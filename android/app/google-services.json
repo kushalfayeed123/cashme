@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "444278190668",
+    "project_id": "cashme-4af9b",
+    "storage_bucket": "cashme-4af9b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:444278190668:android:00b70ef670885c6af13ae9",
+        "android_client_info": {
+          "package_name": "com.example.cashme"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "444278190668-lc8cmoo5qlobq6huvjf1gugg24d0jn8n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIr9MPNgU4DPRMPM4jIvKkKAnRQ7hiHIU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "444278190668-lc8cmoo5qlobq6huvjf1gugg24d0jn8n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -11,11 +11,11 @@ bool userFirestoreEmulator = false;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await st.Settings.init();
-  // await Firebase.initializeApp();
-  // if (userFirestoreEmulator) {
-  //   FirebaseFirestore.instance.settings = Settings(
-  //       host: 'localhost:8080', sslEnabled: false, persistenceEnabled: false);
-  // }
+  await Firebase.initializeApp();
+  if (userFirestoreEmulator) {
+    FirebaseFirestore.instance.settings = Settings(
+        host: 'localhost:8080', sslEnabled: false, persistenceEnabled: false);
+  }
   setupLocator();
 
   runApp(
