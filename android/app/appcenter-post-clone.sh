@@ -15,11 +15,7 @@ export PATH=`pwd`/flutter/bin:$PATH
 
 flutter channel stable
 flutter doctor
-# build APK
-flutter build apk --release  --build-number $APPCENTER_BUILD_ID --flavor $APP_ENVIRONMENT --target=lib/main_$APP_ENVIRONMENT.dart
+flutter build apk --release
 
 # copy the APK where AppCenter will find it
-mkdir -p android/app/build/outputs/apk/$APP_ENVIRONMENT/; mv build/app/outputs/apk/$APP_ENVIRONMENT/release/app-$APP_ENVIRONMENT-release.apk $_
-
-# copy the AAB where AppCenter will find it
-mkdir -p android/app/build/outputs/bundle/${APP_ENVIRONMENT}Release/; mv build/app/outputs/bundle/${APP_ENVIRONMENT}Release/app-$APP_ENVIRONMENT-release.aab $_
+mkdir -p android/app/build/outputs/apk/; mv build/app/outputs/apk/release/app-release.apk $_
