@@ -35,14 +35,14 @@ class ThemeProvider with ChangeNotifier {
   }
 
   Future setDefaultTheme() async {
-    _currentTheme = Settings.themeMode ?? CmThemeMode.auto;
-    _isDarkMode = _currentTheme == CmThemeMode.auto
-        ? MediaQueryData.fromWindow(WidgetsBinding.instance.window)
-                .platformBrightness ==
-            Brightness.dark
-        : _currentTheme == CmThemeMode.dark;
+    // _currentTheme = Settings.themeMode ?? CmThemeMode.auto;
+    // _isDarkMode = _currentTheme == CmThemeMode.auto
+    //     ? MediaQueryData.fromWindow(WidgetsBinding.instance.window)
+    //             .platformBrightness ==
+    //         Brightness.dark
+    //     :
+    // _currentTheme == CmThemeMode.light;
 
-    // AppColors.darkMode = _isDarkMode;
     Settings.themeMode = _currentTheme;
     notifyListeners();
   }

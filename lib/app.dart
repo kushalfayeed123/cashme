@@ -41,9 +41,7 @@ class _MyAppState extends State<MyApp> {
       builder: (ctx, theme, _) => MaterialApp(
         title: 'Cash Me',
         debugShowCheckedModeBanner: false,
-        theme: theme.isDarkModeEnabled
-            ? appThemeData[AppTheme.DarkTheme]
-            : appThemeData[AppTheme.LightTheme],
+        theme: appThemeData[AppTheme.LightTheme],
         initialRoute: '/',
         routes: rt.routes,
         onUnknownRoute: (settings) {
