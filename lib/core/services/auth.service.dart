@@ -1,12 +1,17 @@
 import 'dart:io';
 
+import 'package:cash_me/core/models/wallet.model.dart';
+import 'package:cash_me/core/providers/wallet_provider.dart';
 import 'package:cash_me/core/services/user.service.dart';
+import 'package:cash_me/core/services/wallet.service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 
 import '../../locator.dart';
 
 class AuthenticationService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+
   // final _localAuth = LocalAuthentication();
   bool isAuthenticated = false;
 
@@ -38,7 +43,6 @@ class AuthenticationService {
       User user = _firebaseAuth.currentUser;
       await locator<UserService>()
           .addUserData(user.uid, email, firstName, lastName, cashMeName, pin);
-      print('clicked');
     } catch (e) {
       throw HttpException(e.message);
     }

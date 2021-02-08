@@ -1,8 +1,12 @@
 import 'dart:io';
 
 import 'package:cash_me/core/models/user.model.dart';
+import 'package:cash_me/core/models/wallet.model.dart';
+import 'package:cash_me/locator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
+
+import 'wallet.service.dart';
 
 class UserService {
   final CollectionReference _userCollectionReference =
@@ -26,6 +30,9 @@ class UserService {
       await _userCollectionReference.doc(userId).set(
             _userData.toJson(),
           );
+      WalletModel walletData = new WalletModel(
+          availableBalance: 0, legderBalance: 0, userId: userId);
+      await locator<WalletService>().addWallet(userId, walletData);
     } catch (e) {
       throw HttpException(e.message);
     }
@@ -37,8 +44,6 @@ class UserService {
           .where('KeyReference', isEqualTo: keyReference)
           .limit(1)
           .get();
-      print(userRes.docs[0].data());
-
       return UserModel.fromData(userRes.docs[0]);
     } catch (e) {
       throw HttpException(e);
