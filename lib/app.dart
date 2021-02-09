@@ -45,7 +45,7 @@ class _MyAppState extends State<MyApp> {
         initialRoute: '/',
         routes: rt.routes,
         onUnknownRoute: (settings) {
-          return MaterialPageRoute(builder: (ctx) => SplashScreen());
+          return MaterialPageRoute(builder: (ctx) => SplashScreenUi());
         },
       ),
     );

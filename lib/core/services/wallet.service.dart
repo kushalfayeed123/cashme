@@ -19,11 +19,15 @@ class WalletService {
     }
   }
 
-  Future getWallet(String userId) async {
-    final walletRes = await _walletCollectionReference
-        .where('UserId', isEqualTo: userId)
-        .limit(1)
-        .get();
-    return WalletModel.fromData(walletRes.docs[0]);
+  Stream<WalletModel> getWallet(String userId) {
+    try {
+      return _walletCollectionReference
+          .where('UserId', isEqualTo: userId)
+          .snapshots()
+          .asyncMap((doc) =>
+              doc.docs.map((e) => WalletModel.fromData(e)).toList()[0]);
+    } catch (e) {
+      throw HttpException(e);
+    }
   }
 }

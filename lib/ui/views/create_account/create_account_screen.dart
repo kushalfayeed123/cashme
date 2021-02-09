@@ -50,7 +50,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   }
 
   Widget build(BuildContext context) {
-    TextStyle style = TextStyle(fontFamily: 'Montserrat', fontSize: 16.0);
+    TextStyle style = TextStyle(fontFamily: 'San Francisco', fontSize: 16.0);
     final firstNameField = new Theme(
       data: new ThemeData(primaryColor: Color(0xff16c79a)),
       child: TextField(
@@ -123,7 +123,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     final pinField = new Theme(
       data: new ThemeData(primaryColor: Color(0xff16c79a)),
       child: TextField(
-        keyboardType: TextInputType.text,
+        keyboardType: TextInputType.number,
         controller: _pinController,
         obscureText: true,
         style: style,
@@ -173,7 +173,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: Color(0xFFf4f9f9),
+      backgroundColor: Color(0xFFe8eae6),
       body: GestureDetector(
         onTap: () {
           FocusScope.of(context).unfocus();
@@ -205,7 +205,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                             style: TextStyle(
                                 fontSize: 25.0,
                                 fontWeight: FontWeight.w600,
-                                fontFamily: 'Montserrat',
+                                fontFamily: 'San Francisco',
                                 color: Color(0xff16c79a)),
                             textAlign: TextAlign.left,
                           ),
@@ -239,7 +239,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                                 style: TextStyle(
                                     color: Color(0xff16c79a),
                                     fontSize: 14.0,
-                                    fontFamily: 'Montserrat')),
+                                    fontFamily: 'San Francisco')),
                             onTap: () {
                               Navigator.of(context)
                                   .pushNamed(LoginScreen.routeName);

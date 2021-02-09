@@ -3,20 +3,24 @@ import 'dart:async';
 import 'package:cash_me/core/models/user.model.dart';
 import 'package:cash_me/core/providers/authentication_provider.dart';
 import 'package:cash_me/core/providers/user_provider.dart';
+import 'package:cash_me/core/providers/wallet_provider.dart';
 import 'package:cash_me/ui/shared/utils/settings.dart';
 import 'package:cash_me/ui/views/home/home_screen.dart';
 import 'package:cash_me/ui/views/login/login_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:splashscreen/splashscreen.dart';
 import 'package:provider/provider.dart';
+import 'package:animated_splash_screen/animated_splash_screen.dart';
+import 'package:page_transition/page_transition.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreenUi extends StatefulWidget {
   static const routeName = '/';
 
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
+class _SplashScreenState extends State<SplashScreenUi>
     with SingleTickerProviderStateMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   AnimationController _textAnimationController;
@@ -37,6 +41,17 @@ class _SplashScreenState extends State<SplashScreen>
     super.dispose();
   }
 
+  @override
+  void didChangeDependencies() {
+    if (_isInit) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        startTime();
+      });
+      setState(() => _isInit = false);
+    }
+    super.didChangeDependencies();
+  }
+
   startTime() async {
     var duration = new Duration(seconds: 5);
     return new Timer(duration, () => route());
@@ -44,10 +59,6 @@ class _SplashScreenState extends State<SplashScreen>
 
   route() async {
     try {
-      // Navigator.of(context).pushNamedAndRemoveUntil(
-      //   LoginScreen.routeName,
-      //   (Route<dynamic> route) => false,
-      // );
       final isLoggedIn = await _authenticationProvider.isUserLoggedIn();
 
       if (isLoggedIn) {
@@ -55,6 +66,8 @@ class _SplashScreenState extends State<SplashScreen>
             .setCurrentUser(false);
         UserModel _user =
             Provider.of<UserProvider>(context, listen: false).currentUser;
+        await Provider.of<WalletProvider>(context, listen: false)
+            .setUserWallet(_user.id);
 
         // await Provider.of<NotificationProvider>(context, listen: false)
         //     .setUserNotifications(_user?.id);
@@ -75,17 +88,6 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   @override
-  void didChangeDependencies() {
-    if (_isInit) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        startTime();
-      });
-      setState(() => _isInit = false);
-    }
-    super.didChangeDependencies();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
@@ -94,70 +96,75 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   initScreen(BuildContext context) {
-    double targetValue = MediaQuery.of(context).size.height * 0.3;
+    double targetValue = MediaQuery.of(context).size.height * 0.2;
 
-    return Scaffold(
-      backgroundColor: Color(0xffccf2f4),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-              begin: Alignment.topRight,
-              end: Alignment.bottomLeft,
-              colors: [
-                Color(0xFFf4f9f9),
-                Color(0xFFccf2f4),
-                Color(0xFFa4ebf3),
-                Color(0xFFa4ebf3),
-              ]),
-        ),
-        padding: EdgeInsets.symmetric(horizontal: 32),
-        child: Column(
-          children: [
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TweenAnimationBuilder(
-                    tween: Tween<double>(begin: 0, end: targetValue),
-                    onEnd: () {
-                      setState(() => targetValue = targetValue);
-                    },
-                    duration: Duration(seconds: 2),
-                    builder: (BuildContext context, double size, Widget child) {
-                      return Container(
-                        height: size,
-                        // child: Column(
-                        //   mainAxisAlignment: MainAxisAlignment.center,
-                        //   children: [Text('CASH ME')],
-                        // ),
-                        // child: Image.asset(
-                        //   'assets/images/logo.png',
-                        //   fit: BoxFit.cover,
-                        // ),
-                      );
-                    },
-                  )
-                ],
-              ),
-            ),
-            // AnimatedBuilder(
-            //   animation: _textAnimationController,
-            //   builder: (context, widget) {
-            //     return Column(
-            //       children: [
-            //         Row(
-            //           mainAxisAlignment: MainAxisAlignment.center,
-            //           children: [
-
-            //           ],
-            //         )
-            //       ],
-            //     );
-            //   },
-            // )
-          ],
-        ),
+    return SplashScreen(
+      seconds: 20,
+      navigateAfterSeconds: route(),
+      backgroundColor: Color(0xff16c79a),
+      loadingText: Text('Loading'),
+      loaderColor: Colors.white,
+      title: Text(
+        'CASH ME',
+        style: TextStyle(
+            color: Color(0xFFffffff),
+            fontSize: 40,
+            fontWeight: FontWeight.bold),
       ),
     );
+
+    // return Scaffold(
+    //   // backgroundColor: Color(0xffccf2f4),
+    //   body: Container(
+    //     decoration: BoxDecoration(color: Color(0xff16c79a)),
+    //     padding: EdgeInsets.symmetric(horizontal: 32),
+    //     child: Column(
+    //       children: [
+    //         Expanded(
+    //           child: Column(
+    //             mainAxisAlignment: MainAxisAlignment.center,
+    //             children: [
+    //               TweenAnimationBuilder(
+    //                 curve: Curves.easeInOutQuad,
+    //                 tween: Tween<double>(begin: 0.0, end: 100.0),
+    //                 onEnd: () {
+    //                   setState(() => targetValue = targetValue);
+    //                 },
+    //                 duration: Duration(seconds: 7),
+    //                 builder: (BuildContext context, double size, Widget child) {
+    //                   return Container(
+    //                     height: size,
+    //                     child: Center(
+    //                         child: Row(
+    //                       mainAxisAlignment: MainAxisAlignment.center,
+    //                       children: [
+    //                         Text(
+    //                           'CASH ',
+    //                           style: TextStyle(
+    //                               fontFamily: 'San Fransisco',
+    //                               fontSize: 40,
+    //                               color: Colors.white,
+    //                               fontWeight: FontWeight.bold),
+    //                         ),
+    //                         Text(
+    //                           'Me ',
+    //                           style: TextStyle(
+    //                               fontFamily: 'San Fransisco',
+    //                               fontSize: 40,
+    //                               color: Color(0xFF002147),
+    //                               fontWeight: FontWeight.bold),
+    //                         ),
+    //                       ],
+    //                     )),
+    //                   );
+    //                 },
+    //               )
+    //             ],
+    //           ),
+    //         ),
+    //       ],
+    //     ),
+    //   ),
+    // );
   }
 }
