@@ -88,6 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
       key: _scaffoldKey,
       endDrawer: Drawer(),
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Padding(
           padding: const EdgeInsets.only(top: 30.0, left: 20.0),
           child: Row(

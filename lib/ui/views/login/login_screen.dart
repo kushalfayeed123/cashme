@@ -1,11 +1,14 @@
+import 'dart:async';
 import 'dart:io';
 
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cash_me/core/providers/authentication_provider.dart';
 import 'package:cash_me/core/providers/user_provider.dart';
 import 'package:cash_me/ui/shared/utils/settings.dart';
 import 'package:cash_me/ui/views/create_account/create_account_screen.dart';
 import 'package:cash_me/ui/views/home/home_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -27,10 +30,50 @@ class _LoginScreenState extends State<LoginScreen>
     super.initState();
   }
 
+  openLoadingDialog() {
+    AwesomeDialog(
+            context: context,
+            animType: AnimType.SCALE,
+            customHeader: null,
+            dialogType: DialogType.NO_HEADER,
+            dismissOnTouchOutside: false,
+            body: spinner)
+        .show();
+  }
+
+  closeDialog() {
+    AwesomeDialog(context: context).dissmiss();
+  }
+
+  showErrorMessageDialog(message) {
+    AwesomeDialog(
+        context: context,
+        animType: AnimType.SCALE,
+        showCloseIcon: true,
+        customHeader: null,
+        dialogType: DialogType.ERROR,
+        dismissOnTouchOutside: false,
+        body: Text(
+          message,
+          style: TextStyle(
+              fontFamily: 'San Fransisco',
+              fontSize: 14,
+              color: Color(0xFF002147)),
+        )).show();
+  }
+
+  final spinner = SpinKitRing(
+    // type: SpinKitWaveType.end,
+    color: Color(0xff16c79a),
+    size: 50.0,
+  );
+
   void _login() async {
     setState(() => _autoValidate = true);
     // if (!_formKey.currentState.validate()) return;
     // _formKey.currentState.save();
+    openLoadingDialog();
+
     try {
       await Provider.of<AuthenticationProvider>(context, listen: false).signIn(
         email: _emailController.text,
@@ -38,15 +81,18 @@ class _LoginScreenState extends State<LoginScreen>
       );
       await Provider.of<UserProvider>(context, listen: false)
           .setCurrentUser(false);
-      // Settings.userKeyRefernce =
-      //     Provider.of<UserProvider>(context, listen: false)
-      //         .currentUser
-      //         .keyReference;
+      Settings.userKeyRefernce =
+          Provider.of<UserProvider>(context, listen: false)
+              .currentUser
+              .keyReference;
+      closeDialog();
       Navigator.of(context).pushReplacementNamed(HomeScreen.routeName);
     } on HttpException catch (e) {
-      print(e);
+      closeDialog();
+      showErrorMessageDialog(e.message);
     } catch (e) {
-      print(e);
+      closeDialog();
+      showErrorMessageDialog(e.message);
     }
   }
 

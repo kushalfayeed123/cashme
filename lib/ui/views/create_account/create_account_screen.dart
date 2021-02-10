@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:cash_me/core/providers/authentication_provider.dart';
 import 'package:cash_me/ui/views/login/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
 
 class CreateAccountScreen extends StatefulWidget {
   static const routeName = '/create-account';
@@ -17,23 +20,66 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   TextEditingController _emailController = new TextEditingController();
   TextEditingController _pinController = new TextEditingController();
   TextEditingController _passwordController = new TextEditingController();
+  OverlayEntry _overlayEntry;
+
+  bool _isLoading = false;
 
   final _formKey = GlobalKey<FormState>();
   bool _autoValidate = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-  spinkit() {
-    SpinKitRotatingCircle(
-      color: Color(0xff16c79a),
-      size: 100.0,
-    );
+
+  openLoadingDialog() {
+    AwesomeDialog(
+            context: context,
+            animType: AnimType.SCALE,
+            customHeader: null,
+            dialogType: DialogType.NO_HEADER,
+            dismissOnTouchOutside: false,
+            body: spinner)
+        .show();
+  }
+
+  showSuccessMessageDialog(message) {
+    AwesomeDialog(
+        context: context,
+        animType: AnimType.SCALE,
+        showCloseIcon: true,
+        customHeader: null,
+        dialogType: DialogType.SUCCES,
+        dismissOnTouchOutside: false,
+        body: Text(
+          message,
+          style: TextStyle(fontFamily: 'San Fransisco', fontSize: 14),
+        )).show();
+  }
+
+  showErrorMessageDialog(message) {
+    AwesomeDialog(
+        context: context,
+        animType: AnimType.SCALE,
+        showCloseIcon: true,
+        customHeader: null,
+        dialogType: DialogType.ERROR,
+        dismissOnTouchOutside: false,
+        body: Text(
+          message,
+          style: TextStyle(
+              fontFamily: 'San Fransisco',
+              fontSize: 14,
+              color: Color(0xFF002147)),
+        )).show();
+  }
+
+  closeDialog() {
+    AwesomeDialog(context: context).dissmiss();
   }
 
   void _createAccount() async {
-    spinkit();
+    // spinkit();
     // setState(() => _autoValidate = true);
     // if (!_formKey.currentState.validate()) return null;
     // _formKey.currentState.save();
-
+    openLoadingDialog();
     try {
       await Provider.of<AuthenticationProvider>(context, listen: false)
           .registerUser(
@@ -43,13 +89,30 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
               lastName: _lastnameController.text,
               cashMeName: _cashmenameController.text,
               pin: _pinController.text);
-      Navigator.of(context).pushNamed(LoginScreen.routeName);
+      closeDialog();
+      showSuccessMessageDialog('Your account has been created successfully');
+      Timer(Duration(seconds: 5), () {
+        Navigator.of(context).pushNamed(LoginScreen.routeName);
+      });
     } catch (e) {
-      print(e);
+      closeDialog();
+      showErrorMessageDialog(e);
     }
   }
 
+  final spinner = SpinKitRing(
+    // type: SpinKitWaveType.end,
+    color: Color(0xff16c79a),
+    size: 50.0,
+  );
+
   Widget build(BuildContext context) {
+    //   final spinner = SpinKitRing(
+    //   // type: SpinKitWaveType.end,
+    //   color: Color(0xff16c79a),
+    //   size: 50.0,
+    // );
+
     TextStyle style = TextStyle(fontFamily: 'San Francisco', fontSize: 16.0);
     final firstNameField = new Theme(
       data: new ThemeData(primaryColor: Color(0xff16c79a)),
