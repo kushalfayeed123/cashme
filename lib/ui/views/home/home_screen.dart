@@ -366,10 +366,10 @@ class _HomeScreenState extends State<HomeScreen> {
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(
-              Icons.home,
+              Icons.send_to_mobile,
               color: Color(0xff16c79a),
             ),
-            label: 'Home',
+            label: 'Send',
           ),
           // BottomNavigationBarItem(
           //   icon: Icon(
