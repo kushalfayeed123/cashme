@@ -24,4 +24,8 @@ class AuthenticationProvider with ChangeNotifier {
   Future<bool> isUserLoggedIn() async {
     return await _authService.isUserLoggedIn();
   }
+
+  Future<void> signOut() async {
+    await _authService.signOut();
+  }
 }

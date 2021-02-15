@@ -56,4 +56,12 @@ class AuthenticationService {
       throw HttpException(e.message);
     }
   }
+
+  Future signOut() async {
+    try {
+      await _firebaseAuth.signOut();
+    } catch (e) {
+      throw HttpException(e.message);
+    }
+  }
 }

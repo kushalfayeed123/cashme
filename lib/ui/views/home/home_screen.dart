@@ -1,7 +1,7 @@
-import 'package:cash_me/core/models/user.model.dart';
-import 'package:cash_me/core/models/wallet.model.dart';
+import 'package:cash_me/core/providers/authentication_provider.dart';
 import 'package:cash_me/core/providers/user_provider.dart';
 import 'package:cash_me/core/providers/wallet_provider.dart';
+import 'package:cash_me/ui/views/login/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -74,11 +74,101 @@ class _HomeScreenState extends State<HomeScreen> {
       'transactionType': 'Debit',
       'amount': '200'
     },
+    {
+      'firstname': 'Segun',
+      'lastName': 'Ajanaku',
+      'transactionType': 'Debit',
+      'amount': '200'
+    },
+    {
+      'firstname': 'Segun',
+      'lastName': 'Ajanaku',
+      'transactionType': 'Debit',
+      'amount': '200'
+    },
+    {
+      'firstname': 'Segun',
+      'lastName': 'Ajanaku',
+      'transactionType': 'Debit',
+      'amount': '200'
+    },
+    {
+      'firstname': 'Segun',
+      'lastName': 'Ajanaku',
+      'transactionType': 'Debit',
+      'amount': '200'
+    },
+    {
+      'firstname': 'Segun',
+      'lastName': 'Ajanaku',
+      'transactionType': 'Debit',
+      'amount': '200'
+    },
+    {
+      'firstname': 'Segun',
+      'lastName': 'Ajanaku',
+      'transactionType': 'Debit',
+      'amount': '200'
+    },
+    {
+      'firstname': 'Segun',
+      'lastName': 'Ajanaku',
+      'transactionType': 'Debit',
+      'amount': '200'
+    },
+    {
+      'firstname': 'Segun',
+      'lastName': 'Ajanaku',
+      'transactionType': 'Debit',
+      'amount': '200'
+    },
+    {
+      'firstname': 'Segun',
+      'lastName': 'Ajanaku',
+      'transactionType': 'Debit',
+      'amount': '200'
+    },
+    {
+      'firstname': 'Segun',
+      'lastName': 'Ajanaku',
+      'transactionType': 'Debit',
+      'amount': '200'
+    },
+    {
+      'firstname': 'Segun',
+      'lastName': 'Ajanaku',
+      'transactionType': 'Debit',
+      'amount': '200'
+    },
+    {
+      'firstname': 'Segun',
+      'lastName': 'Ajanaku',
+      'transactionType': 'Debit',
+      'amount': '200'
+    },
+    {
+      'firstname': 'Segun',
+      'lastName': 'Ajanaku',
+      'transactionType': 'Debit',
+      'amount': '200'
+    },
+    {
+      'firstname': 'Segun',
+      'lastName': 'Ajanaku',
+      'transactionType': 'Debit',
+      'amount': '200'
+    },
   ];
+
+  logout() async {
+    final _authProvider =
+        Provider.of<AuthenticationProvider>(context, listen: false);
+    _authProvider.signOut();
+    Navigator.of(context).pushNamed(LoginScreen.routeName);
+  }
 
   @override
   Widget build(BuildContext context) {
-    bool showLedger = false;
     final _user = Provider.of<UserProvider>(context).currentUser;
     final _wallet = Provider.of<WalletProvider>(context).userWallet;
     setState(() => this.bcontext = context);
@@ -86,47 +176,106 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Color(0xFFe8eae6),
       key: _scaffoldKey,
-      endDrawer: Drawer(),
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Padding(
-          padding: const EdgeInsets.only(top: 30.0, left: 20.0),
-          child: Row(
+      endDrawer: Drawer(
+        child: Container(
+          decoration: BoxDecoration(color: Color(0xff16c79a)),
+          padding: EdgeInsets.only(left: 40.0, top: 100.0),
+          child: Column(
             // mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
-                'CASH ',
-                style: TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontSize: 25,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold),
+              GestureDetector(
+                onTap: () {},
+                child: Row(
+                  children: [
+                    Icon(Icons.monetization_on, color: Color(0xFF002147)),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Text(
+                      'Cash Out',
+                      style: TextStyle(
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'San Francisco',
+                          color: Color(0xFF002147)),
+                    ),
+                  ],
+                ),
               ),
-              Text(
-                'ME ',
-                style: TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontSize: 25,
-                    color: Color(0xFF002147),
-                    fontWeight: FontWeight.bold),
+              SizedBox(
+                height: 20,
+              ),
+              GestureDetector(
+                onTap: () {},
+                child: Row(
+                  children: [
+                    Icon(Icons.settings, color: Color(0xFF002147)),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Text(
+                      'Settings',
+                      style: TextStyle(
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'San Francisco',
+                          color: Color(0xFF002147)),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              GestureDetector(
+                onTap: () {
+                  logout();
+                },
+                child: Row(
+                  children: [
+                    Icon(Icons.logout, color: Color(0xFF002147)),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Text(
+                      'Logout',
+                      style: TextStyle(
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'San Francisco',
+                          color: Color(0xFF002147)),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
         ),
-        // Padding(
-        //   padding: EdgeInsets.only(top: 40, left: 20),
-        //   child: Container(
-        //     height: 25,
-        //     width: 25,
-        //     decoration: BoxDecoration(
-        //         image: DecorationImage(
-        //           image: AssetImage('assets/images/logo.png'),
-        //           fit: BoxFit.fill,
-        //         ),
-        //         shape: BoxShape.rectangle,
-        //         borderRadius: BorderRadius.all(Radius.circular(50))),
-        //   ),
-        // ),
+      ),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: Padding(
+          padding: const EdgeInsets.only(top: 30.0, left: 20.0),
+          child: RichText(
+            text: TextSpan(
+                text: 'CASH',
+                style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 30,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold),
+                children: <TextSpan>[
+                  TextSpan(
+                      text: 'ME',
+                      style: TextStyle(
+                          fontFamily: 'Montserrat',
+                          fontSize: 30,
+                          color: Color(0xFF002147),
+                          fontWeight: FontWeight.bold))
+                ]),
+          ),
+        ),
         elevation: 0.0,
         primary: false,
         backgroundColor: Color(0xff16c79a),
@@ -190,19 +339,19 @@ class _HomeScreenState extends State<HomeScreen> {
                           // ),
                           Padding(
                             padding: const EdgeInsets.only(
-                                top: 70.0, left: 20.0, right: 10.0),
+                                top: 70.0, left: 15.0, right: 10.0),
                             child: Column(
                               children: [
                                 Container(
                                   width: 220.0,
-                                  child: Text(
-                                      '${_user.firstName} ${_user.lastName}',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 25,
-                                        fontWeight: FontWeight.w600,
-                                        fontFamily: 'San Francisco',
-                                      )),
+                                  child:
+                                      Text('${_user.cashMeName.toUpperCase()}',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 25,
+                                            fontWeight: FontWeight.w600,
+                                            fontFamily: 'San Francisco',
+                                          )),
                                 ),
                               ],
                             ),
@@ -216,14 +365,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Padding(
-                    padding: EdgeInsets.only(top: 120, left: 10),
+                    padding: EdgeInsets.only(
+                        top: MediaQuery.of(context).size.height * 0.15,
+                        left: MediaQuery.of(context).size.width * 0.015),
                     child: Material(
                       elevation: 15.0,
                       borderRadius: BorderRadius.all(Radius.circular(5)),
                       color: Color(0xFFf4f9f9),
                       child: Container(
                           height: 150,
-                          width: 350,
+                          width: MediaQuery.of(context).size.width * 0.89,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -284,10 +435,12 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             Align(
                 alignment: Alignment.centerLeft,
-                child: Padding(
-                  padding: EdgeInsets.only(left: 30, top: 20, bottom: 20),
+                child: Container(
+                  padding: EdgeInsets.only(
+                      left: MediaQuery.of(context).size.width * 0.09,
+                      top: MediaQuery.of(context).size.height * 0.009,
+                      bottom: 20),
                   child: SizedBox(
-                    height: 100,
                     child: Text(
                       'Transactions',
                       style: TextStyle(
@@ -301,7 +454,9 @@ class _HomeScreenState extends State<HomeScreen> {
             Align(
                 alignment: Alignment.topCenter,
                 child: Padding(
-                  padding: EdgeInsets.only(top: 350, left: 30),
+                  padding: EdgeInsets.only(
+                      top: MediaQuery.of(context).size.height * 0.43,
+                      left: MediaQuery.of(context).size.width * 0.036),
                   child: ListView.separated(
                     padding: const EdgeInsets.all(8),
                     shrinkWrap: true,

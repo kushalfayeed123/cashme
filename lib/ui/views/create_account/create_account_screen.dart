@@ -20,6 +20,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   TextEditingController _emailController = new TextEditingController();
   TextEditingController _pinController = new TextEditingController();
   TextEditingController _passwordController = new TextEditingController();
+  TextEditingController _passwordConfirmController =
+      new TextEditingController();
   OverlayEntry _overlayEntry;
 
   bool _isLoading = false;
@@ -83,12 +85,10 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     try {
       await Provider.of<AuthenticationProvider>(context, listen: false)
           .registerUser(
-              password: _passwordController.text,
-              email: _emailController.text,
-              firstName: _firstnameController.text,
-              lastName: _lastnameController.text,
-              cashMeName: _cashmenameController.text,
-              pin: _pinController.text);
+        password: _passwordController.text,
+        email: _emailController.text,
+        cashMeName: _cashmenameController.text,
+      );
       closeDialog();
       showSuccessMessageDialog('Your account has been created successfully');
       Timer(Duration(seconds: 5), () {
@@ -115,7 +115,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
     TextStyle style = TextStyle(fontFamily: 'San Francisco', fontSize: 16.0);
     final firstNameField = new Theme(
-      data: new ThemeData(primaryColor: Color(0xff16c79a)),
+      data: new ThemeData(primaryColor: Color(0xFF002147)),
       child: TextField(
         keyboardType: TextInputType.text,
         controller: _firstnameController,
@@ -150,7 +150,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       ),
     );
     final emailField = new Theme(
-      data: new ThemeData(primaryColor: Color(0xff16c79a)),
+      data: new ThemeData(primaryColor: Color(0xFF002147)),
       child: TextField(
         keyboardType: TextInputType.emailAddress,
         controller: _emailController,
@@ -167,7 +167,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       ),
     );
     final cashMeNameField = new Theme(
-      data: new ThemeData(primaryColor: Color(0xff16c79a)),
+      data: new ThemeData(primaryColor: Color(0xFF002147)),
       child: TextField(
         keyboardType: TextInputType.text,
         controller: _cashmenameController,
@@ -176,7 +176,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         decoration: InputDecoration(
           contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
           suffixIcon: Icon(Icons.person),
-          hintText: "Cashme Name",
+          hintText: "CashMe Name",
           border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(32.0),
               borderSide: BorderSide(color: Color(0xff16c79a))),
@@ -201,7 +201,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       ),
     );
     final passwordField = new Theme(
-      data: new ThemeData(primaryColor: Color(0xff16c79a)),
+      data: new ThemeData(primaryColor: Color(0xFF002147)),
       child: TextField(
         keyboardType: TextInputType.text,
         controller: _passwordController,
@@ -211,6 +211,23 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
           suffixIcon: Icon(Icons.lock),
           hintText: "Password",
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(32.0),
+              borderSide: BorderSide(color: Color(0xff16c79a))),
+        ),
+      ),
+    );
+    final confirmPasswordField = new Theme(
+      data: new ThemeData(primaryColor: Color(0xFF002147)),
+      child: TextField(
+        keyboardType: TextInputType.text,
+        controller: _passwordConfirmController,
+        obscureText: true,
+        style: style,
+        decoration: InputDecoration(
+          contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+          suffixIcon: Icon(Icons.lock),
+          hintText: "Confirm Password",
           border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(32.0),
               borderSide: BorderSide(color: Color(0xff16c79a))),
@@ -236,7 +253,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: Color(0xFFe8eae6),
+      backgroundColor: Color(0xff16c79a),
       body: GestureDetector(
         onTap: () {
           FocusScope.of(context).unfocus();
@@ -251,12 +268,26 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       Padding(
-                        padding: EdgeInsets.only(top: 20.0, bottom: 20.0),
+                        padding: EdgeInsets.only(top: 30.0, bottom: 20.0),
                         child: SizedBox(
-                          height: MediaQuery.of(context).size.width * 0.4,
-                          child: Image.asset(
-                            "assets/images/logo.png",
-                            fit: BoxFit.contain,
+                          height: MediaQuery.of(context).size.width * 0.2,
+                          child: RichText(
+                            text: TextSpan(
+                                text: 'CASH',
+                                style: TextStyle(
+                                    fontFamily: 'Montserrat',
+                                    fontSize: 40,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold),
+                                children: <TextSpan>[
+                                  TextSpan(
+                                      text: 'ME',
+                                      style: TextStyle(
+                                          fontFamily: 'Montserrat',
+                                          fontSize: 40,
+                                          color: Color(0xFF002147),
+                                          fontWeight: FontWeight.bold))
+                                ]),
                           ),
                         ),
                       ),
@@ -269,25 +300,27 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                                 fontSize: 25.0,
                                 fontWeight: FontWeight.w600,
                                 fontFamily: 'San Francisco',
-                                color: Color(0xff16c79a)),
+                                color: Color(0xFF002147)),
                             textAlign: TextAlign.left,
                           ),
                         ),
                         padding: EdgeInsets.only(left: 10.0),
                       ),
                       SizedBox(height: 15.0),
-                      firstNameField,
-                      SizedBox(height: 15.0),
-                      lastNameField,
-                      SizedBox(height: 15.0),
+                      // firstNameField,
+                      // SizedBox(height: 15.0),
+                      // lastNameField,
+                      // SizedBox(height: 15.0),
                       emailField,
                       SizedBox(height: 15.0),
                       cashMeNameField,
                       SizedBox(height: 15.0),
                       passwordField,
                       SizedBox(height: 15.0),
-                      pinField,
+                      confirmPasswordField,
                       SizedBox(height: 15.0),
+                      // pinField,
+                      // SizedBox(height: 15.0),
                       loginButon,
                       SizedBox(
                         height: 20.0,
@@ -300,7 +333,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                           InkWell(
                             child: Text("Already have an account? Login",
                                 style: TextStyle(
-                                    color: Color(0xff16c79a),
+                                    color: Color(0xFF002147),
                                     fontSize: 14.0,
                                     fontFamily: 'San Francisco')),
                             onTap: () {

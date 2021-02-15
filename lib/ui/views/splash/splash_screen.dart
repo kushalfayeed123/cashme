@@ -105,7 +105,7 @@ class _SplashScreenState extends State<SplashScreenUi>
       loadingText: Text('Loading'),
       loaderColor: Colors.white,
       title: Text(
-        'CASH ME',
+        'CASHME',
         style: TextStyle(
             color: Color(0xFFffffff),
             fontSize: 40,

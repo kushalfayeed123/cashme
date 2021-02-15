@@ -101,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen>
     TextStyle style = TextStyle(fontFamily: 'San Francisco', fontSize: 16.0);
 
     final emailField = new Theme(
-      data: new ThemeData(primaryColor: Color(0xff16c79a)),
+      data: new ThemeData(primaryColor: Color(0xFF002147)),
       child: TextField(
         keyboardType: TextInputType.emailAddress,
         controller: _emailController,
@@ -119,7 +119,7 @@ class _LoginScreenState extends State<LoginScreen>
     );
 
     final passwordField = new Theme(
-      data: new ThemeData(primaryColor: Color(0xff16c79a)),
+      data: new ThemeData(primaryColor: Color(0xFF002147)),
       child: TextField(
         keyboardType: TextInputType.text,
         controller: _passwordController,
@@ -153,7 +153,7 @@ class _LoginScreenState extends State<LoginScreen>
       ),
     );
     return Scaffold(
-      backgroundColor: Color(0xFFe8eae6),
+      backgroundColor: Color(0xff16c79a),
       body: GestureDetector(
         onTap: () {
           FocusScope.of(context).unfocus();
@@ -168,12 +168,26 @@ class _LoginScreenState extends State<LoginScreen>
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       Padding(
-                        padding: EdgeInsets.only(top: 20.0, bottom: 20.0),
+                        padding: EdgeInsets.only(top: 30.0, bottom: 20.0),
                         child: SizedBox(
-                          height: MediaQuery.of(context).size.width * 0.4,
-                          child: Image.asset(
-                            "assets/images/logo.png",
-                            fit: BoxFit.contain,
+                          height: MediaQuery.of(context).size.width * 0.2,
+                          child: RichText(
+                            text: TextSpan(
+                                text: 'CASH',
+                                style: TextStyle(
+                                    fontFamily: 'Montserrat',
+                                    fontSize: 40,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold),
+                                children: <TextSpan>[
+                                  TextSpan(
+                                      text: 'ME',
+                                      style: TextStyle(
+                                          fontFamily: 'Montserrat',
+                                          fontSize: 40,
+                                          color: Color(0xFF002147),
+                                          fontWeight: FontWeight.bold))
+                                ]),
                           ),
                         ),
                       ),
@@ -186,7 +200,7 @@ class _LoginScreenState extends State<LoginScreen>
                                 fontSize: 25.0,
                                 fontWeight: FontWeight.w600,
                                 fontFamily: 'San Francisco',
-                                color: Color(0xff16c79a)),
+                                color: Color(0xFF002147)),
                             textAlign: TextAlign.left,
                           ),
                         ),
@@ -209,7 +223,7 @@ class _LoginScreenState extends State<LoginScreen>
                           InkWell(
                             child: Text("Create an Account",
                                 style: TextStyle(
-                                    color: Color(0xff16c79a),
+                                    color: Color(0xFF002147),
                                     fontSize: 14.0,
                                     fontFamily: 'San Francisco')),
                             onTap: () {
