@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>444278190668-20u2jvh1bqqtcf6et10ob32rktuvn77h.apps.googleusercontent.com</string>
+	<string>444278190668-3aenfvb6bqbpnha97l26k7u465ske48f.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.444278190668-20u2jvh1bqqtcf6et10ob32rktuvn77h</string>
+	<string>com.googleusercontent.apps.444278190668-3aenfvb6bqbpnha97l26k7u465ske48f</string>
 	<key>API_KEY</key>
 	<string>AIzaSyBB8gtZHEyNuyVJ_t5r41W-PSEnYcxX1aI</string>
 	<key>GCM_SENDER_ID</key>
@@ -13,7 +13,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.cashme</string>
+	<string>com.cashmeorg.cashme</string>
 	<key>PROJECT_ID</key>
 	<string>cashme-4af9b</string>
 	<key>STORAGE_BUCKET</key>
@@ -29,6 +29,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:444278190668:ios:1d6a88078b8e44e3f13ae9</string>
+	<string>1:444278190668:ios:6821f88143bddaf8f13ae9</string>
 </dict>
 </plist>

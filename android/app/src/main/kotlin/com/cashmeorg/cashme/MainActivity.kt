@@ -1,4 +1,4 @@
-package com.example.cashme
+package com.cashmeorg.cashme
 
 import io.flutter.embedding.android.FlutterActivity
 
