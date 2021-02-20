@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:cash_me/core/constants.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cash_me/core/models/account_charge.model.dart';
 import 'package:cash_me/core/models/bank.model.dart';
 import 'package:cash_me/core/models/charge_response.model.dart';
@@ -12,6 +13,7 @@ import 'package:cash_me/core/services/wallet.service.dart';
 import 'package:cash_me/ui/views/home/home_screen.dart';
 import 'package:cash_me/ui/views/login/login_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
@@ -23,8 +25,11 @@ class LoadWalletScreen extends StatefulWidget {
   _LoadWalletScreenState createState() => _LoadWalletScreenState();
 }
 
-class _LoadWalletScreenState extends State<LoadWalletScreen> {
-  BuildContext context;
+class _LoadWalletScreenState extends State<LoadWalletScreen>
+    with SingleTickerProviderStateMixin {
+  // BuildContext context;
+  BuildContext bcontext;
+
   TextEditingController _accountController = new TextEditingController();
   TextEditingController _dobController = new TextEditingController();
   TextEditingController _bvnController = new TextEditingController();
@@ -34,6 +39,37 @@ class _LoadWalletScreenState extends State<LoadWalletScreen> {
   var banks = new List<BankModel>();
   var selectedBank;
   var _requeryUrl, _queryCount = 0, _reQueryTxCount = 0, _waitDuration = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    getBanks();
+  }
+
+  openLoadingDialog() {
+    AwesomeDialog(
+            context: context,
+            animType: AnimType.SCALE,
+            customHeader: null,
+            dialogType: DialogType.NO_HEADER,
+            dismissOnTouchOutside: false,
+            body: spinner)
+        .show();
+  }
+
+  closeDialog() {
+    AwesomeDialog(context: context).dissmiss();
+  }
+
+  bool _isInit = true;
+
+  @override
+  void didChangeDependencies() {
+    if (_isInit) {
+      _isInit = false;
+    }
+    super.didChangeDependencies();
+  }
 
   void _requeryTx(String flwRef) async {
     if (_reQueryTxCount < MAX_REQUERY_COUNT) {
@@ -47,6 +83,9 @@ class _LoadWalletScreenState extends State<LoadWalletScreen> {
 
       if (response == null) {
         print('Payment processing failed. Please try again later.');
+        showErrorMessageDialog(
+            'Payment processing failed. Please try again later.');
+        closeDialog();
         // _showToast(
         //     context, 'Payment processing failed. Please try again later.');
       } else {
@@ -59,6 +98,9 @@ class _LoadWalletScreenState extends State<LoadWalletScreen> {
         } else if (requeryResponse.data.chargeResponseCode == '00') {
           _onPaymentSuccessful();
         } else {
+          showErrorMessageDialog('payment failed');
+          closeDialog();
+
           print('payment failed');
           // _showToast(
           //     context, 'Payment processing failed. Please try again later.');
@@ -66,6 +108,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen> {
         }
       }
     } else if (_reQueryTxCount == MAX_REQUERY_COUNT) {
+      showErrorMessageDialog('Request Timed out');
       print('timeout');
       // _showToast(
       //     context, 'Payment processing timeout. Please try again later.');
@@ -114,6 +157,8 @@ class _LoadWalletScreenState extends State<LoadWalletScreen> {
           chargeResponse.data.flwRef != null) {
         _requeryTx(chargeResponse.data.flwRef);
       } else {
+        showErrorMessageDialog('Payment failed');
+        closeDialog();
         print('payment failed');
         // _showToast(
         //     context, 'Payment processing failed. Please try again later.');
@@ -143,54 +188,75 @@ class _LoadWalletScreenState extends State<LoadWalletScreen> {
   }
 
   void _onPaymentSuccessful() async {
+    showSuccessMessageDialog('Payment successful');
     print('payment successful');
     // _showPaymentSuccessfulDialog();
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  showSuccessMessageDialog(message) {
+    AwesomeDialog(
+        context: context,
+        animType: AnimType.SCALE,
+        showCloseIcon: true,
+        customHeader: null,
+        dialogType: DialogType.NO_HEADER,
+        dismissOnTouchOutside: false,
+        body: Text(
+          message,
+          style: TextStyle(fontFamily: 'San Fransisco', fontSize: 14),
+        )).show();
   }
 
-  @override
-  void initState() {
-    super.initState();
-    getBanks();
+  showErrorMessageDialog(message) {
+    AwesomeDialog(
+        context: context,
+        animType: AnimType.SCALE,
+        showCloseIcon: true,
+        customHeader: null,
+        dialogType: DialogType.NO_HEADER,
+        dismissOnTouchOutside: false,
+        body: Container(
+          padding: EdgeInsets.all(20),
+          child: Text(
+            message,
+            style: TextStyle(
+                fontFamily: 'San Fransisco',
+                fontSize: 14,
+                color: Color(0xFF002147)),
+          ),
+        )).show();
   }
+
+  final spinner = SpinKitRing(
+    // type: SpinKitWaveType.end,
+    color: Color(0xff16c79a),
+    size: 50.0,
+  );
 
   dispose() {
     super.dispose();
   }
 
-  int _selectedIndex = 0;
-  DateTime selectedDate = DateTime.now();
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  void initiatePayment() async {
+    openLoadingDialog();
+    final _user = Provider.of<UserProvider>(context, listen: false).currentUser;
 
-  @override
-  Widget build(BuildContext context) {
-    final _user = Provider.of<UserProvider>(context).currentUser;
-
-    home() {
-      Navigator.of(context).pushNamed(HomeScreen.routeName);
-    }
-
-    void initiatePayment() async {
-      AccountCharge chargePayload = AccountCharge(
-          accountbank: selectedBank,
-          pbfPubKey: PUBLIC_KEY,
-          currency: CURRENCY,
-          paymentType: PAYMENTTYPE,
-          country: COUNTRY,
-          email: _user.email,
-          firstName: 'Cash',
-          lastName: 'Me',
-          txRef: "CASHME-" + DateTime.now().toString(),
-          passcode: _dobController.text,
-          phonenumber: _phoneController.text,
-          accountnumber: _accountController.text,
-          amount: _amountController.text,
-          bvn: _bvnController.text);
-
+    AccountCharge chargePayload = AccountCharge(
+        accountbank: selectedBank,
+        pbfPubKey: PUBLIC_KEY,
+        currency: CURRENCY,
+        paymentType: PAYMENTTYPE,
+        country: COUNTRY,
+        email: _user.email,
+        firstName: 'Cash',
+        lastName: 'Me',
+        txRef: "CASHME-" + DateTime.now().toString(),
+        passcode: _dobController.text,
+        phonenumber: _phoneController.text,
+        accountnumber: _accountController.text,
+        amount: _amountController.text,
+        bvn: _bvnController.text);
+    try {
       var requestBody =
           chargePayload.encryptJsonPayload(ENCRYPTION_KEY, PUBLIC_KEY);
 
@@ -203,26 +269,47 @@ class _LoadWalletScreenState extends State<LoadWalletScreen> {
       print(response);
 
       if (response == null) {
+        closeDialog();
+
+        showErrorMessageDialog(
+            'Sorry we could not load your wallet. Please try again later.');
         // _showToast(context, 'Payment processing failed. Please try again later.');
         // _dismissMobileMoneyDialog(false);
       } else {
         _continueProcessingAfterCharge(response, true);
       }
+    } catch (e) {
+      closeDialog();
+      showErrorMessageDialog(e);
     }
+  }
 
-    _selectDate(BuildContext context) async {
-      final DateTime picked = await showDatePicker(
-        context: context,
-        initialDate: selectedDate,
-        firstDate: DateTime(1908),
-        lastDate: DateTime.now(),
-      );
-      if (picked != null && picked != selectedDate)
-        setState(() {
-          selectedDate = picked;
-        });
-      _dobController.text = selectedDate.toString();
-    }
+  int _selectedIndex = 0;
+  DateTime selectedDate = DateTime.now();
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
+  home() {
+    Navigator.of(context).pushNamed(HomeScreen.routeName);
+  }
+
+  _selectDate(BuildContext context) async {
+    final DateTime picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(1908),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != selectedDate)
+      setState(() {
+        selectedDate = picked;
+      });
+    _dobController.text = selectedDate.toString();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final _user = Provider.of<UserProvider>(context, listen: false).currentUser;
+    setState(() => this.bcontext = context);
 
     TextStyle style = TextStyle(fontFamily: 'San Francisco', fontSize: 16.0);
 
@@ -280,7 +367,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen> {
       child: TextField(
         keyboardType: TextInputType.phone,
         controller: _phoneController,
-        obscureText: true,
+        obscureText: false,
         style: style,
         decoration: InputDecoration(
           contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),

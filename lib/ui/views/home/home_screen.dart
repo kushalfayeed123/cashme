@@ -490,7 +490,8 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: new FloatingActionButton(
         onPressed: () {
-          Navigator.of(context).pushNamed(LoadWalletScreen.routeName);
+          Navigator.of(context)
+              .pushReplacementNamed(LoadWalletScreen.routeName);
         },
         tooltip: 'Increment',
         backgroundColor: Color(0xff16c79a),
