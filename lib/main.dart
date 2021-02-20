@@ -1,5 +1,6 @@
 import 'package:cash_me/core/providers/authentication_provider.dart';
 import 'package:cash_me/core/providers/theme_provider.dart';
+import 'package:cash_me/core/providers/transaction_provider.dart';
 import 'package:cash_me/core/providers/user_provider.dart';
 import 'package:cash_me/core/providers/wallet_provider.dart';
 import 'package:flutter/material.dart';
@@ -28,6 +29,7 @@ void main() async {
         ChangeNotifierProvider(create: (ctx) => AuthenticationProvider()),
         ChangeNotifierProvider(create: (ctx) => UserProvider()),
         ChangeNotifierProvider(create: (ctx) => WalletProvider()),
+        ChangeNotifierProvider(create: (ctx) => TransactionProvider()),
       ],
       child: MyApp(),
     ),

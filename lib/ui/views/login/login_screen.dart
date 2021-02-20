@@ -1,6 +1,4 @@
-import 'dart:async';
 import 'dart:io';
-
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cash_me/core/providers/authentication_provider.dart';
 import 'package:cash_me/core/providers/user_provider.dart';
@@ -19,9 +17,6 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
-  bool _autoValidate = false;
-  final _formKey = GlobalKey<FormState>();
-
   TextEditingController _emailController = new TextEditingController();
   TextEditingController _passwordController = new TextEditingController();
 
@@ -69,7 +64,6 @@ class _LoginScreenState extends State<LoginScreen>
   );
 
   void _login() async {
-    setState(() => _autoValidate = true);
     // if (!_formKey.currentState.validate()) return;
     // _formKey.currentState.save();
     openLoadingDialog();

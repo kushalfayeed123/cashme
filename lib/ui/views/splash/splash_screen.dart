@@ -4,14 +4,11 @@ import 'package:cash_me/core/models/user.model.dart';
 import 'package:cash_me/core/providers/authentication_provider.dart';
 import 'package:cash_me/core/providers/user_provider.dart';
 import 'package:cash_me/core/providers/wallet_provider.dart';
-import 'package:cash_me/ui/shared/utils/settings.dart';
 import 'package:cash_me/ui/views/home/home_screen.dart';
 import 'package:cash_me/ui/views/login/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:splashscreen/splashscreen.dart';
 import 'package:provider/provider.dart';
-import 'package:animated_splash_screen/animated_splash_screen.dart';
-import 'package:page_transition/page_transition.dart';
 
 class SplashScreenUi extends StatefulWidget {
   static const routeName = '/';
@@ -96,8 +93,6 @@ class _SplashScreenState extends State<SplashScreenUi>
   }
 
   initScreen(BuildContext context) {
-    double targetValue = MediaQuery.of(context).size.height * 0.2;
-
     return SplashScreen(
       seconds: 20,
       navigateAfterSeconds: route(),

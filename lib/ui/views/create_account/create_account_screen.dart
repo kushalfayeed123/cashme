@@ -14,20 +14,12 @@ class CreateAccountScreen extends StatefulWidget {
 }
 
 class _CreateAccountScreenState extends State<CreateAccountScreen> {
-  TextEditingController _firstnameController = new TextEditingController();
-  TextEditingController _lastnameController = new TextEditingController();
   TextEditingController _cashmenameController = new TextEditingController();
   TextEditingController _emailController = new TextEditingController();
-  TextEditingController _pinController = new TextEditingController();
   TextEditingController _passwordController = new TextEditingController();
   TextEditingController _passwordConfirmController =
       new TextEditingController();
-  OverlayEntry _overlayEntry;
 
-  bool _isLoading = false;
-
-  final _formKey = GlobalKey<FormState>();
-  bool _autoValidate = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   openLoadingDialog() {
@@ -114,41 +106,41 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     // );
 
     TextStyle style = TextStyle(fontFamily: 'San Francisco', fontSize: 16.0);
-    final firstNameField = new Theme(
-      data: new ThemeData(primaryColor: Color(0xFF002147)),
-      child: TextField(
-        keyboardType: TextInputType.text,
-        controller: _firstnameController,
-        obscureText: false,
-        style: style,
-        decoration: InputDecoration(
-          contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-          suffixIcon: Icon(Icons.person),
-          hintText: "First Name",
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(32.0),
-              borderSide: BorderSide(color: Color(0xff16c79a))),
-        ),
-      ),
-    );
-    final lastNameField = new Theme(
-      data: new ThemeData(primaryColor: Color(0xff16c79a)),
-      child: TextField(
-        keyboardType: TextInputType.text,
-        // isRequired: true,
-        controller: _lastnameController,
-        obscureText: false,
-        style: style,
-        decoration: InputDecoration(
-          contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-          suffixIcon: Icon(Icons.person),
-          hintText: "Last Name",
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(32.0),
-              borderSide: BorderSide(color: Color(0xff16c79a))),
-        ),
-      ),
-    );
+    // final firstNameField = new Theme(
+    //   data: new ThemeData(primaryColor: Color(0xFF002147)),
+    //   child: TextField(
+    //     keyboardType: TextInputType.text,
+    //     controller: _firstnameController,
+    //     obscureText: false,
+    //     style: style,
+    //     decoration: InputDecoration(
+    //       contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+    //       suffixIcon: Icon(Icons.person),
+    //       hintText: "First Name",
+    //       border: OutlineInputBorder(
+    //           borderRadius: BorderRadius.circular(32.0),
+    //           borderSide: BorderSide(color: Color(0xff16c79a))),
+    //     ),
+    //   ),
+    // );
+    // final lastNameField = new Theme(
+    //   data: new ThemeData(primaryColor: Color(0xff16c79a)),
+    //   child: TextField(
+    //     keyboardType: TextInputType.text,
+    //     // isRequired: true,
+    //     controller: _lastnameController,
+    //     obscureText: false,
+    //     style: style,
+    //     decoration: InputDecoration(
+    //       contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+    //       suffixIcon: Icon(Icons.person),
+    //       hintText: "Last Name",
+    //       border: OutlineInputBorder(
+    //           borderRadius: BorderRadius.circular(32.0),
+    //           borderSide: BorderSide(color: Color(0xff16c79a))),
+    //     ),
+    //   ),
+    // );
     final emailField = new Theme(
       data: new ThemeData(primaryColor: Color(0xFF002147)),
       child: TextField(
@@ -183,23 +175,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         ),
       ),
     );
-    final pinField = new Theme(
-      data: new ThemeData(primaryColor: Color(0xff16c79a)),
-      child: TextField(
-        keyboardType: TextInputType.number,
-        controller: _pinController,
-        obscureText: true,
-        style: style,
-        decoration: InputDecoration(
-          contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-          suffixIcon: Icon(Icons.lock),
-          hintText: "Pin",
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(32.0),
-              borderSide: BorderSide(color: Color(0xff16c79a))),
-        ),
-      ),
-    );
+
     final passwordField = new Theme(
       data: new ThemeData(primaryColor: Color(0xFF002147)),
       child: TextField(

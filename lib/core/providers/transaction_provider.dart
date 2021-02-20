@@ -1,14 +1,12 @@
 import 'package:cash_me/core/models/transaction.model.dart';
-import 'package:cash_me/core/models/wallet.model.dart';
 import 'package:cash_me/core/services/transaction.service.dart';
-import 'package:cash_me/core/services/wallet.service.dart';
 import 'package:cash_me/locator.dart';
 import 'package:flutter/material.dart';
 
 class TransactionProvider with ChangeNotifier {
   TransactionService _transactService = locator<TransactionService>();
-  TransactionModel _userTransaction;
-  TransactionModel get userTransactions => _userTransaction;
+  List<TransactionModel> _userTransactions;
+  List<TransactionModel> get userTransactions => _userTransactions;
 
   Future addTransaction(
       TransactionModel transactionData, String _userId) async {
@@ -24,7 +22,8 @@ class TransactionProvider with ChangeNotifier {
         .getTransacts(userId)
         .asBroadcastStream()
         .listen((transact) {
-      _userTransaction = transact;
+      _userTransactions = transact;
+      print(transact);
       notifyListeners();
     });
   }

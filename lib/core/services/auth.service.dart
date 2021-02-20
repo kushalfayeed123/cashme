@@ -1,11 +1,7 @@
 import 'dart:io';
 
-import 'package:cash_me/core/models/wallet.model.dart';
-import 'package:cash_me/core/providers/wallet_provider.dart';
 import 'package:cash_me/core/services/user.service.dart';
-import 'package:cash_me/core/services/wallet.service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:provider/provider.dart';
 
 import '../../locator.dart';
 

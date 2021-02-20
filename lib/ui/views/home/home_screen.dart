@@ -1,6 +1,8 @@
 import 'package:cash_me/core/providers/authentication_provider.dart';
+import 'package:cash_me/core/providers/transaction_provider.dart';
 import 'package:cash_me/core/providers/user_provider.dart';
 import 'package:cash_me/core/providers/wallet_provider.dart';
+import 'package:cash_me/ui/views/load_wallet/load_wallet.dart';
 import 'package:cash_me/ui/views/login/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -20,6 +22,8 @@ class _HomeScreenState extends State<HomeScreen> {
           Provider.of<UserProvider>(context, listen: false).currentUser;
       await Provider.of<WalletProvider>(context, listen: false)
           .setUserWallet(_user.id);
+      await Provider.of<TransactionProvider>(context, listen: false)
+          .setUserTransactions(_user.id);
     } catch (e) {
       print(e);
     }
@@ -43,122 +47,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-  final List entries = [
-    {
-      'firstname': 'Segun',
-      'lastName': 'Ajanaku',
-      'transactionType': 'Debit',
-      'amount': '200'
-    },
-    {
-      'firstname': 'Segun',
-      'lastName': 'Ajanaku',
-      'transactionType': 'Debit',
-      'amount': '200'
-    },
-    {
-      'firstname': 'Segun',
-      'lastName': 'Ajanaku',
-      'transactionType': 'Debit',
-      'amount': '200'
-    },
-    {
-      'firstname': 'Segun',
-      'lastName': 'Ajanaku',
-      'transactionType': 'Debit',
-      'amount': '200'
-    },
-    {
-      'firstname': 'Segun',
-      'lastName': 'Ajanaku',
-      'transactionType': 'Debit',
-      'amount': '200'
-    },
-    {
-      'firstname': 'Segun',
-      'lastName': 'Ajanaku',
-      'transactionType': 'Debit',
-      'amount': '200'
-    },
-    {
-      'firstname': 'Segun',
-      'lastName': 'Ajanaku',
-      'transactionType': 'Debit',
-      'amount': '200'
-    },
-    {
-      'firstname': 'Segun',
-      'lastName': 'Ajanaku',
-      'transactionType': 'Debit',
-      'amount': '200'
-    },
-    {
-      'firstname': 'Segun',
-      'lastName': 'Ajanaku',
-      'transactionType': 'Debit',
-      'amount': '200'
-    },
-    {
-      'firstname': 'Segun',
-      'lastName': 'Ajanaku',
-      'transactionType': 'Debit',
-      'amount': '200'
-    },
-    {
-      'firstname': 'Segun',
-      'lastName': 'Ajanaku',
-      'transactionType': 'Debit',
-      'amount': '200'
-    },
-    {
-      'firstname': 'Segun',
-      'lastName': 'Ajanaku',
-      'transactionType': 'Debit',
-      'amount': '200'
-    },
-    {
-      'firstname': 'Segun',
-      'lastName': 'Ajanaku',
-      'transactionType': 'Debit',
-      'amount': '200'
-    },
-    {
-      'firstname': 'Segun',
-      'lastName': 'Ajanaku',
-      'transactionType': 'Debit',
-      'amount': '200'
-    },
-    {
-      'firstname': 'Segun',
-      'lastName': 'Ajanaku',
-      'transactionType': 'Debit',
-      'amount': '200'
-    },
-    {
-      'firstname': 'Segun',
-      'lastName': 'Ajanaku',
-      'transactionType': 'Debit',
-      'amount': '200'
-    },
-    {
-      'firstname': 'Segun',
-      'lastName': 'Ajanaku',
-      'transactionType': 'Debit',
-      'amount': '200'
-    },
-    {
-      'firstname': 'Segun',
-      'lastName': 'Ajanaku',
-      'transactionType': 'Debit',
-      'amount': '200'
-    },
-    {
-      'firstname': 'Segun',
-      'lastName': 'Ajanaku',
-      'transactionType': 'Debit',
-      'amount': '200'
-    },
-  ];
 
   logout() async {
     final _authProvider =
@@ -171,6 +59,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final _user = Provider.of<UserProvider>(context).currentUser;
     final _wallet = Provider.of<WalletProvider>(context).userWallet;
+    var _transactions =
+        Provider.of<TransactionProvider>(context)?.userTransactions;
+    if (_transactions == null) {
+      _transactions = [];
+    }
     setState(() => this.bcontext = context);
 
     return Scaffold(
@@ -417,7 +310,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     left: 30.0,
                                     right: 40.0),
                                 child: Text(
-                                  "₦${_wallet?.legderBalance ?? ""}",
+                                  '₦${_wallet?.legderBalance ?? ""}',
                                   style: TextStyle(
                                     color: Color(0xFF002147),
                                     fontFamily: 'San Francisco',
@@ -434,73 +327,126 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             Align(
-                alignment: Alignment.centerLeft,
-                child: Container(
-                  padding: EdgeInsets.only(
-                      left: MediaQuery.of(context).size.width * 0.09,
-                      top: MediaQuery.of(context).size.height * 0.009,
-                      bottom: 20),
-                  child: SizedBox(
-                    child: Text(
-                      'Transactions',
-                      style: TextStyle(
-                          color: Colors.blueGrey,
-                          fontSize: 16,
-                          fontFamily: 'San Francisco',
-                          fontWeight: FontWeight.w600),
-                    ),
+              alignment: Alignment.centerLeft,
+              child: Container(
+                padding: EdgeInsets.only(
+                    left: MediaQuery.of(context).size.width * 0.09,
+                    top: MediaQuery.of(context).size.height * 0.009,
+                    bottom: 20),
+                child: SizedBox(
+                  child: Text(
+                    'Transactions',
+                    style: TextStyle(
+                        color: Colors.blueGrey,
+                        fontSize: 16,
+                        fontFamily: 'San Francisco',
+                        fontWeight: FontWeight.w600),
                   ),
-                )),
+                ),
+              ),
+            ),
             Align(
                 alignment: Alignment.topCenter,
                 child: Padding(
                   padding: EdgeInsets.only(
                       top: MediaQuery.of(context).size.height * 0.43,
                       left: MediaQuery.of(context).size.width * 0.036),
-                  child: ListView.separated(
-                    padding: const EdgeInsets.all(8),
-                    shrinkWrap: true,
-                    itemCount: entries.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return Container(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ListTile(
-                              title: Text(
-                                'Segun Ajanaku',
+                  child: Row(
+                    children: [
+                      _transactions.length == 0
+                          ? Container(
+                              padding: EdgeInsets.only(
+                                  left:
+                                      MediaQuery.of(context).size.width * 0.15,
+                                  top: 40),
+                              child: Text(
+                                'There are no transactions yet.',
                                 style: TextStyle(
-                                  color: Color(0xFF002147),
-                                  fontFamily: 'San Francisco',
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              subtitle: Text(
-                                'Debit',
-                                style: TextStyle(
-                                  color: Colors.blueGrey,
-                                  fontFamily: 'San Francisco',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              trailing: Text(
-                                '-200000',
-                                style: TextStyle(
-                                  color: Color(0xFFf58634),
-                                  fontFamily: 'San Francisco',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                    color: Colors.blueGrey,
+                                    fontSize: 16,
+                                    fontFamily: 'San Francisco',
+                                    fontWeight: FontWeight.w600),
                               ),
                             )
-                          ],
-                        ),
-                      );
-                    },
-                    separatorBuilder: (BuildContext context, int index) =>
-                        const Divider(),
+                          : ListView.separated(
+                              padding: const EdgeInsets.all(8),
+                              shrinkWrap: true,
+                              itemCount: _transactions.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                return Container(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                      ..._transactions.map((data) => ListTile(
+                                            title: Text(
+                                              data?.type == 'debit'
+                                                  ? data?.receiverName
+                                                  : data?.senderName,
+                                              style: TextStyle(
+                                                color: Color(0xFF002147),
+                                                fontFamily: 'San Francisco',
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            subtitle: Text(
+                                              data?.type,
+                                              style: TextStyle(
+                                                color: Colors.blueGrey,
+                                                fontFamily: 'San Francisco',
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            trailing: Column(
+                                              children: [
+                                                data?.type == 'debit'
+                                                    ? Text(
+                                                        '-${data?.value}',
+                                                        style: TextStyle(
+                                                          color:
+                                                              Color(0xFFf58634),
+                                                          fontFamily:
+                                                              'San Francisco',
+                                                          fontSize: 14,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                        ),
+                                                      )
+                                                    : Text(
+                                                        '+${data?.value}',
+                                                        style: TextStyle(
+                                                          color:
+                                                              Color(0xff16c79a),
+                                                          fontFamily:
+                                                              'San Francisco',
+                                                          fontSize: 14,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                        ),
+                                                      ),
+                                                SizedBox(height: 50),
+                                                Text(
+                                                  data.status,
+                                                  style: TextStyle(
+                                                    color: Color(0xff16c79a),
+                                                    fontFamily: 'San Francisco',
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ))
+                                    ],
+                                  ),
+                                );
+                              },
+                              separatorBuilder:
+                                  (BuildContext context, int index) =>
+                                      const Divider(),
+                            ),
+                    ],
                   ),
                 )),
             // Align(
@@ -543,7 +489,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: new FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.of(context).pushNamed(LoadWalletScreen.routeName);
+        },
         tooltip: 'Increment',
         backgroundColor: Color(0xff16c79a),
         child: new Icon(

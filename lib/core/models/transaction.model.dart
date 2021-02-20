@@ -5,8 +5,8 @@ class TransactionModel {
   final String id;
   final String type;
   final String value;
-  final String senderId;
-  final String receiverId;
+  final String senderName;
+  final String receiverName;
   final DateTime createdOn;
   final DateTime modifiedOn;
   final String status;
@@ -15,8 +15,8 @@ class TransactionModel {
     this.id,
     @required this.type,
     @required this.value,
-    @required this.senderId,
-    @required this.receiverId,
+    @required this.senderName,
+    @required this.receiverName,
     @required this.createdOn,
     @required this.modifiedOn,
     @required this.status,
@@ -25,8 +25,8 @@ class TransactionModel {
       : id = snapshot.id,
         type = snapshot.data()['Type'],
         value = snapshot.data()['Value'],
-        senderId = snapshot.data()['SenderId'],
-        receiverId = snapshot.data()['ReceiverId'],
+        senderName = snapshot.data()['SenderName'],
+        receiverName = snapshot.data()['ReceiverName'],
         createdOn = snapshot.data()['CreatedOn'],
         modifiedOn = snapshot.data()['ModifiedOn'],
         status = snapshot.data()['Status'];
@@ -34,8 +34,8 @@ class TransactionModel {
     return {
       'Type': type,
       'Value': value,
-      'SenderId': senderId,
-      'ReceiverId': receiverId,
+      'SenderName': senderName,
+      'ReceiverName': receiverName,
       'CreatedOn': createdOn,
       'ModifiedOn': modifiedOn,
       'Status': status,
