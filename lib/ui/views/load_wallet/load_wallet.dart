@@ -229,7 +229,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
 
       var newValue = _wallet.legderBalance + int.parse(_amountController.text);
       walletPayload =
-          WalletModel(legderBalance: newValue, availableBalance: newValue);
+          WalletModel(legderBalance: newValue, availableBalance: _wallet.availableBalance);
 
       if (isFirst) {
         await Provider.of<UserProvider>(context, listen: false)
