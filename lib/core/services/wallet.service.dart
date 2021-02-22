@@ -91,4 +91,29 @@ class WalletService {
       throw HttpException(e);
     }
   }
+
+  Future intitialUpdateWalletData(String walletId, WalletModel payload) async {
+    try {
+      _walletCollectionReference.doc(walletId).update({
+        'AccountNumber': payload.accountNumber,
+        'Accountbank': payload.accountbank,
+        'Bvn': payload.bvn,
+        'AvailableBalance': payload.availableBalance,
+        'LegderBalance': payload.legderBalance
+      });
+    } catch (e) {
+      throw HttpException(e);
+    }
+  }
+
+  Future updateWallet(String walletId, WalletModel payload) async {
+    try {
+      _walletCollectionReference.doc(walletId).update({
+        'AvailableBalance': payload.availableBalance,
+        'LegderBalance': payload.legderBalance
+      });
+    } catch (e) {
+      throw HttpException(e);
+    }
+  }
 }

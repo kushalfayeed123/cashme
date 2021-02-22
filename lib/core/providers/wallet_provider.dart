@@ -1,4 +1,3 @@
-import 'package:cash_me/core/models/account_charge.model.dart';
 import 'package:cash_me/core/models/bank.model.dart';
 import 'package:cash_me/core/models/charge_response.model.dart';
 import 'package:cash_me/core/models/wallet.model.dart';
@@ -34,9 +33,18 @@ class WalletProvider with ChangeNotifier {
     });
   }
 
+  Future initialUpdate(String walletId, WalletModel payload) async {
+    await _walletService.intitialUpdateWalletData(walletId, payload);
+  }
+
+  Future updateWallet(String walletId, WalletModel payload) async {
+    await _walletService.updateWallet(walletId, payload);
+  }
+
   // Future setBanks() async {
-  //   var banks = await _walletService.getBanks();
-  //   _banks = banks.toList();
+  //   _walletService.getBanks().asStream().listen((bank) {
+  //     _banks = bank.map((model) => BankModel.fromJson(model)).toList();
+  //   });
   //   notifyListeners();
   // }
 }

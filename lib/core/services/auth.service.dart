@@ -26,8 +26,7 @@ class AuthenticationService {
   Future registerUser(
     String password,
     String email,
-    String firstName,
-    String lastName,
+    String fullName,
     String cashMeName,
     String pin,
   ) async {
@@ -38,7 +37,7 @@ class AuthenticationService {
       );
       User user = _firebaseAuth.currentUser;
       await locator<UserService>()
-          .addUserData(user.uid, email, firstName, lastName, cashMeName, pin);
+          .addUserData(user.uid, email, fullName, cashMeName, pin);
     } catch (e) {
       throw HttpException(e.message);
     }

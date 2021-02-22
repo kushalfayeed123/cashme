@@ -8,10 +8,7 @@ class TransactionService {
   final CollectionReference _trasactCollectionReference =
       FirebaseFirestore.instance.collection("Transaction");
 
-  final sandboxUrl = 'https://ravesandboxapi.flutterwave.com';
-  final liveUrl = 'https://api.ravepay.co';
-
-  Future addTransact(String userId, TransactionModel transactData) async {
+  Future createTransaction(TransactionModel transactData) async {
     final transactId = Uuid().v1();
     try {
       await _trasactCollectionReference.doc(transactId).set(
@@ -26,12 +23,23 @@ class TransactionService {
     try {
       return _trasactCollectionReference
           .where('UserId', isEqualTo: userId)
-          .orderBy('ModifiedOn')
+          // .orderBy('ModifiedOn')
           .snapshots()
           .asyncMap((doc) =>
               doc.docs.map((e) => TransactionModel.fromData(e)).toList());
     } catch (e) {
       throw HttpException(e);
+    }
+  }
+
+  Future updateTransaction(
+      String transactionId, TransactionModel payload) async {
+    try {
+      _trasactCollectionReference
+          .doc(transactionId)
+          .update({'Status': payload.status, 'ModifiedOn': payload.modifiedOn});
+    } catch (e) {
+      throw Exception(e);
     }
   }
 }

@@ -23,3 +23,7 @@ const COUNTRY = 'NG';
 // const network = 'UGX';
 const WEB_HOOK_3DS = 'https://rave-webhook.herokuapp.com/receivepayment';
 const MAX_REQUERY_COUNT = 30;
+
+const DEBIT = 'Debit';
+const CREDIT = 'Credit';
+const LOAD = 'Load';

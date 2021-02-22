@@ -17,6 +17,10 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future updateUserData(String userId, UserModel payload) async {
+    await _userService.updateUserData(userId, payload);
+  }
+
   UserModel get user {
     return _currentUser;
   }

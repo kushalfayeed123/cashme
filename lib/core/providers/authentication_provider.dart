@@ -12,13 +12,11 @@ class AuthenticationProvider with ChangeNotifier {
   Future<void> registerUser({
     String password,
     String email,
-    String firstName,
-    String lastName,
+    String fullName,
     String cashMeName,
     String pin,
   }) async {
-    await _authService.registerUser(
-        password, email, firstName, lastName, cashMeName, pin);
+    await _authService.registerUser(password, email, fullName, cashMeName, pin);
   }
 
   Future<bool> isUserLoggedIn() async {

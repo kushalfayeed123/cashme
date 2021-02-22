@@ -12,26 +12,31 @@ class UserService {
   final CollectionReference _userCollectionReference =
       FirebaseFirestore.instance.collection("User");
 
-  Future addUserData(String uid, String email, String firstName,
-      String lastName, String cashMeName, String pin) async {
+  Future addUserData(String uid, String email, String fullName,
+      String cashMeName, String pin) async {
     final UserModel _userData = UserModel(
         cashMeName: cashMeName,
-        firstName: firstName,
-        lastName: lastName,
+        fullName: fullName,
         email: email,
         pin: pin,
         createdBy: cashMeName,
         createdOn: DateTime.now(),
         modifiedBy: cashMeName,
         modifiedOn: DateTime.now(),
-        keyReference: uid);
+        keyReference: uid,
+        phoneNumber: null);
     final userId = Uuid().v1();
     try {
       await _userCollectionReference.doc(userId).set(
             _userData.toJson(),
           );
       WalletModel walletData = new WalletModel(
-          availableBalance: 0, legderBalance: 0, userId: userId);
+          availableBalance: 0,
+          legderBalance: 0,
+          userId: userId,
+          accountbank: null,
+          accountNumber: null,
+          bvn: null);
       await locator<WalletService>().addWallet(userId, walletData);
     } catch (e) {
       throw HttpException(e.message);
@@ -45,6 +50,20 @@ class UserService {
           .limit(1)
           .get();
       return UserModel.fromData(userRes.docs[0]);
+    } catch (e) {
+      throw HttpException(e);
+    }
+  }
+
+  Future updateUserData(String userId, UserModel payload) async {
+    try {
+      _userCollectionReference.doc(userId).update({
+        'Pin': payload.pin,
+        'FullName': payload.fullName,
+        'PhoneNumber': payload.phoneNumber,
+        'modifiedOn': payload.modifiedOn,
+        'modifiedBy': payload.modifiedBy
+      });
     } catch (e) {
       throw HttpException(e);
     }

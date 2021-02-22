@@ -8,9 +8,8 @@ class TransactionProvider with ChangeNotifier {
   List<TransactionModel> _userTransactions;
   List<TransactionModel> get userTransactions => _userTransactions;
 
-  Future addTransaction(
-      TransactionModel transactionData, String _userId) async {
-    await _transactService.addTransact(_userId, transactionData);
+  Future addTransaction(TransactionModel transactionData) async {
+    await _transactService.createTransaction(transactionData);
   }
 
   // Future getUserWallet(String userId) async {
@@ -26,5 +25,10 @@ class TransactionProvider with ChangeNotifier {
       print(transact);
       notifyListeners();
     });
+  }
+
+  Future updateTransaction(
+      String transactionId, TransactionModel payload) async {
+    await _transactService.updateTransaction(transactionId, payload);
   }
 }
