@@ -9,8 +9,8 @@ class AccountCharge {
   final String currency;
   final String paymentType;
   final String country;
-  final String amount;
-  final String firstName;
+  final int amount;
+  final String fullname;
   final String lastName;
   final String email;
   final String passcode;
@@ -18,45 +18,57 @@ class AccountCharge {
   final String txRef;
   final String bvn;
   final String redirectUrl;
+  final String destbankcode;
+  final String recipientaccount;
+  final String ip;
+  final String deviceFingerprint;
 
-  const AccountCharge({
-    this.pbfPubKey,
-    this.accountbank,
-    this.accountnumber,
-    this.currency,
-    this.paymentType,
-    this.country,
-    this.amount,
-    this.firstName,
-    this.lastName,
-    this.email,
-    this.passcode,
-    this.phonenumber,
-    this.txRef,
-    this.bvn,
-    this.redirectUrl,
-  });
+  const AccountCharge(
+      {this.pbfPubKey,
+      this.accountbank,
+      this.accountnumber,
+      this.currency,
+      this.paymentType,
+      this.country,
+      this.amount,
+      this.fullname,
+      this.lastName,
+      this.email,
+      this.passcode,
+      this.phonenumber,
+      this.txRef,
+      this.bvn,
+      this.redirectUrl,
+      this.recipientaccount,
+      this.destbankcode,
+      this.ip,
+      this.deviceFingerprint});
 
-  Map<String, dynamic> toJson() => {
-        'PBFPubKey': pbfPubKey,
-        'accountbank': accountbank,
-        'accountnumber': accountnumber,
-        'currency': currency,
-        'payment_type': paymentType,
-        'country': country,
-        'amount': amount,
-        'email': email,
-        'firstname': firstName,
-        'lastname': lastName,
-        'passcode': passcode,
-        'phonenumber': phonenumber,
-        'txRef': txRef,
-        'bvn': bvn,
-        'redirect_url': redirectUrl,
-      };
+  Map<String, dynamic> toJson() {
+    return {
+      'PBFPubKey': pbfPubKey,
+      'account_bank': accountbank,
+      'account_number': accountnumber,
+      'currency': currency,
+      'payment_type': paymentType,
+      'country': country,
+      'amount': amount,
+      'email': email,
+      'passcode': passcode,
+      'bvn': bvn,
+      'phone_number': phonenumber,
+      'fullname': fullname,
+      'lastname': lastName,
+      'Ip': ip,
+      'tx_ref ': txRef,
+      'device_fingerprint': deviceFingerprint,
+      'redirect_url': redirectUrl,
+      'destbankcode': destbankcode,
+      'recipientaccount': recipientaccount,
+    };
+  }
 
-  Map<String, String> encryptJsonPayload(
-      String encryptionKey, String publicKey) {
+  encryptJsonPayload(String encryptionKey, String publicKey) {
     String encoded = jsonEncode(this);
     String encrypted = getEncryptedData(encoded, encryptionKey);
 

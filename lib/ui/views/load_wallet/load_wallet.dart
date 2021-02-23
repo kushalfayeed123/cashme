@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 import 'package:cash_me/core/constants.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cash_me/core/models/account_charge.model.dart';
@@ -14,6 +15,7 @@ import 'package:cash_me/core/providers/transaction_provider.dart';
 import 'package:cash_me/core/providers/user_provider.dart';
 import 'package:cash_me/core/providers/wallet_provider.dart';
 import 'package:cash_me/core/services/wallet.service.dart';
+import 'package:cash_me/locator.dart';
 import 'package:cash_me/ui/views/home/home_screen.dart';
 import 'package:cash_me/ui/views/login/login_screen.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +23,8 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:tripledes/tripledes.dart';
+import 'package:flutterwave/flutterwave.dart';
 
 class LoadWalletScreen extends StatefulWidget {
   static const routeName = 'load_wallet';
@@ -87,7 +91,28 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
     super.didChangeDependencies();
   }
 
-  verifyAccountNumber() {}
+  var accCode;
+  var accountName;
+  var firstName;
+  var lastName;
+
+  getSelectedBank(value) {
+    accCode = value;
+  }
+
+  verifyAccountNumber() async {
+    AccountCharge chargePayload = AccountCharge(
+      destbankcode: selectedBank,
+      pbfPubKey: PUBLIC_KEY.toString(),
+      recipientaccount: _accountController.text,
+    );
+
+    accountName = await locator<WalletService>().verifyAccount(chargePayload);
+    // firstName = accountName.split()[0];
+    // lastName = accountName.split()[1];
+
+    print(accountName);
+  }
 
   void _requeryTx(String flwRef) async {
     if (_reQueryTxCount < MAX_REQUERY_COUNT) {
@@ -100,12 +125,9 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
       //     .loadWallet(REQUERY_ENDPOINT, requeryRequestBody);
 
       if (response == null) {
-        print('Payment processing failed. Please try again later.');
+        closeDialog();
         showErrorMessageDialog(
             'Payment processing failed. Please try again later.');
-        closeDialog();
-        // _showToast(
-        //     context, 'Payment processing failed. Please try again later.');
       } else {
         var requeryResponse = RequeryResponse.fromJson(response);
         if (requeryResponse.data == null) {
@@ -171,7 +193,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
       if (chargeResponse.status == 'success' &&
           chargeResponse.data.pingUrl != null) {
         _waitDuration = chargeResponse.data.wait;
-        _requeryUrl = chargeResponse.data.pingUrl;
+        _requeryUrl = '${chargeResponse.data.pingUrl}?use_polling=1';
         Timer(Duration(milliseconds: chargeResponse.data.wait), () {
           _chargeAgainAfterDuration(chargeResponse.data.pingUrl);
         });
@@ -216,9 +238,8 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
   }
 
   void _onPaymentSuccessful() async {
-    showSuccessMessageDialog('Payment successful');
-    print('payment successful');
-    // _showPaymentSuccessfulDialog();
+    postPaymentAction();
+    showSuccessMessageDialog('Your wallet was loaded successful');
   }
 
   void postPaymentAction() async {
@@ -228,8 +249,8 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
           Provider.of<WalletProvider>(context, listen: false).userWallet;
 
       var newValue = _wallet.legderBalance + int.parse(_amountController.text);
-      walletPayload =
-          WalletModel(legderBalance: newValue, availableBalance: _wallet.availableBalance);
+      walletPayload = WalletModel(
+          legderBalance: newValue, availableBalance: _wallet.availableBalance);
 
       if (isFirst) {
         await Provider.of<UserProvider>(context, listen: false)
@@ -298,6 +319,14 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
   }
 
   void initiatePayment() async {
+    const _chars =
+        'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
+    Random _rnd = Random();
+
+    String getRandomString(int length) =>
+        String.fromCharCodes(Iterable.generate(
+            length, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
+    // verifyAccountNumber();
     openLoadingDialog();
     final _user = Provider.of<UserProvider>(context, listen: false).currentUser;
 
@@ -326,48 +355,114 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
       createdOn: DateTime.now(),
     );
 
-    AccountCharge chargePayload = AccountCharge(
-        accountbank: selectedBank,
-        pbfPubKey: PUBLIC_KEY,
-        currency: CURRENCY,
-        paymentType: PAYMENTTYPE,
-        country: COUNTRY,
-        email: _user.email,
-        // firstName: 'Cash',
-        // lastName: 'Me',
-        txRef: "CASHME-" + DateTime.now().toString(),
-        passcode: _dobController.text,
-        phonenumber: _phoneController.text,
-        accountnumber: _accountController.text,
-        amount: _amountController.text,
-        bvn: _bvnController.text);
-    try {
-      postPaymentAction();
+    var payLoad = {
+      // "PBFPubKey": PUBLIC_KEY.toString().trim(),
+      "account_bank": selectedBank.toString().trim(),
+      "account_number": _accountController.text.toString().trim(),
+      "amount": int.parse(_amountController.text),
+      "email": _user.email.toString().trim(),
+      "tx_ref": 'MC-' + DateTime.now().toIso8601String(),
+      "firstname": 'Forest '.toString().trim(),
+      "lastname": ' Green'.toString().trim(),
+      // "phone_number": _phoneController.text.toString().trim(),
 
-      // var requestBody =
-      //     chargePayload.encryptJsonPayload(ENCRYPTION_KEY, PUBLIC_KEY);
+      "currency": CURRENCY.toString().trim(),
+      // "payment_type": 'debit_ng_account'.toString().trim(),
+      // "country": COUNTRY.toString().trim(),
+      // "lastname": 'Green'.toString().trim(),
+    };
+
+    AccountCharge chargePayload = AccountCharge(
+      // pbfPubKey: PUBLIC_KEY,
+      accountbank: selectedBank,
+      accountnumber: _accountController.text,
+      currency: CURRENCY,
+      // paymentType: PAYMENTTYPE,
+      // country: COUNTRY,
+      amount: int.parse(_amountController.text),
+      email: _user.email,
+      // passcode: _dobController.text,
+      // bvn: _bvnController.text,
+      phonenumber: _phoneController.text,
+      fullname: 'Forest',
+      // lastName: 'Green',
+      // ip: '',
+      txRef: "MC-" + DateTime.now().toString(),
+      // deviceFingerprint: '',
+    );
+    try {
+      var requestBody = encryptJsonPayload(ENCRYPTION_KEY, PUBLIC_KEY, payLoad);
+      print(payLoad);
 
       // await Provider.of<WalletProvider>(context, listen: false)
       //     .loadWallet('$SANDBOX_CHARGE_ENDPOINT?use_polling=1', requestBody);
 
-      // var response = await WalletService()
-      //     .loadWallet('$SANDBOX_CHARGE_ENDPOINT?use_polling=1', requestBody);
+      var response = await locator<WalletService>()
+          .loadWallet('$SANDBOX_CHARGE_ENDPOINT', payLoad);
 
-      // print(response);
+      if (response == null) {
+        closeDialog();
 
-      // if (response == null) {
-      //   ;
-
-      //   showErrorMessageDialog(
-      //       'Sorry we could not load your walletcloseDialog(). Please try again later.');
-      // } else {
-      //   _continueProcessingAfterCharge(response, true);
-      // }
+        showErrorMessageDialog(
+            'Sorry, we could not load your wallet. Please try again later.');
+      } else {
+        print(response);
+        _continueProcessingAfterCharge(response, true);
+      }
     } catch (e) {
       closeDialog();
-      showErrorMessageDialog(e);
+      print(e);
+      // showErrorMessageDialog(e.message);
     }
   }
+
+  encryptJsonPayload(String encryptionKey, String publicKey, payload) {
+    String encoded = jsonEncode(payload);
+    String encrypted = getEncryptedData(encoded, encryptionKey);
+
+    final encryptedPayload = {
+      "PBFPubKey": publicKey,
+      "client": encrypted,
+      "alg": "3DES-24"
+    };
+
+    return encryptedPayload;
+  }
+
+  String getEncryptedData(encoded, encryptionKey) {
+    return encrypt(encryptionKey, encoded);
+  }
+
+  String encrypt(key, text) {
+    var blockCipher = BlockCipher(TripleDESEngine(), key);
+    var i = blockCipher.encodeB64(text);
+    return i;
+  }
+
+  // _handlePaymentInitialization() async {
+  //   final flutterwave = Flutterwave.forUIPayment(
+  //     amount: this.amountController.text.toString().trim(),
+  //     currency: this.currencyController.text,
+  //     context: this.context,
+  //     publicKey: this.publicKeyController.text.trim(),
+  //     encryptionKey: this.encryptionKeyController.text.trim(),
+  //     email: this.emailController.text.trim(),
+  //     fullName: "Test User",
+  //     txRef: DateTime.now().toIso8601String(),
+  //     narration: "Example Project",
+  //     isDebugMode: this.isDebug,
+  //     phoneNumber: this.phoneNumberController.text.trim(),
+  //     acceptAccountPayment: true,
+  //     acceptCardPayment: true,
+  //     acceptUSSDPayment: true
+  //   );
+  //   final response = await flutterwave.initializeForUiPayments();
+  //   if (response != null) {
+  //     this.showLoading(response.data.status);
+  //   } else {
+  //     this.showLoading("No Response!");
+  //   }
+  // }
 
   int _selectedIndex = 0;
   DateTime selectedDate = DateTime.now();
@@ -413,7 +508,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
             value: selectedBank,
             isDense: false,
             onChanged: (String value) {
-              verifyAccountNumber();
+              getSelectedBank(value);
               setState(() {
                 selectedBank = value;
               });
@@ -441,7 +536,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
         decoration: InputDecoration(
           contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
           suffixIcon: Icon(Icons.lock),
-          hintText: "Create your pin",
+          hintText: isFirst ? "Create your pin" : "Enter your pin",
           border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(32.0),
               borderSide: BorderSide(color: Color(0xff16c79a))),
@@ -535,7 +630,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
     final amountField = new Theme(
       data: new ThemeData(primaryColor: Color(0xff16c79a)),
       child: TextField(
-        keyboardType: TextInputType.datetime,
+        keyboardType: TextInputType.number,
         controller: _amountController,
         obscureText: false,
         style: style,

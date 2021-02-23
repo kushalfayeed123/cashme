@@ -62,12 +62,12 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final _user = Provider.of<UserProvider>(context).currentUser;
     final _wallet = Provider.of<WalletProvider>(context).userWallet;
-    final _transactions =
+    var _transactions =
         Provider.of<TransactionProvider>(context).userTransactions;
 
-    // if (_transactions == null) {
-    //   _transactions = [];
-    // }
+    if (_transactions == null) {
+      _transactions = [];
+    }
     setState(() => this.bcontext = context);
 
     return Scaffold(
@@ -357,7 +357,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       left: MediaQuery.of(context).size.width * 0.036),
                   child: Row(
                     children: [
-                      _transactions.length == 0
+                      _transactions?.length == 0
                           ? Container(
                               padding: EdgeInsets.only(
                                   left:
@@ -377,7 +377,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: ListView.separated(
                                   padding: const EdgeInsets.all(8),
                                   shrinkWrap: true,
-                                  itemCount: _transactions.length,
+                                  itemCount: _transactions?.length,
                                   itemBuilder:
                                       (BuildContext context, int index) {
                                     return Container(

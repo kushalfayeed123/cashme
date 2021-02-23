@@ -47,6 +47,7 @@ class Data {
   String status;
   String deviceFingerprint;
   String vbvrespmessage;
+  String accountname;
   String vbvrespcode;
   String cycle;
   String acctvalrespcode;
@@ -113,6 +114,7 @@ class Data {
     // deletedAt = json['deletedAt'].toDate();
     customerId = json['customerId'];
     accountId = json['AccountId'];
+    accountname = json['accountname'];
 
     pingUrl = json['ping_url'];
     wait = json['wait'];
@@ -121,6 +123,6 @@ class Data {
   }
   @override
   String toString() {
-    return 'Data{ chargeResponseCode: $chargeResponseCode, orderRef: $orderRef, device_fingerprint: $deviceFingerprint, settlement_token: $settlementToken, cycle: $cycle, charged_amount: $chargedAmount, merchantfee: $merchantfee, merchantbearsfee: $merchantbearsfee, raveRef: $raveRef, IP: $iP, narration: $narration, modalauditid: $modalauditid, vbvrespmessage: $vbvrespmessage, vbvrespcode: $vbvrespcode, acctvalrespmsg: $acctvalrespmsg, acctvalrespcode: $acctvalrespcode, paymentType: $paymentType, paymentPlan: $paymentPlan, paymentPage: $paymentPage, paymentId: $paymentId, fraud_status: $fraudStatus, charge_type: $chargeType, is_live: $isLive, retry_attempt: $retryAttempt, getpaidBatchId: $getpaidBatchId, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt, customerId: $customerId, AccountId: $accountId, authModelUsed: $authModelUsed, flwRef: $flwRef, txRef: $txRef, chargeResponseMessage: $chargeResponseMessage, authurl: $authurl, appFee: $appFee, currency: $currency, charged_amount: $chargedAmount,  redirectUrl: $redirectUrl,  amount: $amount, status: $status, ping_url: $pingUrl, wait: $wait}';
+    return 'Data{ chargeResponseCode: $chargeResponseCode, accountname: $accountname, orderRef: $orderRef, device_fingerprint: $deviceFingerprint, settlement_token: $settlementToken, cycle: $cycle, charged_amount: $chargedAmount, merchantfee: $merchantfee, merchantbearsfee: $merchantbearsfee, raveRef: $raveRef, IP: $iP, narration: $narration, modalauditid: $modalauditid, vbvrespmessage: $vbvrespmessage, vbvrespcode: $vbvrespcode, acctvalrespmsg: $acctvalrespmsg, acctvalrespcode: $acctvalrespcode, paymentType: $paymentType, paymentPlan: $paymentPlan, paymentPage: $paymentPage, paymentId: $paymentId, fraud_status: $fraudStatus, charge_type: $chargeType, is_live: $isLive, retry_attempt: $retryAttempt, getpaidBatchId: $getpaidBatchId, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt, customerId: $customerId, AccountId: $accountId, authModelUsed: $authModelUsed, flwRef: $flwRef, txRef: $txRef, chargeResponseMessage: $chargeResponseMessage, authurl: $authurl, appFee: $appFee, currency: $currency, charged_amount: $chargedAmount,  redirectUrl: $redirectUrl,  amount: $amount, status: $status, ping_url: $pingUrl, wait: $wait}';
   }
 }

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:cash_me/core/constants.dart';
+import 'package:cash_me/core/models/account_charge.model.dart';
 import 'package:cash_me/core/models/wallet.model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
@@ -15,8 +16,11 @@ class WalletService {
 
   Map<String, String> get headers => {
         "Authorization":
-            // "Bearer FLWSECK_TEST-88e6e737751438039c0a2875396babc1-X"
-            "Bearer FLWSECK-2e71fb7432ce8d2baba8e2ddb320d6bf-X"
+            //     // "Bearer FLWSECK-2e71fb7432ce8d2baba8e2ddb320d6bf-X",
+
+            "Bearer FLWSECK_TEST-88e6e737751438039c0a2875396babc1-X",
+        "Content-Type": " application/json",
+        "Accept": " application/json"
       };
 
   Future getResponseFromEndpoint(String url) async {
@@ -35,15 +39,20 @@ class WalletService {
     }
   }
 
-  Future loadWallet(String url, Map<String, String> body) async {
+  Future verifyAccount(AccountCharge payload) async {
+    var res = await http.post(ACCOUNT_VERIFICATION_ENDPOINT,
+        body: json.encode(payload), headers: headers);
+    return jsonDecode(res.body);
+  }
+
+  Future loadWallet(String url, body) async {
     try {
-      var res = await http.post(url, body: body, headers: headers);
+      var res = await http.post(url, body: json.encode(body), headers: headers);
+
       if (res.statusCode == 200 ||
           res.statusCode == 201 ||
           res.statusCode == 204 ||
           res.statusCode == 206) {
-        print(jsonDecode(res.body));
-        return jsonDecode(res.body);
       } else {
         print('Error: ${res.statusCode}  response : ${res.body}');
         return null;
