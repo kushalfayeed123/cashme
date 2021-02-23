@@ -249,8 +249,6 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
           Provider.of<WalletProvider>(context, listen: false).userWallet;
 
       var newValue = _wallet.legderBalance + int.parse(_amountController.text);
-      walletPayload = WalletModel(
-          legderBalance: newValue, availableBalance: _wallet.availableBalance);
 
       if (isFirst) {
         await Provider.of<UserProvider>(context, listen: false)
@@ -261,6 +259,8 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
             .addTransaction(transactionPayload);
         closeDialog();
       } else {
+        walletPayload =
+            WalletModel(legderBalance: newValue, availableBalance: newValue);
         await Provider.of<WalletProvider>(context, listen: false)
             .updateWallet(_wallet.id, walletPayload);
         await Provider.of<TransactionProvider>(context, listen: false)
@@ -319,13 +319,6 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
   }
 
   void initiatePayment() async {
-    const _chars =
-        'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
-    Random _rnd = Random();
-
-    String getRandomString(int length) =>
-        String.fromCharCodes(Iterable.generate(
-            length, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
     // verifyAccountNumber();
     openLoadingDialog();
     final _user = Provider.of<UserProvider>(context, listen: false).currentUser;
@@ -391,24 +384,25 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
       // deviceFingerprint: '',
     );
     try {
-      var requestBody = encryptJsonPayload(ENCRYPTION_KEY, PUBLIC_KEY, payLoad);
-      print(payLoad);
+      postPaymentAction();
+      // var requestBody = encryptJsonPayload(ENCRYPTION_KEY, PUBLIC_KEY, payLoad);
+      // print(payLoad);
 
-      // await Provider.of<WalletProvider>(context, listen: false)
-      //     .loadWallet('$SANDBOX_CHARGE_ENDPOINT?use_polling=1', requestBody);
+      // // await Provider.of<WalletProvider>(context, listen: false)
+      // //     .loadWallet('$SANDBOX_CHARGE_ENDPOINT?use_polling=1', requestBody);
 
-      var response = await locator<WalletService>()
-          .loadWallet('$SANDBOX_CHARGE_ENDPOINT', payLoad);
+      // var response = await locator<WalletService>()
+      //     .loadWallet('$SANDBOX_CHARGE_ENDPOINT', payLoad);
 
-      if (response == null) {
-        closeDialog();
+      // if (response == null) {
+      //   closeDialog();
 
-        showErrorMessageDialog(
-            'Sorry, we could not load your wallet. Please try again later.');
-      } else {
-        print(response);
-        _continueProcessingAfterCharge(response, true);
-      }
+      //   showErrorMessageDialog(
+      //       'Sorry, we could not load your wallet. Please try again later.');
+      // } else {
+      //   print(response);
+      //   _continueProcessingAfterCharge(response, true);
+      // }
     } catch (e) {
       closeDialog();
       print(e);
