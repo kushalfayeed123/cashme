@@ -4,6 +4,8 @@ import 'package:cash_me/core/providers/user_provider.dart';
 import 'package:cash_me/core/providers/wallet_provider.dart';
 import 'package:cash_me/ui/views/load_wallet/load_wallet.dart';
 import 'package:cash_me/ui/views/login/login_screen.dart';
+import 'package:cash_me/ui/views/scan_screen/scan_screen.dart';
+import 'package:cash_me/ui/views/transfer_screen/transfer_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -205,7 +207,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 alignment: Alignment.topCenter,
                 child: Container(
                     width: double.infinity,
-                    height: 220,
+                    height: MediaQuery.of(context).size.height * 0.23,
                     decoration: BoxDecoration(
                         borderRadius:
                             BorderRadius.only(bottomLeft: Radius.circular(30)),
@@ -234,9 +236,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           //     ],
                           //   ),
                           // ),
+
                           Padding(
-                            padding: const EdgeInsets.only(
-                                top: 70.0, left: 15.0, right: 10.0),
+                            padding: EdgeInsets.only(
+                                top: MediaQuery.of(context).size.height * 0.05,
+                                left: 15.0,
+                                right: 10.0),
                             child: Column(
                               children: [
                                 Container(
@@ -263,14 +268,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: <Widget>[
                   Padding(
                     padding: EdgeInsets.only(
-                        top: MediaQuery.of(context).size.height * 0.15,
-                        left: MediaQuery.of(context).size.width * 0.015),
+                      top: MediaQuery.of(context).size.height * 0.15,
+                      left: MediaQuery.of(context).size.width * 0.015,
+                    ),
                     child: Material(
                       elevation: 15.0,
-                      borderRadius: BorderRadius.all(Radius.circular(5)),
+                      borderRadius: BorderRadius.all(Radius.circular(30)),
                       color: Color(0xFFf4f9f9),
                       child: Container(
-                          height: 150,
+                          height: MediaQuery.of(context).size.height * 0.20,
                           width: MediaQuery.of(context).size.width * 0.89,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.start,
@@ -278,7 +284,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             children: [
                               Container(
                                   padding: EdgeInsets.only(
-                                      top: 20.0, bottom: 5.0, left: 30.0),
+                                      top: MediaQuery.of(context).size.height *
+                                          0.07,
+                                      // bottom: 5.0,
+                                      left: 30.0),
                                   child: Row(
                                     children: [
                                       Text(
@@ -310,7 +319,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               Container(
                                 padding: EdgeInsets.only(
                                     top: 5.0,
-                                    bottom: 20.0,
+                                    // bottom: 20.0,
                                     left: 30.0,
                                     right: 40.0),
                                 child: Text(
@@ -334,9 +343,9 @@ class _HomeScreenState extends State<HomeScreen> {
               alignment: Alignment.centerLeft,
               child: Container(
                 padding: EdgeInsets.only(
-                    left: MediaQuery.of(context).size.width * 0.09,
-                    top: MediaQuery.of(context).size.height * 0.009,
-                    bottom: 20),
+                  left: MediaQuery.of(context).size.width * 0.09,
+                  top: MediaQuery.of(context).size.height * 0.065,
+                ),
                 child: SizedBox(
                   child: Text(
                     'Transactions',
@@ -353,7 +362,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 alignment: Alignment.topCenter,
                 child: Padding(
                   padding: EdgeInsets.only(
-                      top: MediaQuery.of(context).size.height * 0.43,
+                      top: MediaQuery.of(context).size.height * 0.45,
                       left: MediaQuery.of(context).size.width * 0.036),
                   child: Row(
                     children: [
@@ -477,6 +486,20 @@ class _HomeScreenState extends State<HomeScreen> {
         unselectedFontSize: 1.0,
         iconSize: 30.0,
         backgroundColor: Color(0xFFf4f9f9),
+        onTap: (index) {
+          print(index);
+          switch (index) {
+            case 0:
+              Navigator.of(context).pushNamed(TransferScreen.routeName);
+              break;
+            case 1:
+              Navigator.of(context).pushNamed(ScanScreen.routeName);
+              break;
+            // case 2:
+            //   Navigator.of(context).pushNamed(TransferScreen.routeName);
+            //   break;
+          }
+        },
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(

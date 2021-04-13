@@ -18,13 +18,15 @@ import 'package:cash_me/core/services/wallet.service.dart';
 import 'package:cash_me/locator.dart';
 import 'package:cash_me/ui/views/home/home_screen.dart';
 import 'package:cash_me/ui/views/login/login_screen.dart';
+import 'package:cash_me/ui/views/scan_screen/scan_screen.dart';
+import 'package:cash_me/ui/views/transfer_screen/transfer_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:tripledes/tripledes.dart';
-import 'package:flutterwave/flutterwave.dart';
+// import 'package:flutterwave/flutterwave.dart';
 
 class LoadWalletScreen extends StatefulWidget {
   static const routeName = 'load_wallet';
@@ -257,7 +259,6 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
             .initialUpdate(_wallet.id, walletPayload);
         await Provider.of<TransactionProvider>(context, listen: false)
             .addTransaction(transactionPayload);
-        closeDialog();
       } else {
         walletPayload =
             WalletModel(legderBalance: newValue, availableBalance: newValue);
@@ -265,7 +266,6 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
             .updateWallet(_wallet.id, walletPayload);
         await Provider.of<TransactionProvider>(context, listen: false)
             .addTransaction(transactionPayload);
-
         closeDialog();
       }
     } catch (e) {
@@ -385,6 +385,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
     );
     try {
       postPaymentAction();
+
       // var requestBody = encryptJsonPayload(ENCRYPTION_KEY, PUBLIC_KEY, payLoad);
       // print(payLoad);
 
@@ -462,9 +463,9 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
   DateTime selectedDate = DateTime.now();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
-  home() {
-    Navigator.of(context).pushNamed(HomeScreen.routeName);
-  }
+  // home() {
+  //   Navigator.of(context).pushNamed(HomeScreen.routeName);
+  // }
 
   _selectDate(BuildContext context) async {
     final DateTime picked = await showDatePicker(
@@ -892,7 +893,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
                 child: Container(
                   padding: EdgeInsets.only(
                       left: MediaQuery.of(context).size.width * 0.09,
-                      top: MediaQuery.of(context).size.height * 0.29,
+                      top: MediaQuery.of(context).size.height * 0.33,
                       bottom: 0),
                   child: SizedBox(
                     child: Text(
@@ -946,7 +947,17 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
-          home();
+          switch (index) {
+            case 0:
+              Navigator.of(context).pushNamed(TransferScreen.routeName);
+              break;
+            case 1:
+              Navigator.of(context).pushNamed(HomeScreen.routeName);
+              break;
+            case 2:
+              Navigator.of(context).pushNamed(ScanScreen.routeName);
+              break;
+          }
         },
         type: BottomNavigationBarType.fixed,
         showSelectedLabels: false,
@@ -958,11 +969,17 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(
-              Icons.home,
+              Icons.send_to_mobile,
               color: Color(0xFF002147),
             ),
-            label: 'Home',
+            label: 'Transfer',
           ),
+          BottomNavigationBarItem(
+              icon: Icon(
+                Icons.home,
+                color: Color(0xFF002147),
+              ),
+              label: 'Home'),
           BottomNavigationBarItem(
               icon: Icon(
                 Icons.qr_code_scanner_rounded,

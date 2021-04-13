@@ -7,6 +7,9 @@ import 'package:flutter/cupertino.dart';
 class UserProvider with ChangeNotifier {
   UserService _userService = locator<UserService>();
   UserModel _currentUser;
+
+  List<UserModel> _allUsers;
+  List<UserModel> get allUsers => _allUsers;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
   UserModel get currentUser => _currentUser;
@@ -14,6 +17,15 @@ class UserProvider with ChangeNotifier {
   Future setCurrentUser(bool isLocalAuth) async {
     var keyRefernence = _firebaseAuth.currentUser.uid;
     _currentUser = await _userService.getCurrentUser(keyRefernence);
+    notifyListeners();
+  }
+
+  Future setAllUsers(String userId) async {
+    var users = await _userService.getAllUsers();
+
+    _allUsers =
+        users.where((e) => e.cashMeName != null || e.fullName != null).toList();
+    _allUsers = _allUsers.where((e) => e.id != userId).toList();
     notifyListeners();
   }
 

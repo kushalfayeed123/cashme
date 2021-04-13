@@ -12,6 +12,15 @@ class UserService {
   final CollectionReference _userCollectionReference =
       FirebaseFirestore.instance.collection("User");
 
+  Future<List<UserModel>> getAllUsers() async {
+    try {
+    var users = await _userCollectionReference.get();
+      return users.docs.map((e) => UserModel.fromData(e)).toList();
+    } catch (e) {
+      throw HttpException(e);
+    }
+  }
+
   Future addUserData(String uid, String email, String fullName,
       String cashMeName, String pin) async {
     final UserModel _userData = UserModel(
