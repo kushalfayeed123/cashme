@@ -1,3 +1,4 @@
+import 'package:cash_me/core/constants.dart';
 import 'package:cash_me/core/providers/authentication_provider.dart';
 import 'package:cash_me/core/providers/transaction_provider.dart';
 import 'package:cash_me/core/providers/user_provider.dart';
@@ -291,7 +292,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   child: Row(
                                     children: [
                                       Text(
-                                        "Total Balance",
+                                        "Available Balance:",
                                         style: TextStyle(
                                           color: Colors.blueGrey,
                                           fontFamily: 'San Francisco',
@@ -323,7 +324,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     left: 30.0,
                                     right: 40.0),
                                 child: Text(
-                                  '₦${_wallet.legderBalance > 0 ? NumberFormat('#,###,000').format(_wallet?.legderBalance) : _wallet?.legderBalance}',
+                                  '₦${_wallet.availableBalance > 0 ? NumberFormat('#,###,000').format(_wallet?.availableBalance) : _wallet?.availableBalance}',
                                   style: TextStyle(
                                     color: Color(0xFF002147),
                                     fontFamily: 'San Francisco',
@@ -343,9 +344,9 @@ class _HomeScreenState extends State<HomeScreen> {
               alignment: Alignment.centerLeft,
               child: Container(
                 padding: EdgeInsets.only(
-                  left: MediaQuery.of(context).size.width * 0.09,
-                  top: MediaQuery.of(context).size.height * 0.065,
-                ),
+                    left: MediaQuery.of(context).size.width * 0.09,
+                    top: MediaQuery.of(context).size.height * 0.045,
+                    bottom: 30.0),
                 child: SizedBox(
                   child: Text(
                     'Transactions',
@@ -395,12 +396,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                         children: <Widget>[
                                           ListTile(
                                             title: Text(
-                                              _transactions[index]?.type ==
-                                                      'debit'
-                                                  ? _transactions[index]
-                                                      ?.receiverName
-                                                  : _transactions[index]
-                                                      ?.senderName,
+                                              _transactions[index]
+                                                  ?.transactionMode,
                                               style: TextStyle(
                                                 color: Color(0xFF002147),
                                                 fontFamily: 'San Francisco',
@@ -420,12 +417,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                             trailing: Column(
                                               children: [
                                                 _transactions[index]?.type ==
-                                                        'debit'
+                                                        DEBIT
                                                     ? Text(
                                                         '-${_transactions[index]?.value}',
                                                         style: TextStyle(
-                                                          color:
-                                                              Color(0xFFf58634),
+                                                          color: Colors.red,
                                                           fontFamily:
                                                               'San Francisco',
                                                           fontSize: 14,

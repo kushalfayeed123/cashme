@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:cash_me/core/constants.dart';
 import 'package:cash_me/core/models/transaction.model.dart';
 import 'package:cash_me/core/models/transfer.model.dart';
 import 'package:cash_me/core/models/user.model.dart';
@@ -17,6 +19,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:barcode_scan_fix/barcode_scan.dart';
+import 'package:connectivity/connectivity.dart';
 
 class ScanScreen extends StatefulWidget {
   static const routeName = 'Scan';
@@ -26,6 +29,8 @@ class ScanScreen extends StatefulWidget {
 
 class _ScanScreenState extends State<ScanScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  BuildContext bcontext;
+
   UserModel userPayload;
   WalletModel walletPayload;
   TransactionModel transactionPayload;
@@ -54,6 +59,65 @@ class _ScanScreenState extends State<ScanScreen> {
     }
   }
 
+  showSuccessMessageDialog(message) {
+    TextStyle style = TextStyle(fontFamily: 'San Francisco', fontSize: 16.0);
+
+    AwesomeDialog(
+        context: context,
+        animType: AnimType.BOTTOMSLIDE,
+        customHeader: null,
+        dialogType: DialogType.NO_HEADER,
+        // padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 30.0),
+        dismissOnTouchOutside: false,
+        body: Container(
+          height: MediaQuery.of(context).size.height * 0.3,
+          width: MediaQuery.of(context).size.width,
+          padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
+          child: Column(
+            children: [
+              Text(
+                message,
+                style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 18.0,
+                    color: Color(0xFF002147),
+                    fontWeight: FontWeight.w600),
+              ),
+              SizedBox(
+                height: 20.0,
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Material(
+                    elevation: 5.0,
+                    borderRadius: BorderRadius.circular(30.0),
+                    color: Color(0xFF002147),
+                    child: MaterialButton(
+                      minWidth: MediaQuery.of(context).size.width * 0.5,
+                      padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+                      onPressed: () async {
+                        // closeDialog();
+                        await updateSenderWalllet();
+                        Navigator.of(context).pushNamedAndRemoveUntil(
+                            HomeScreen.routeName,
+                            (Route<dynamic> route) => false);
+                      },
+                      child: Text("Ok",
+                          textAlign: TextAlign.center,
+                          style: style.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
+        )).show();
+  }
+
   final spinner = SpinKitRing(
     // type: SpinKitWaveType.end,
     color: Color(0xff16c79a),
@@ -77,7 +141,6 @@ class _ScanScreenState extends State<ScanScreen> {
 
   updateSenderWalllet() async {
     try {
-      print('got here');
       await Provider.of<WalletProvider>(context, listen: false)
           .getSenderWallet(qrPayload.senderId);
 
@@ -89,7 +152,7 @@ class _ScanScreenState extends State<ScanScreen> {
 
       WalletModel walletPayload = WalletModel(
           userId: qrPayload.receiverId,
-          // availableBalance: newBalance,
+          availableBalance: newBalance,
           legderBalance: newBalance,
           bvn: senderWallet.bvn,
           accountNumber: senderWallet.accountNumber,
@@ -106,9 +169,6 @@ class _ScanScreenState extends State<ScanScreen> {
 
       await Provider.of<WalletProvider>(context, listen: false)
           .updateWallet(senderWallet.id, walletPayload);
-      // await Provider.of<TransactionProvider>(context, listen: false)
-      //     .addTransaction(transactionPayload);
-      // closeDialog();
     } catch (e) {
       // closeDialog();
       throw Exception(e);
@@ -116,7 +176,14 @@ class _ScanScreenState extends State<ScanScreen> {
   }
 
   void prePaymentAction() async {
-    // openLoadingDialog();
+    openLoadingDialog();
+
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.none) {
+      closeDialog();
+      showSuccessMessageDialog(
+          'Your account has been credited with the sum of ₦${NumberFormat('#,###,000').format(int.parse(qrPayload.transferValue))}.');
+    }
     try {
       var _user = Provider.of<UserProvider>(context, listen: false).currentUser;
       await Provider.of<UserProvider>(context, listen: false)
@@ -128,10 +195,10 @@ class _ScanScreenState extends State<ScanScreen> {
 
       var newValue = _wallet.legderBalance + int.parse(qrPayload.transferValue);
       transactionPayload = TransactionModel(
-          type: 'credit',
+          type: CREDIT,
           value: qrPayload.transferValue.toString(),
           senderName: sender.cashMeName,
-          receiverName: _user.cashMeName,
+          transactionMode: QR_TRANSFER,
           createdOn: DateTime.now(),
           modifiedOn: DateTime.now(),
           status: 'Pending',
@@ -143,9 +210,12 @@ class _ScanScreenState extends State<ScanScreen> {
           .updateWallet(_wallet.id, walletPayload);
       await Provider.of<TransactionProvider>(context, listen: false)
           .addTransaction(transactionPayload);
-      updateSenderWalllet();
-    } catch (e) {
       // closeDialog();
+
+      await showSuccessMessageDialog(
+          'Your account has been credited with the sum of ₦${NumberFormat('#,###,000').format(int.parse(qrPayload.transferValue))}.');
+    } catch (e) {
+      closeDialog();
       throw Exception(e);
     }
   }
@@ -160,6 +230,7 @@ class _ScanScreenState extends State<ScanScreen> {
     final _wallet = Provider.of<WalletProvider>(context).userWallet;
     TextStyle style = TextStyle(fontFamily: 'San Francisco', fontSize: 16.0);
     Map<String, dynamic> qrCodeResult;
+    setState(() => this.bcontext = context);
 
     final scanButton = Material(
       elevation: 5.0,
@@ -341,7 +412,7 @@ class _ScanScreenState extends State<ScanScreen> {
                                 padding: const EdgeInsets.only(
                                     left: 35.0, top: 20.0),
                                 child: Text(
-                                  'Available Balance',
+                                  'Available Balance:',
                                   style: TextStyle(
                                       fontFamily: 'Montserrat',
                                       fontSize: 16,

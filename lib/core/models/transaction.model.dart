@@ -6,7 +6,8 @@ class TransactionModel {
   final String type;
   final String value;
   final String senderName;
-  final String receiverName;
+  final String transactionMode;
+  // final String transactionMode;
   final DateTime createdOn;
   final DateTime modifiedOn;
   final String status;
@@ -17,7 +18,7 @@ class TransactionModel {
     @required this.type,
     @required this.value,
     @required this.senderName,
-    @required this.receiverName,
+    @required this.transactionMode,
     @required this.createdOn,
     @required this.modifiedOn,
     @required this.status,
@@ -28,7 +29,7 @@ class TransactionModel {
         type = snapshot.data()['Type'],
         value = snapshot.data()['Value'] ?? '',
         senderName = snapshot.data()['SenderName'] ?? '',
-        receiverName = snapshot.data()['ReceiverName'] ?? '',
+        transactionMode = snapshot.data()['TransactionMode'] ?? '',
         createdOn = snapshot.data()['CreatedOn'].toDate(),
         modifiedOn = snapshot.data()['ModifiedOn'].toDate(),
         status = snapshot.data()['Status'],
@@ -38,7 +39,7 @@ class TransactionModel {
       'Type': type,
       'Value': value,
       'SenderName': senderName,
-      'ReceiverName': receiverName,
+      'TransactionMode': transactionMode,
       'CreatedOn': createdOn,
       'ModifiedOn': modifiedOn,
       'Status': status,

@@ -31,4 +31,8 @@ const MAX_REQUERY_COUNT = 30;
 
 const DEBIT = 'Debit';
 const CREDIT = 'Credit';
-const LOAD = 'Load';
+
+const QR_TRANSFER = 'QR Transfer';
+const USERNAME_TRANSFER = 'User Transfer';
+const WALLET_LOAD = 'Wallet Load';
+const CASHOUT = 'Cash Out';

@@ -335,11 +335,11 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
 
     transactionPayload = TransactionModel(
       userId: _user.id,
-      type: LOAD,
-      status: 'Succesful',
+      type: CREDIT,
+      status: 'Completed',
       value: _amountController.text,
       senderName: _user.cashMeName,
-      receiverName: _user.cashMeName,
+      transactionMode: WALLET_LOAD,
       modifiedOn: DateTime.now(),
       createdOn: DateTime.now(),
     );
@@ -813,7 +813,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
                                 padding: const EdgeInsets.only(
                                     left: 35.0, top: 20.0),
                                 child: Text(
-                                  'Available Balance',
+                                  'Available Balance:',
                                   style: TextStyle(
                                       fontFamily: 'Montserrat',
                                       fontSize: 16,

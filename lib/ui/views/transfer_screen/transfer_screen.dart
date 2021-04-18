@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:cash_me/core/constants.dart';
 import 'package:cash_me/core/models/transaction.model.dart';
 import 'package:cash_me/core/models/transfer.model.dart';
 import 'package:cash_me/core/models/user.model.dart';
@@ -72,10 +73,6 @@ class _TransferScreenState extends State<TransferScreen> {
   }
 
   closeDialog() {
-    if (!valueGenerated)
-      setState(() {
-        valueGenerated = true;
-      });
     AwesomeDialog(context: context).dissmiss();
   }
 
@@ -117,7 +114,7 @@ class _TransferScreenState extends State<TransferScreen> {
             child: Column(
               children: [
                 Text(
-                  'You are about transfer the sum of ₦${NumberFormat('#,###,000').format(int.parse(qrdataFeed.text))}. Are you sure you want to continue?',
+                  'You are about to transfer the sum of ₦${NumberFormat('#,###,000').format(int.parse(qrdataFeed.text))}. Are you sure you want to continue?',
                   style: TextStyle(
                       fontFamily: 'Montserrat',
                       fontSize: 18.0,
@@ -138,45 +135,23 @@ class _TransferScreenState extends State<TransferScreen> {
                       child: MaterialButton(
                         minWidth: MediaQuery.of(context).size.width * 0.3,
                         padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-                        onPressed: () async {
-                          if (valueGenerated) {
-                            // prePaymentAction();
+                        onPressed: () {
+                          if (qrdataFeed.text.isEmpty) {
                             setState(() {
-                              valueGenerated = false;
+                              qrData = "text";
                             });
-                            // closeDialog();
                           } else {
-                            if (qrdataFeed.text.isEmpty) {
-                              setState(() {
-                                qrData = "text";
-                              });
-                            } else {
-                              setState(() {
-                                transferPayload = TransferModel(
-                                    senderId: currentUser.id,
-                                    receiverId: '',
-                                    email: currentUser.email,
-                                    transferValue: qrdataFeed.text,
-                                    walletId: _wallet.id);
-                                qrData = qrdataFeed.text;
-                                valueGenerated = true;
-                              });
-                              prePaymentAction();
-                              // mystate(() {
-                              //   transferPayload =
-                              //       TransferModel(
-                              //           senderId:
-                              //               currentUser.id,
-                              //           receiverId: '',
-                              //           email:
-                              //               currentUser
-                              //                   .email,
-                              //           transferValue:
-                              //               qrdataFeed
-                              //                   .text);
-                              //   qrData = qrdataFeed.text;
-                              // });
-                            }
+                            setState(() {
+                              transferPayload = TransferModel(
+                                  senderId: currentUser.id,
+                                  receiverId: '',
+                                  email: currentUser.email,
+                                  transferValue: qrdataFeed.text,
+                                  walletId: _wallet.id);
+                              qrData = qrdataFeed.text;
+                              // valueGenerated = true;
+                            });
+                            prePaymentAction();
                           }
                         },
                         child: Text("Yes",
@@ -197,7 +172,11 @@ class _TransferScreenState extends State<TransferScreen> {
                         minWidth: MediaQuery.of(context).size.width * 0.3,
                         padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
                         onPressed: () async {
+                          setState(() {
+                            valueGenerated = false;
+                          });
                           closeDialog();
+                          Navigator.of(context).pop();
                         },
                         child: Text("Cancel",
                             textAlign: TextAlign.center,
@@ -232,7 +211,7 @@ class _TransferScreenState extends State<TransferScreen> {
   }
 
   prePaymentAction() async {
-    print(valueGenerated);
+    // print(valueGenerated);
     openLoadingDialog();
     try {
       var _user = Provider.of<UserProvider>(context, listen: false).currentUser;
@@ -242,12 +221,13 @@ class _TransferScreenState extends State<TransferScreen> {
       var newValue =
           _wallet.availableBalance - int.parse(transferPayload.transferValue);
       transactionPayload = TransactionModel(
-          type: 'debit',
+          type: DEBIT,
           value: transferPayload.transferValue.toString(),
           senderName: _user.cashMeName,
+          transactionMode: QR_TRANSFER,
           createdOn: DateTime.now(),
           modifiedOn: DateTime.now(),
-          status: 'Pending',
+          status: 'Completed',
           userId: _user.id);
 
       walletPayload = WalletModel(
@@ -489,9 +469,30 @@ class _TransferScreenState extends State<TransferScreen> {
                                                   ? setState(() {
                                                       valueGenerated = false;
                                                       Navigator.of(context)
-                                                          .pop();
+                                                          .pushNamedAndRemoveUntil(
+                                                              HomeScreen
+                                                                  .routeName,
+                                                              (Route<dynamic>
+                                                                      route) =>
+                                                                  false);
                                                     })
-                                                  : showConfirmationDialog();
+                                                  : mystate(() {
+                                                      showConfirmationDialog();
+                                                      transferPayload =
+                                                          TransferModel(
+                                                              senderId:
+                                                                  currentUser
+                                                                      .id,
+                                                              receiverId: '',
+                                                              email: currentUser
+                                                                  .email,
+                                                              transferValue:
+                                                                  qrdataFeed
+                                                                      .text);
+                                                      qrData = qrdataFeed.text;
+
+                                                      valueGenerated = true;
+                                                    });
                                             },
                                             child: Text(
                                                 valueGenerated
@@ -628,6 +629,8 @@ class _TransferScreenState extends State<TransferScreen> {
 
   @override
   Widget build(BuildContext context) {
+    setState(() => this.bcontext = context);
+
     // if (valueGenerated) {
     //   Navigator.of(context).pop();
     // }
@@ -830,7 +833,7 @@ class _TransferScreenState extends State<TransferScreen> {
                               padding:
                                   const EdgeInsets.only(left: 35.0, top: 20.0),
                               child: Text(
-                                'Available Balance',
+                                'Available Balance:',
                                 style: TextStyle(
                                     fontFamily: 'Montserrat',
                                     fontSize: 16,
