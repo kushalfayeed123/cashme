@@ -1,3 +1,11 @@
+import 'dart:convert';
+
+import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:cash_me/core/models/transaction.model.dart';
+import 'package:cash_me/core/models/transfer.model.dart';
+import 'package:cash_me/core/models/user.model.dart';
+import 'package:cash_me/core/models/wallet.model.dart';
+import 'package:cash_me/core/providers/transaction_provider.dart';
 import 'package:cash_me/core/providers/user_provider.dart';
 import 'package:cash_me/core/providers/wallet_provider.dart';
 import 'package:cash_me/ui/views/home/home_screen.dart';
@@ -5,6 +13,7 @@ import 'package:cash_me/ui/views/load_wallet/load_wallet.dart';
 import 'package:cash_me/ui/views/transfer_screen/transfer_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:barcode_scan_fix/barcode_scan.dart';
@@ -17,6 +26,10 @@ class ScanScreen extends StatefulWidget {
 
 class _ScanScreenState extends State<ScanScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  UserModel userPayload;
+  WalletModel walletPayload;
+  TransactionModel transactionPayload;
+  TransferModel qrPayload;
 
   bool _isInit = true;
   @override
@@ -41,6 +54,102 @@ class _ScanScreenState extends State<ScanScreen> {
     }
   }
 
+  final spinner = SpinKitRing(
+    // type: SpinKitWaveType.end,
+    color: Color(0xff16c79a),
+    size: 50.0,
+  );
+
+  openLoadingDialog() {
+    AwesomeDialog(
+            context: context,
+            animType: AnimType.BOTTOMSLIDE,
+            customHeader: null,
+            dialogType: DialogType.NO_HEADER,
+            dismissOnTouchOutside: false,
+            body: spinner)
+        .show();
+  }
+
+  closeDialog() {
+    AwesomeDialog(context: context).dissmiss();
+  }
+
+  updateSenderWalllet() async {
+    try {
+      print('got here');
+      await Provider.of<WalletProvider>(context, listen: false)
+          .getSenderWallet(qrPayload.senderId);
+
+      var senderWallet =
+          Provider.of<WalletProvider>(context, listen: false).senderWallet;
+      var newBalance =
+          senderWallet.legderBalance - int.parse(qrPayload.transferValue);
+      // var sender = Provider.of<UserProvider>(context, listen: false).sender;
+
+      WalletModel walletPayload = WalletModel(
+          userId: qrPayload.receiverId,
+          // availableBalance: newBalance,
+          legderBalance: newBalance,
+          bvn: senderWallet.bvn,
+          accountNumber: senderWallet.accountNumber,
+          accountbank: senderWallet.accountbank);
+
+      // transactionPayload = TransactionModel(
+      //     type: 'debit',
+      //     value: qrPayload.transferValue.toString(),
+      //     senderName: sender.cashMeName,
+      //     createdOn: DateTime.now(),
+      //     modifiedOn: DateTime.now(),
+      //     status: 'Pending',
+      //     userId: sender.id);
+
+      await Provider.of<WalletProvider>(context, listen: false)
+          .updateWallet(senderWallet.id, walletPayload);
+      // await Provider.of<TransactionProvider>(context, listen: false)
+      //     .addTransaction(transactionPayload);
+      // closeDialog();
+    } catch (e) {
+      // closeDialog();
+      throw Exception(e);
+    }
+  }
+
+  void prePaymentAction() async {
+    // openLoadingDialog();
+    try {
+      var _user = Provider.of<UserProvider>(context, listen: false).currentUser;
+      await Provider.of<UserProvider>(context, listen: false)
+          .setUser(qrPayload.email);
+      var sender = Provider.of<UserProvider>(context, listen: false).sender;
+
+      var _wallet =
+          Provider.of<WalletProvider>(context, listen: false).userWallet;
+
+      var newValue = _wallet.legderBalance + int.parse(qrPayload.transferValue);
+      transactionPayload = TransactionModel(
+          type: 'credit',
+          value: qrPayload.transferValue.toString(),
+          senderName: sender.cashMeName,
+          receiverName: _user.cashMeName,
+          createdOn: DateTime.now(),
+          modifiedOn: DateTime.now(),
+          status: 'Pending',
+          userId: _user.id);
+
+      walletPayload =
+          WalletModel(legderBalance: newValue, availableBalance: newValue);
+      await Provider.of<WalletProvider>(context, listen: false)
+          .updateWallet(_wallet.id, walletPayload);
+      await Provider.of<TransactionProvider>(context, listen: false)
+          .addTransaction(transactionPayload);
+      updateSenderWalllet();
+    } catch (e) {
+      // closeDialog();
+      throw Exception(e);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -50,7 +159,7 @@ class _ScanScreenState extends State<ScanScreen> {
   Widget build(BuildContext context) {
     final _wallet = Provider.of<WalletProvider>(context).userWallet;
     TextStyle style = TextStyle(fontFamily: 'San Francisco', fontSize: 16.0);
-    String qrCodeResult = "Not Yet Scanned";
+    Map<String, dynamic> qrCodeResult;
 
     final scanButton = Material(
       elevation: 5.0,
@@ -60,13 +169,12 @@ class _ScanScreenState extends State<ScanScreen> {
         minWidth: MediaQuery.of(context).size.width,
         padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
         onPressed: () async {
-          String codeScanner = await BarcodeScanner.scan();
-          print(codeScanner);
+          var codeScanner = await BarcodeScanner.scan();
+          qrCodeResult = jsonDecode(codeScanner);
           setState(() {
-            qrCodeResult = codeScanner;
+            qrPayload = TransferModel.fromJson(qrCodeResult);
           });
-          // openBottomSheet('username');
-          // initiatePayment();
+          prePaymentAction();
         },
         child: Text(
           "Scan QR Code",

@@ -70,7 +70,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
   openLoadingDialog() {
     AwesomeDialog(
             context: context,
-            animType: AnimType.SCALE,
+            animType: AnimType.BOTTOMSLIDE,
             customHeader: null,
             dialogType: DialogType.NO_HEADER,
             dismissOnTouchOutside: false,
@@ -112,8 +112,6 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
     accountName = await locator<WalletService>().verifyAccount(chargePayload);
     // firstName = accountName.split()[0];
     // lastName = accountName.split()[1];
-
-    print(accountName);
   }
 
   void _requeryTx(String flwRef) async {
@@ -133,7 +131,6 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
       } else {
         var requeryResponse = RequeryResponse.fromJson(response);
         if (requeryResponse.data == null) {
-          print('Payment processing failed. Please try again later.');
         } else if (requeryResponse.data.chargeResponseCode == '02' &&
             requeryResponse.data.status != 'failed') {
           _onPollingComplete(flwRef);
@@ -143,7 +140,6 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
           showErrorMessageDialog('payment failed');
           closeDialog();
 
-          print('payment failed');
           // _showToast(
           //     context, 'Payment processing failed. Please try again later.');
           // _dismissMobileMoneyDialog(false);
@@ -277,7 +273,8 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
   showSuccessMessageDialog(message) {
     AwesomeDialog(
         context: context,
-        animType: AnimType.SCALE,
+        padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 30.0),
+        animType: AnimType.BOTTOMSLIDE,
         showCloseIcon: true,
         customHeader: null,
         dialogType: DialogType.NO_HEADER,
@@ -291,7 +288,8 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
   showErrorMessageDialog(message) {
     AwesomeDialog(
         context: context,
-        animType: AnimType.SCALE,
+        animType: AnimType.BOTTOMSLIDE,
+        padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 30.0),
         showCloseIcon: true,
         customHeader: null,
         dialogType: DialogType.NO_HEADER,
@@ -301,9 +299,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
           child: Text(
             message,
             style: TextStyle(
-                fontFamily: 'San Fransisco',
-                fontSize: 14,
-                color: Color(0xFF002147)),
+                fontFamily: 'San Fransisco', fontSize: 14, color: Colors.red),
           ),
         )).show();
   }

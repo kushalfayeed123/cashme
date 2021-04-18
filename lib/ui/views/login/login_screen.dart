@@ -28,7 +28,7 @@ class _LoginScreenState extends State<LoginScreen>
   openLoadingDialog() {
     AwesomeDialog(
             context: context,
-            animType: AnimType.SCALE,
+            animType: AnimType.BOTTOMSLIDE,
             customHeader: null,
             dialogType: DialogType.NO_HEADER,
             dismissOnTouchOutside: false,
@@ -43,17 +43,16 @@ class _LoginScreenState extends State<LoginScreen>
   showErrorMessageDialog(message) {
     AwesomeDialog(
         context: context,
-        animType: AnimType.SCALE,
+        animType: AnimType.BOTTOMSLIDE,
+        padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 30.0),
         showCloseIcon: true,
         customHeader: null,
-        dialogType: DialogType.ERROR,
+        dialogType: DialogType.NO_HEADER,
         dismissOnTouchOutside: false,
         body: Text(
           message,
           style: TextStyle(
-              fontFamily: 'San Fransisco',
-              fontSize: 14,
-              color: Color(0xFF002147)),
+              fontFamily: 'San Fransisco', fontSize: 14, color: Colors.red),
         )).show();
   }
 

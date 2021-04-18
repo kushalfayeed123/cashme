@@ -9,6 +9,8 @@ class WalletProvider with ChangeNotifier {
   WalletService _walletService = locator<WalletService>();
   WalletModel _userWallet;
   WalletModel get userWallet => _userWallet;
+  WalletModel _senderWallet;
+  WalletModel get senderWallet => _senderWallet;
   List<BankModel> _banks;
   List<BankModel> get banks => _banks;
   ChargeResponse _res;
@@ -29,6 +31,13 @@ class WalletProvider with ChangeNotifier {
   Future setUserWallet(String userId) async {
     _walletService.getWallet(userId).asBroadcastStream().listen((wallet) {
       _userWallet = wallet;
+      notifyListeners();
+    });
+  }
+
+  Future getSenderWallet(String senderID) async {
+    _walletService.getWallet(senderID).asBroadcastStream().listen((wallet) {
+      _senderWallet = wallet;
       notifyListeners();
     });
   }

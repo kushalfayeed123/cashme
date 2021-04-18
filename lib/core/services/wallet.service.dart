@@ -30,7 +30,7 @@ class WalletService {
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        print('Error: ${response.body}');
+        // print('Error: ${response.body}');
         return null;
       }
     } catch (e) {
@@ -54,7 +54,7 @@ class WalletService {
           res.statusCode == 204 ||
           res.statusCode == 206) {
       } else {
-        print('Error: ${res.statusCode}  response : ${res.body}');
+        // print('Error: ${res.statusCode}  response : ${res.body}');
         return null;
       }
     } catch (e) {

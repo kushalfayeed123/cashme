@@ -26,9 +26,9 @@ class TransactionModel {
   TransactionModel.fromData(DocumentSnapshot snapshot)
       : id = snapshot.id,
         type = snapshot.data()['Type'],
-        value = snapshot.data()['Value'],
-        senderName = snapshot.data()['SenderName'],
-        receiverName = snapshot.data()['ReceiverName'],
+        value = snapshot.data()['Value'] ?? '',
+        senderName = snapshot.data()['SenderName'] ?? '',
+        receiverName = snapshot.data()['ReceiverName'] ?? '',
         createdOn = snapshot.data()['CreatedOn'].toDate(),
         modifiedOn = snapshot.data()['ModifiedOn'].toDate(),
         status = snapshot.data()['Status'],

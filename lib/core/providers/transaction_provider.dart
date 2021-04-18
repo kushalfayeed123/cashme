@@ -22,7 +22,6 @@ class TransactionProvider with ChangeNotifier {
         .asBroadcastStream()
         .listen((transact) {
       _userTransactions = transact;
-      print(transact);
       notifyListeners();
     });
   }

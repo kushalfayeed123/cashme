@@ -26,8 +26,8 @@ class WalletModel {
   WalletModel.fromData(DocumentSnapshot snapshot)
       : id = snapshot.id,
         userId = snapshot.data()['UserId'],
-        availableBalance = snapshot.data()['AvailableBalance'],
-        legderBalance = snapshot.data()['LegderBalance'],
+        availableBalance = snapshot.data()['AvailableBalance'] ?? 0,
+        legderBalance = snapshot.data()['LegderBalance'] ?? 0,
         accountNumber = snapshot.data()['AccountNumber'],
         accountbank = snapshot.data()['Accountbank'],
         bvn = snapshot.data()['Bvn'];

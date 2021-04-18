@@ -487,7 +487,6 @@ class _HomeScreenState extends State<HomeScreen> {
         iconSize: 30.0,
         backgroundColor: Color(0xFFf4f9f9),
         onTap: (index) {
-          print(index);
           switch (index) {
             case 0:
               Navigator.of(context).pushNamed(TransferScreen.routeName);

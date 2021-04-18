@@ -14,7 +14,7 @@ class UserService {
 
   Future<List<UserModel>> getAllUsers() async {
     try {
-    var users = await _userCollectionReference.get();
+      var users = await _userCollectionReference.get();
       return users.docs.map((e) => UserModel.fromData(e)).toList();
     } catch (e) {
       throw HttpException(e);
@@ -56,6 +56,18 @@ class UserService {
     try {
       final userRes = await _userCollectionReference
           .where('KeyReference', isEqualTo: keyReference)
+          .limit(1)
+          .get();
+      return UserModel.fromData(userRes.docs[0]);
+    } catch (e) {
+      throw HttpException(e);
+    }
+  }
+
+  Future getUser(String email) async {
+    try {
+      final userRes = await _userCollectionReference
+          .where('Email', isEqualTo: email)
           .limit(1)
           .get();
       return UserModel.fromData(userRes.docs[0]);

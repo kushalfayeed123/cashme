@@ -1,11 +1,18 @@
+import 'dart:convert';
+
+import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:cash_me/core/models/transaction.model.dart';
 import 'package:cash_me/core/models/transfer.model.dart';
 import 'package:cash_me/core/models/user.model.dart';
+import 'package:cash_me/core/models/wallet.model.dart';
+import 'package:cash_me/core/providers/transaction_provider.dart';
 import 'package:cash_me/core/providers/user_provider.dart';
 import 'package:cash_me/core/providers/wallet_provider.dart';
 import 'package:cash_me/ui/views/home/home_screen.dart';
 import 'package:cash_me/ui/views/load_wallet/load_wallet.dart';
 import 'package:cash_me/ui/views/scan_screen/scan_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
@@ -26,6 +33,9 @@ class _TransferScreenState extends State<TransferScreen> {
   BuildContext bcontext;
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   bool valueGenerated = false;
+  UserModel userPayload;
+  WalletModel walletPayload;
+  TransactionModel transactionPayload;
 
   bool _isInit = true;
   TransferModel transferPayload;
@@ -44,7 +54,32 @@ class _TransferScreenState extends State<TransferScreen> {
     super.initState();
   }
 
-  void getInitValues() async {
+  final spinner = SpinKitRing(
+    // type: SpinKitWaveType.end,
+    color: Color(0xff16c79a),
+    size: 50.0,
+  );
+
+  openLoadingDialog() {
+    AwesomeDialog(
+            context: context,
+            animType: AnimType.BOTTOMSLIDE,
+            customHeader: null,
+            dialogType: DialogType.NO_HEADER,
+            dismissOnTouchOutside: false,
+            body: spinner)
+        .show();
+  }
+
+  closeDialog() {
+    if (!valueGenerated)
+      setState(() {
+        valueGenerated = true;
+      });
+    AwesomeDialog(context: context).dissmiss();
+  }
+
+  getInitValues() async {
     try {
       final _user =
           Provider.of<UserProvider>(context, listen: false).currentUser;
@@ -54,6 +89,185 @@ class _TransferScreenState extends State<TransferScreen> {
           .setAllUsers(_user.id);
     } catch (e) {
       print(e);
+    }
+  }
+
+  showConfirmationDialog() {
+    final _wallet =
+        Provider.of<WalletProvider>(context, listen: false).userWallet;
+
+    final currentUser =
+        Provider.of<UserProvider>(context, listen: false).currentUser;
+
+    if (int.parse(qrdataFeed.text) > _wallet.availableBalance) {
+      showErrorMessageDialog(
+          'Sorry, this transcation can not be completed because of insufficient funds.');
+    } else {
+      AwesomeDialog(
+          context: context,
+          animType: AnimType.BOTTOMSLIDE,
+          customHeader: null,
+          dialogType: DialogType.NO_HEADER,
+          // padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 30.0),
+          dismissOnTouchOutside: false,
+          body: Container(
+            height: MediaQuery.of(context).size.height * 0.3,
+            width: MediaQuery.of(context).size.width,
+            padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
+            child: Column(
+              children: [
+                Text(
+                  'You are about transfer the sum of ₦${NumberFormat('#,###,000').format(int.parse(qrdataFeed.text))}. Are you sure you want to continue?',
+                  style: TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontSize: 18.0,
+                      color: Color(0xFF002147),
+                      fontWeight: FontWeight.w600),
+                ),
+                SizedBox(
+                  height: 20.0,
+                ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Material(
+                      elevation: 5.0,
+                      borderRadius: BorderRadius.circular(30.0),
+                      color: Color(0xFF002147),
+                      child: MaterialButton(
+                        minWidth: MediaQuery.of(context).size.width * 0.3,
+                        padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+                        onPressed: () async {
+                          if (valueGenerated) {
+                            // prePaymentAction();
+                            setState(() {
+                              valueGenerated = false;
+                            });
+                            // closeDialog();
+                          } else {
+                            if (qrdataFeed.text.isEmpty) {
+                              setState(() {
+                                qrData = "text";
+                              });
+                            } else {
+                              setState(() {
+                                transferPayload = TransferModel(
+                                    senderId: currentUser.id,
+                                    receiverId: '',
+                                    email: currentUser.email,
+                                    transferValue: qrdataFeed.text,
+                                    walletId: _wallet.id);
+                                qrData = qrdataFeed.text;
+                                valueGenerated = true;
+                              });
+                              prePaymentAction();
+                              // mystate(() {
+                              //   transferPayload =
+                              //       TransferModel(
+                              //           senderId:
+                              //               currentUser.id,
+                              //           receiverId: '',
+                              //           email:
+                              //               currentUser
+                              //                   .email,
+                              //           transferValue:
+                              //               qrdataFeed
+                              //                   .text);
+                              //   qrData = qrdataFeed.text;
+                              // });
+                            }
+                          }
+                        },
+                        child: Text("Yes",
+                            textAlign: TextAlign.center,
+                            style: style.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 30.0,
+                    ),
+                    Material(
+                      elevation: 5.0,
+                      borderRadius: BorderRadius.circular(30.0),
+                      color: Color(0xFF002147),
+                      child: MaterialButton(
+                        minWidth: MediaQuery.of(context).size.width * 0.3,
+                        padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+                        onPressed: () async {
+                          closeDialog();
+                        },
+                        child: Text("Cancel",
+                            textAlign: TextAlign.center,
+                            style: style.copyWith(
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                )
+              ],
+            ),
+          )).show();
+    }
+  }
+
+  showErrorMessageDialog(message) {
+    AwesomeDialog(
+      context: context,
+      animType: AnimType.BOTTOMSLIDE,
+      showCloseIcon: true,
+      customHeader: null,
+      dialogType: DialogType.NO_HEADER,
+      dismissOnTouchOutside: false,
+      padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 30.0),
+      body: Text(
+        message,
+        style: TextStyle(
+            fontFamily: 'San Fransisco', fontSize: 17, color: Colors.red),
+      ),
+    ).show();
+  }
+
+  prePaymentAction() async {
+    print(valueGenerated);
+    openLoadingDialog();
+    try {
+      var _user = Provider.of<UserProvider>(context, listen: false).currentUser;
+
+      var _wallet =
+          Provider.of<WalletProvider>(context, listen: false).userWallet;
+      var newValue =
+          _wallet.availableBalance - int.parse(transferPayload.transferValue);
+      transactionPayload = TransactionModel(
+          type: 'debit',
+          value: transferPayload.transferValue.toString(),
+          senderName: _user.cashMeName,
+          createdOn: DateTime.now(),
+          modifiedOn: DateTime.now(),
+          status: 'Pending',
+          userId: _user.id);
+
+      walletPayload = WalletModel(
+          legderBalance: _wallet.legderBalance, availableBalance: newValue);
+      await Provider.of<WalletProvider>(context, listen: false)
+          .updateWallet(_wallet.id, walletPayload);
+      await Provider.of<TransactionProvider>(context, listen: false)
+          .addTransaction(transactionPayload);
+      // setState(() {
+      //   valueGenerated = true;
+      //   // Navigator.of(context).pop();
+      // });
+      closeDialog();
+      closeDialog();
+      setState(() {
+        valueGenerated = true;
+      });
+    } catch (e) {
+      closeDialog();
+      throw Exception(e);
     }
   }
 
@@ -97,7 +311,6 @@ class _TransferScreenState extends State<TransferScreen> {
               setState(() {
                 selectedUser = value;
               });
-              // print(selectedBank);
             },
             items: users.map((UserModel map) {
               return new DropdownMenuItem<String>(
@@ -110,6 +323,7 @@ class _TransferScreenState extends State<TransferScreen> {
         ),
       ),
     );
+
     showModalBottomSheet(
         context: context,
         isScrollControlled: true,
@@ -174,7 +388,7 @@ class _TransferScreenState extends State<TransferScreen> {
                                     width: MediaQuery.of(context).size.width *
                                         0.68,
                                     child: QrImage(
-                                      data: transferPayload.toString(),
+                                      data: jsonEncode(transferPayload),
                                       foregroundColor: Color(0xFF002147),
                                     ),
                                   ),
@@ -271,37 +485,17 @@ class _TransferScreenState extends State<TransferScreen> {
                                             padding: EdgeInsets.fromLTRB(
                                                 20.0, 15.0, 20.0, 15.0),
                                             onPressed: () async {
-                                              if (valueGenerated) {
-                                                setState(() {
-                                                  valueGenerated = false;
-                                                  Navigator.of(context).pop();
-                                                });
-                                              } else {
-                                                if (qrdataFeed.text.isEmpty) {
-                                                  mystate(() {
-                                                    qrData = "text";
-                                                  });
-                                                } else {
-                                                  setState(() {
-                                                    valueGenerated = true;
-                                                  });
-                                                  mystate(() {
-                                                    transferPayload =
-                                                        TransferModel(
-                                                            senderId:
-                                                                currentUser.id,
-                                                            receiverId: '',
-                                                            transferValue:
-                                                                qrdataFeed
-                                                                    .text);
-                                                    qrData = qrdataFeed.text;
-                                                  });
-                                                }
-                                              }
+                                              valueGenerated
+                                                  ? setState(() {
+                                                      valueGenerated = false;
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                    })
+                                                  : showConfirmationDialog();
                                             },
                                             child: Text(
                                                 valueGenerated
-                                                    ? "Complete Transfer"
+                                                    ? "Done"
                                                     : "Generate",
                                                 textAlign: TextAlign.center,
                                                 style: style.copyWith(
@@ -407,9 +601,7 @@ class _TransferScreenState extends State<TransferScreen> {
                                                 .width,
                                             padding: EdgeInsets.fromLTRB(
                                                 20.0, 15.0, 20.0, 15.0),
-                                            onPressed: () async {
-                                              print(qrData);
-                                            },
+                                            onPressed: () async {},
                                             child: Text("Transfer",
                                                 textAlign: TextAlign.center,
                                                 style: style.copyWith(
@@ -436,7 +628,11 @@ class _TransferScreenState extends State<TransferScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final _wallet = Provider.of<WalletProvider>(context).userWallet;
+    // if (valueGenerated) {
+    //   Navigator.of(context).pop();
+    // }
+    final _wallet =
+        Provider.of<WalletProvider>(context, listen: false).userWallet;
     TextStyle style = TextStyle(fontFamily: 'San Francisco', fontSize: 16.0);
 
     final userButton = Material(
