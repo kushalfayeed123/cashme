@@ -20,6 +20,7 @@ import 'package:cash_me/ui/views/home/home_screen.dart';
 import 'package:cash_me/ui/views/login/login_screen.dart';
 import 'package:cash_me/ui/views/scan_screen/scan_screen.dart';
 import 'package:cash_me/ui/views/transfer_screen/transfer_screen.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
@@ -241,6 +242,15 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
   }
 
   void postPaymentAction() async {
+    openLoadingDialog();
+
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.none) {
+      closeDialog();
+      showSuccessMessageDialog(
+          'Sorry, you can not load your wallet at the moment because you may not be connected to the internet. Please connect and try again.');
+      return;
+    }
     try {
       var _user = Provider.of<UserProvider>(context, listen: false).currentUser;
       var _wallet =
@@ -263,25 +273,84 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
         await Provider.of<TransactionProvider>(context, listen: false)
             .addTransaction(transactionPayload);
         closeDialog();
+
+        showSuccessMessageDialog(
+            'You have successfully loaded your wallet with the sum of ₦${NumberFormat('#,###,000').format(int.parse(_amountController.text))}');
+        Future.delayed(Duration(microseconds: 300));
+        // closeDialog();
+        // Future.delayed(Duration(microseconds: 300));
+
       }
     } catch (e) {
       closeDialog();
       throw Exception(e);
+      // }
     }
   }
 
   showSuccessMessageDialog(message) {
+    TextStyle style = TextStyle(fontFamily: 'San Francisco', fontSize: 16.0);
+
     AwesomeDialog(
         context: context,
         padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 30.0),
         animType: AnimType.BOTTOMSLIDE,
-        showCloseIcon: true,
+        showCloseIcon: false,
         customHeader: null,
         dialogType: DialogType.NO_HEADER,
         dismissOnTouchOutside: false,
-        body: Text(
-          message,
-          style: TextStyle(fontFamily: 'San Fransisco', fontSize: 14),
+        body:
+
+            // Text(
+            //   message,
+            //   style: TextStyle(fontFamily: 'San Fransisco', fontSize: 14),
+            // )
+            //
+            Container(
+          height: MediaQuery.of(context).size.height * 0.35,
+          width: MediaQuery.of(context).size.width,
+          padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
+          child: Column(
+            children: [
+              Text(
+                message,
+                style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 18.0,
+                    color: Color(0xFF002147),
+                    fontWeight: FontWeight.w600),
+              ),
+              SizedBox(
+                height: 20.0,
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Material(
+                    elevation: 5.0,
+                    borderRadius: BorderRadius.circular(30.0),
+                    color: Color(0xFF002147),
+                    child: MaterialButton(
+                      minWidth: MediaQuery.of(context).size.width * 0.3,
+                      padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+                      onPressed: () async {
+                        closeDialog();
+                        Navigator.of(context).pushNamedAndRemoveUntil(
+                            HomeScreen.routeName,
+                            (Route<dynamic> route) => false);
+                      },
+                      child: Text("OK",
+                          textAlign: TextAlign.center,
+                          style: style.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
         )).show();
   }
 
@@ -316,7 +385,6 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
 
   void initiatePayment() async {
     // verifyAccountNumber();
-    openLoadingDialog();
     final _user = Provider.of<UserProvider>(context, listen: false).currentUser;
 
     userPayload = UserModel(

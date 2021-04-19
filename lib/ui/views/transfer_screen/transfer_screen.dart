@@ -12,6 +12,7 @@ import 'package:cash_me/core/providers/wallet_provider.dart';
 import 'package:cash_me/ui/views/home/home_screen.dart';
 import 'package:cash_me/ui/views/load_wallet/load_wallet.dart';
 import 'package:cash_me/ui/views/scan_screen/scan_screen.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
@@ -98,7 +99,7 @@ class _TransferScreenState extends State<TransferScreen> {
 
     if (int.parse(qrdataFeed.text) > _wallet.availableBalance) {
       showErrorMessageDialog(
-          'Sorry, this transcation can not be completed because of insufficient funds.');
+          'Sorry, this transcation can not be completed because you do not have sufficient funds.');
     } else {
       AwesomeDialog(
           context: context,
@@ -211,8 +212,13 @@ class _TransferScreenState extends State<TransferScreen> {
   }
 
   prePaymentAction() async {
-    // print(valueGenerated);
     openLoadingDialog();
+
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.none) {
+      closeDialog();
+      closeDialog();
+    }
     try {
       var _user = Provider.of<UserProvider>(context, listen: false).currentUser;
 
@@ -227,7 +233,7 @@ class _TransferScreenState extends State<TransferScreen> {
           transactionMode: QR_TRANSFER,
           createdOn: DateTime.now(),
           modifiedOn: DateTime.now(),
-          status: 'Completed',
+          status: 'Pending',
           userId: _user.id);
 
       walletPayload = WalletModel(
