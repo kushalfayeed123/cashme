@@ -238,7 +238,6 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
 
   void _onPaymentSuccessful() async {
     postPaymentAction();
-    showSuccessMessageDialog('Your wallet was loaded successful');
   }
 
   void postPaymentAction() async {
@@ -958,7 +957,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
                   padding: EdgeInsets.only(
                       left: MediaQuery.of(context).size.width * 0.09,
                       top: MediaQuery.of(context).size.height * 0.33,
-                      bottom: 0),
+                      bottom: 50),
                   child: SizedBox(
                     child: Text(
                       'Load Your Wallet',
@@ -975,7 +974,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
                   alignment: Alignment.center,
                   child: Padding(
                     padding: EdgeInsets.only(
-                        top: MediaQuery.of(context).size.height * 0.33,
+                        top: MediaQuery.of(context).size.height * 0.36,
                         left: 30.0,
                         right: 30.0),
                     child: SingleChildScrollView(
