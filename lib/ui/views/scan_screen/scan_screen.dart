@@ -40,6 +40,8 @@ class _ScanScreenState extends State<ScanScreen> {
   TransferModel senderPayload;
   TransferModel transferPayload;
   bool valueGenerated;
+  bool showButton = false;
+
   TextStyle style = TextStyle(fontFamily: 'San Francisco', fontSize: 16.0);
 
   bool _isInit = true;
@@ -110,7 +112,7 @@ class _ScanScreenState extends State<ScanScreen> {
                             HomeScreen.routeName,
                             (Route<dynamic> route) => false);
                       },
-                      child: Text("Ok",
+                      child: Text("OK",
                           textAlign: TextAlign.center,
                           style: style.copyWith(
                               color: Colors.white,
@@ -346,37 +348,42 @@ class _ScanScreenState extends State<ScanScreen> {
                                   height:
                                       MediaQuery.of(context).size.height * 0.02,
                                 ),
-                                Material(
-                                  elevation: 5.0,
-                                  borderRadius: BorderRadius.circular(30.0),
-                                  color: Color(0xFF002147),
-                                  child: MaterialButton(
-                                    minWidth: MediaQuery.of(context).size.width,
-                                    padding: EdgeInsets.fromLTRB(
-                                        20.0, 15.0, 20.0, 15.0),
-                                    onPressed: () async {
-                                      mystate(() {
-                                        senderPayload = TransferModel(
-                                            walletId: _wallet.id,
-                                            senderId: currentUser.id,
-                                            receiverId:
-                                                senderPayload.receiverId,
-                                            email: currentUser.email,
-                                            transferValue:
-                                                senderPayload.transferValue);
-                                      });
-                                      Navigator.of(context)
-                                          .pushNamedAndRemoveUntil(
-                                              HomeScreen.routeName,
-                                              (Route<dynamic> route) => false);
-                                    },
-                                    child: Text("OK",
-                                        textAlign: TextAlign.center,
-                                        style: style.copyWith(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold)),
-                                  ),
-                                )
+                                showButton
+                                    ? Material(
+                                        elevation: 5.0,
+                                        borderRadius:
+                                            BorderRadius.circular(30.0),
+                                        color: Color(0xFF002147),
+                                        child: MaterialButton(
+                                          minWidth:
+                                              MediaQuery.of(context).size.width,
+                                          padding: EdgeInsets.fromLTRB(
+                                              20.0, 15.0, 20.0, 15.0),
+                                          onPressed: () async {
+                                            mystate(() {
+                                              senderPayload = TransferModel(
+                                                  walletId: _wallet.id,
+                                                  senderId: currentUser.id,
+                                                  receiverId:
+                                                      senderPayload.receiverId,
+                                                  email: currentUser.email,
+                                                  transferValue: senderPayload
+                                                      .transferValue);
+                                            });
+                                            Navigator.of(context)
+                                                .pushNamedAndRemoveUntil(
+                                                    HomeScreen.routeName,
+                                                    (Route<dynamic> route) =>
+                                                        false);
+                                          },
+                                          child: Text("DONE",
+                                              textAlign: TextAlign.center,
+                                              style: style.copyWith(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold)),
+                                        ),
+                                      )
+                                    : Container(),
                               ],
                             ),
                           ),
@@ -410,38 +417,6 @@ class _ScanScreenState extends State<ScanScreen> {
     if (qrPayload.senderId == '') {
       openBottomSheet();
     }
-    // else {
-    //   var newValue = _wallet.legderBalance + int.parse(qrPayload.transferValue);
-    //   try {
-    //     await Provider.of<UserProvider>(context, listen: false)
-    //         .setUser(qrPayload.email);
-    //     var sender = Provider.of<UserProvider>(context, listen: false).sender;
-
-    //     transactionPayload = TransactionModel(
-    //         type: CREDIT,
-    //         value: qrPayload.transferValue.toString(),
-    //         senderName: sender.cashMeName,
-    //         transactionMode: QR_TRANSFER,
-    //         createdOn: DateTime.now(),
-    //         modifiedOn: DateTime.now(),
-    //         status: 'Completed',
-    //         userId: _user.id);
-
-    //     walletPayload =
-    //         WalletModel(legderBalance: newValue, availableBalance: newValue);
-    //     await Provider.of<WalletProvider>(context, listen: false)
-    //         .updateWallet(_wallet.id, walletPayload);
-    //     await Provider.of<TransactionProvider>(context, listen: false)
-    //         .addTransaction(transactionPayload);
-    //     // closeDialog();
-
-    //     await showSuccessMessageDialog(
-    //         'Your account has been credited with the sum of ₦${NumberFormat('#,###,000').format(int.parse(qrPayload.transferValue))}.');
-    //   } catch (e) {
-    //     closeDialog();
-    //     throw Exception(e);
-    //   }
-    // }
   }
 
   @override
@@ -455,6 +430,11 @@ class _ScanScreenState extends State<ScanScreen> {
     TextStyle style = TextStyle(fontFamily: 'San Francisco', fontSize: 16.0);
     Map<String, dynamic> qrCodeResult;
     setState(() => this.bcontext = context);
+    Future.delayed(Duration(seconds: 5), () {
+      setState(() {
+        showButton = true;
+      });
+    });
 
     final scanButton = Material(
       elevation: 5.0,

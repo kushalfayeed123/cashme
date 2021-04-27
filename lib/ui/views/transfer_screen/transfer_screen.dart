@@ -414,7 +414,7 @@ class _TransferScreenState extends State<TransferScreen> {
                                     top: 20,
                                   ),
                                   child: Text(
-                                    'Generate QR to Receive Money.',
+                                    'Generate QR to Receive Money',
                                     style: TextStyle(
                                       color: Color(0xFF002147),
                                       fontFamily: 'San Francisco',
@@ -585,7 +585,7 @@ class _TransferScreenState extends State<TransferScreen> {
                                             },
                                             child: Text(
                                                 valueGenerated
-                                                    ? "Scan QR"
+                                                    ? "Scan Sender's QR"
                                                     : "Generate",
                                                 textAlign: TextAlign.center,
                                                 style: style.copyWith(
