@@ -3,10 +3,12 @@ import 'package:cash_me/core/providers/authentication_provider.dart';
 import 'package:cash_me/core/providers/transaction_provider.dart';
 import 'package:cash_me/core/providers/user_provider.dart';
 import 'package:cash_me/core/providers/wallet_provider.dart';
+import 'package:cash_me/ui/shared/utils/date_format.dart';
 import 'package:cash_me/ui/views/load_wallet/load_wallet.dart';
 import 'package:cash_me/ui/views/login/login_screen.dart';
 import 'package:cash_me/ui/views/scan_screen/scan_screen.dart';
 import 'package:cash_me/ui/views/transfer_screen/transfer_screen.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -390,6 +392,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                   itemCount: _transactions?.length,
                                   itemBuilder:
                                       (BuildContext context, int index) {
+                                    var _timeago = DateFormatter(
+                                            _transactions[index].createdOn)
+                                        .format();
                                     return Container(
                                       child: Column(
                                         mainAxisSize: MainAxisSize.min,
@@ -443,9 +448,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                                       ),
                                                 SizedBox(height: 10),
                                                 Text(
-                                                  _transactions[index].status,
+                                                  '${DateFormat.yMMMd().format(_transactions[index]?.createdOn)} at ${DateFormat.jm().format(_transactions[index]?.createdOn)}',
                                                   style: TextStyle(
-                                                    color: Color(0xff16c79a),
+                                                    color: Colors.blueGrey,
                                                     fontFamily: 'San Francisco',
                                                     fontSize: 14,
                                                     fontWeight: FontWeight.w600,
@@ -476,8 +481,10 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
+        selectedLabelStyle: TextStyle(color: Colors.blueGrey),
+        unselectedLabelStyle: TextStyle(color: Colors.blueGrey),
         selectedFontSize: 1.0,
         unselectedFontSize: 1.0,
         iconSize: 30.0,
@@ -485,31 +492,35 @@ class _HomeScreenState extends State<HomeScreen> {
         onTap: (index) {
           switch (index) {
             case 0:
-              Navigator.of(context).pushNamed(TransferScreen.routeName);
+              Navigator.of(context).pushNamed(HomeScreen.routeName);
+
+              // Navigator.push(context,
+              //     CupertinoPageRoute(builder: (context) => TransferScreen()));
               break;
             case 1:
+              Navigator.of(context).pushNamed(TransferScreen.routeName);
+              break;
+
+            case 2:
               Navigator.of(context).pushNamed(ScanScreen.routeName);
               break;
-            // case 2:
-            //   Navigator.of(context).pushNamed(TransferScreen.routeName);
-            //   break;
           }
         },
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(
+              Icons.home,
+              color: Color(0xFF002147),
+            ),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
               Icons.send_to_mobile,
               color: Color(0xFF002147),
             ),
-            label: 'Send',
+            label: 'Transfer',
           ),
-          // BottomNavigationBarItem(
-          //   icon: Icon(
-          //     Icons.add_circle_rounded,
-          //     color: Color(0xff16c79a),
-          //   ),
-          //   label: 'Generate QR',
-          // ),
           BottomNavigationBarItem(
               icon: Icon(
                 Icons.qr_code_scanner_rounded,
@@ -518,13 +529,13 @@ class _HomeScreenState extends State<HomeScreen> {
               label: 'Scan QR'),
         ],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: new FloatingActionButton(
         onPressed: () {
           Navigator.of(context)
               .pushReplacementNamed(LoadWalletScreen.routeName);
         },
-        tooltip: 'Increment',
+        tooltip: 'Load Wallet',
         backgroundColor: Color(0xFF002147),
         child: new Icon(
           Icons.add,

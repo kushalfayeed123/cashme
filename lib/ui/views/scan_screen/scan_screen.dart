@@ -17,9 +17,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:provider/provider.dart';
 import 'package:barcode_scan_fix/barcode_scan.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class ScanScreen extends StatefulWidget {
   static const routeName = 'Scan';
@@ -35,6 +37,10 @@ class _ScanScreenState extends State<ScanScreen> {
   WalletModel walletPayload;
   TransactionModel transactionPayload;
   TransferModel qrPayload;
+  TransferModel senderPayload;
+  TransferModel transferPayload;
+  bool valueGenerated;
+  TextStyle style = TextStyle(fontFamily: 'San Francisco', fontSize: 16.0);
 
   bool _isInit = true;
   @override
@@ -98,8 +104,8 @@ class _ScanScreenState extends State<ScanScreen> {
                       minWidth: MediaQuery.of(context).size.width * 0.5,
                       padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
                       onPressed: () async {
-                        // closeDialog();
-                        await updateSenderWalllet();
+                        closeDialog();
+                        // await updateSenderWalllet();
                         Navigator.of(context).pushNamedAndRemoveUntil(
                             HomeScreen.routeName,
                             (Route<dynamic> route) => false);
@@ -139,70 +145,58 @@ class _ScanScreenState extends State<ScanScreen> {
     AwesomeDialog(context: context).dissmiss();
   }
 
-  updateSenderWalllet() async {
-    try {
-      await Provider.of<WalletProvider>(context, listen: false)
-          .getSenderWallet(qrPayload.senderId);
-
-      var senderWallet =
-          Provider.of<WalletProvider>(context, listen: false).senderWallet;
-      var newBalance =
-          senderWallet.legderBalance - int.parse(qrPayload.transferValue);
-      // var sender = Provider.of<UserProvider>(context, listen: false).sender;
-
-      WalletModel walletPayload = WalletModel(
-          userId: qrPayload.receiverId,
-          availableBalance: newBalance,
-          legderBalance: newBalance,
-          bvn: senderWallet.bvn,
-          accountNumber: senderWallet.accountNumber,
-          accountbank: senderWallet.accountbank);
-
-      // transactionPayload = TransactionModel(
-      //     type: 'debit',
-      //     value: qrPayload.transferValue.toString(),
-      //     senderName: sender.cashMeName,
-      //     createdOn: DateTime.now(),
-      //     modifiedOn: DateTime.now(),
-      //     status: 'Pending',
-      //     userId: sender.id);
-
-      await Provider.of<WalletProvider>(context, listen: false)
-          .updateWallet(senderWallet.id, walletPayload);
-    } catch (e) {
-      // closeDialog();
-      throw Exception(e);
-    }
-  }
-
-  void prePaymentAction() async {
+  senderPayment() async {
+    // var message =
+    //     'Qr transfer was succe Your account has been credited with the sum of ₦${NumberFormat('#,###,000').format(int.parse(senderPayload.transferValue))}.';
     openLoadingDialog();
-
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.none) {
       closeDialog();
-      showSuccessMessageDialog(
-          'Your account has been credited with the sum of ₦${NumberFormat('#,###,000').format(int.parse(qrPayload.transferValue))}.');
+      // showSuccessMessageDialog(message);
     }
-    try {
-      var _user = Provider.of<UserProvider>(context, listen: false).currentUser;
-      await Provider.of<UserProvider>(context, listen: false)
-          .setUser(qrPayload.email);
-      var sender = Provider.of<UserProvider>(context, listen: false).sender;
 
+    await Provider.of<UserProvider>(context, listen: false)
+        .setUser(qrPayload.email);
+    final currentUser =
+        Provider.of<UserProvider>(context, listen: false).currentUser;
+
+    final _wallet =
+        Provider.of<WalletProvider>(context, listen: false).userWallet;
+    final receiverName =
+        Provider.of<UserProvider>(context, listen: false).sender;
+    setState(() {
+      senderPayload = TransferModel(
+          walletId: _wallet.id,
+          senderId: currentUser.id,
+          receiverId: qrPayload.receiverId,
+          email: qrPayload.email,
+          transferValue: qrPayload.transferValue);
+    });
+
+    transferPayload = TransferModel(
+        createdOn: DateTime.now(),
+        modifiedOn: DateTime.now(),
+        type: QR_TRANSFER,
+        senderId: currentUser.id,
+        receiverId: senderPayload.receiverId,
+        email: currentUser.email,
+        transferValue: senderPayload.transferValue,
+        walletId: _wallet.id);
+    try {
       var _wallet =
           Provider.of<WalletProvider>(context, listen: false).userWallet;
+      var newValue =
+          _wallet.availableBalance - int.parse(transferPayload.transferValue);
 
-      var newValue = _wallet.legderBalance + int.parse(qrPayload.transferValue);
       transactionPayload = TransactionModel(
-          type: CREDIT,
-          value: qrPayload.transferValue.toString(),
-          senderName: sender.cashMeName,
+          type: DEBIT,
+          value: transferPayload.transferValue.toString(),
+          senderName: currentUser.cashMeName,
           transactionMode: QR_TRANSFER,
           createdOn: DateTime.now(),
           modifiedOn: DateTime.now(),
-          status: 'Pending',
-          userId: _user.id);
+          status: 'Completed',
+          userId: currentUser.id);
 
       walletPayload =
           WalletModel(legderBalance: newValue, availableBalance: newValue);
@@ -210,14 +204,243 @@ class _ScanScreenState extends State<ScanScreen> {
           .updateWallet(_wallet.id, walletPayload);
       await Provider.of<TransactionProvider>(context, listen: false)
           .addTransaction(transactionPayload);
-      // closeDialog();
 
-      await showSuccessMessageDialog(
-          'Your account has been credited with the sum of ₦${NumberFormat('#,###,000').format(int.parse(qrPayload.transferValue))}.');
+      closeDialog();
+      // showSuccessMessageDialog('Qr transfer was successful.');
     } catch (e) {
       closeDialog();
       throw Exception(e);
     }
+  }
+
+  openBottomSheet() async {
+    await Provider.of<UserProvider>(context, listen: false)
+        .setUser(qrPayload.email);
+    final currentUser =
+        Provider.of<UserProvider>(context, listen: false).currentUser;
+
+    final _wallet =
+        Provider.of<WalletProvider>(context, listen: false).userWallet;
+    final receiverName =
+        Provider.of<UserProvider>(context, listen: false).sender;
+    setState(() {
+      senderPayload = TransferModel(
+          walletId: _wallet.id,
+          senderId: currentUser.id,
+          receiverId: qrPayload.receiverId,
+          email: qrPayload.email,
+          transferValue: qrPayload.transferValue);
+    });
+
+    showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        isDismissible: true,
+        enableDrag: true,
+
+        // bounce: true,
+        // backgroundColor: Color(0xFFe8eae6),
+        // expand: true,
+        builder: (BuildContext context) {
+          return StatefulBuilder(
+              builder: (BuildContext context, StateSetter mystate) {
+            return GestureDetector(
+              onTap: () {
+                FocusScope.of(context).unfocus();
+              },
+              child: SingleChildScrollView(
+                controller: ModalScrollController.of(context),
+                child: Container(
+                  // padding: EdgeInsets.symmetric(horizontal: 20.0),
+                  height: MediaQuery.of(context).size.height,
+                  child: Stack(
+                    children: [
+                      Align(
+                        alignment: Alignment.topCenter,
+                        child: Container(
+                          padding: EdgeInsets.only(
+                            top: 20,
+                          ),
+                          child: Text(
+                            'Generate QR to Receive Money.',
+                            style: TextStyle(
+                              color: Color(0xFF002147),
+                              fontFamily: 'San Francisco',
+                              fontSize: 25,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.12,
+                      ),
+                      Align(
+                        alignment: Alignment.topCenter,
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                              top: MediaQuery.of(context).size.height * 0.24),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              // border: Border.all(color: Color(0xff16c79a), width: 1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            width: MediaQuery.of(context).size.width * 0.68,
+                            child: QrImage(
+                              data: jsonEncode(senderPayload),
+                              foregroundColor: Color(0xFF002147),
+                            ),
+                          ),
+                        ),
+                      ),
+                      // SizedBox(
+                      //   height: MediaQuery.of(context).size.height * 0.17,
+                      // ),
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Container(
+                          padding: EdgeInsets.only(
+                              top: MediaQuery.of(context).size.height * 0.075),
+                          width: MediaQuery.of(context).size.width * 0.96,
+                          height: MediaQuery.of(context).size.height * 0.30,
+                          decoration: BoxDecoration(
+                              color: Color(0xFFe8eae6),
+                              borderRadius: BorderRadius.circular(10)),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 20),
+                                  child: RichText(
+                                    text: TextSpan(
+                                        text: 'You are transfering the sum of',
+                                        style: TextStyle(
+                                            fontFamily: 'Montserrat',
+                                            fontSize: 18.0,
+                                            color: Color(0xFF002147),
+                                            fontWeight: FontWeight.w600),
+                                        children: <TextSpan>[
+                                          TextSpan(
+                                              text:
+                                                  ' ₦${NumberFormat('#,###,000').format(int.parse(qrPayload.transferValue))}',
+                                              style: TextStyle(
+                                                  fontFamily: 'Montserrat',
+                                                  fontSize: 18.0,
+                                                  color: Color(0xff16c79a),
+                                                  fontWeight: FontWeight.w600)),
+                                          TextSpan(
+                                              text:
+                                                  ' to ${receiverName.cashMeName}. ${receiverName.cashMeName} must scan this QR code to complete this transcation. ',
+                                              style: TextStyle(
+                                                  fontFamily: 'Montserrat',
+                                                  fontSize: 18.0,
+                                                  color: Color(0xFF002147),
+                                                  fontWeight: FontWeight.w600))
+                                        ]),
+                                  ),
+                                ),
+                                SizedBox(
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.02,
+                                ),
+                                Material(
+                                  elevation: 5.0,
+                                  borderRadius: BorderRadius.circular(30.0),
+                                  color: Color(0xFF002147),
+                                  child: MaterialButton(
+                                    minWidth: MediaQuery.of(context).size.width,
+                                    padding: EdgeInsets.fromLTRB(
+                                        20.0, 15.0, 20.0, 15.0),
+                                    onPressed: () async {
+                                      mystate(() {
+                                        senderPayload = TransferModel(
+                                            walletId: _wallet.id,
+                                            senderId: currentUser.id,
+                                            receiverId:
+                                                senderPayload.receiverId,
+                                            email: currentUser.email,
+                                            transferValue:
+                                                senderPayload.transferValue);
+                                      });
+                                      Navigator.of(context)
+                                          .pushNamedAndRemoveUntil(
+                                              HomeScreen.routeName,
+                                              (Route<dynamic> route) => false);
+                                    },
+                                    child: Text("OK",
+                                        textAlign: TextAlign.center,
+                                        style: style.copyWith(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold)),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // ],
+                  // ),
+                ),
+              ),
+            );
+          });
+        });
+  }
+
+  void prePaymentAction() async {
+    // openLoadingDialog();
+
+    var _user = Provider.of<UserProvider>(context, listen: false).currentUser;
+    var _wallet =
+        Provider.of<WalletProvider>(context, listen: false).userWallet;
+    setState(() {
+      senderPayload = TransferModel(
+          senderId: _user.id,
+          receiverId: qrPayload.receiverId,
+          transferValue: qrPayload.transferValue);
+    });
+
+    if (qrPayload.senderId == '') {
+      openBottomSheet();
+      senderPayment();
+    }
+    // else {
+    //   var newValue = _wallet.legderBalance + int.parse(qrPayload.transferValue);
+    //   try {
+    //     await Provider.of<UserProvider>(context, listen: false)
+    //         .setUser(qrPayload.email);
+    //     var sender = Provider.of<UserProvider>(context, listen: false).sender;
+
+    //     transactionPayload = TransactionModel(
+    //         type: CREDIT,
+    //         value: qrPayload.transferValue.toString(),
+    //         senderName: sender.cashMeName,
+    //         transactionMode: QR_TRANSFER,
+    //         createdOn: DateTime.now(),
+    //         modifiedOn: DateTime.now(),
+    //         status: 'Completed',
+    //         userId: _user.id);
+
+    //     walletPayload =
+    //         WalletModel(legderBalance: newValue, availableBalance: newValue);
+    //     await Provider.of<WalletProvider>(context, listen: false)
+    //         .updateWallet(_wallet.id, walletPayload);
+    //     await Provider.of<TransactionProvider>(context, listen: false)
+    //         .addTransaction(transactionPayload);
+    //     // closeDialog();
+
+    //     await showSuccessMessageDialog(
+    //         'Your account has been credited with the sum of ₦${NumberFormat('#,###,000').format(int.parse(qrPayload.transferValue))}.');
+    //   } catch (e) {
+    //     closeDialog();
+    //     throw Exception(e);
+    //   }
+    // }
   }
 
   @override
@@ -492,7 +715,7 @@ class _ScanScreenState extends State<ScanScreen> {
                       bottom: 0),
                   child: SizedBox(
                     child: Text(
-                      'Scan QR code to receive money',
+                      'Scan QR code to transfer money',
                       style: TextStyle(
                           color: Colors.blueGrey,
                           fontSize: 16,
@@ -523,8 +746,10 @@ class _ScanScreenState extends State<ScanScreen> {
         ),
         bottomNavigationBar: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
-          showSelectedLabels: false,
-          showUnselectedLabels: false,
+          showSelectedLabels: true,
+          showUnselectedLabels: true,
+          selectedLabelStyle: TextStyle(color: Colors.blueGrey),
+          unselectedLabelStyle: TextStyle(color: Colors.blueGrey),
           selectedFontSize: 1.0,
           unselectedFontSize: 1.0,
           iconSize: 30.0,
@@ -533,14 +758,17 @@ class _ScanScreenState extends State<ScanScreen> {
             switch (index) {
               case 0:
                 Navigator.of(context).pushNamed(HomeScreen.routeName);
+
+                // Navigator.push(context,
+                //     CupertinoPageRoute(builder: (context) => TransferScreen()));
                 break;
               case 1:
                 Navigator.of(context).pushNamed(TransferScreen.routeName);
-
                 break;
-              // case 2:
-              //   Navigator.of(context).pushNamed(TransferScreen.routeName);
-              //   break;
+
+              case 2:
+                Navigator.of(context).pushNamed(ScanScreen.routeName);
+                break;
             }
           },
           items: const <BottomNavigationBarItem>[
@@ -549,24 +777,24 @@ class _ScanScreenState extends State<ScanScreen> {
                 Icons.home,
                 color: Color(0xFF002147),
               ),
-              label: 'Send',
+              label: 'Home',
             ),
-            // BottomNavigationBarItem(
-            //   icon: Icon(
-            //     Icons.add_circle_rounded,
-            //     color: Color(0xff16c79a),
-            //   ),
-            //   label: 'Generate QR',
-            // ),
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.send_to_mobile,
+                color: Color(0xFF002147),
+              ),
+              label: 'Transfer',
+            ),
             BottomNavigationBarItem(
                 icon: Icon(
-                  Icons.send_to_mobile,
+                  Icons.qr_code_scanner_rounded,
                   color: Color(0xFF002147),
                 ),
                 label: 'Scan QR'),
           ],
         ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         floatingActionButton: new FloatingActionButton(
           onPressed: () {
             Navigator.of(context)

@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:cash_me/core/constants.dart';
 import 'package:cash_me/core/models/account_charge.model.dart';
+import 'package:cash_me/core/models/transaction.model.dart';
+import 'package:cash_me/core/models/transfer.model.dart';
 import 'package:cash_me/core/models/wallet.model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
@@ -11,6 +13,8 @@ import 'package:http/http.dart' as http;
 class WalletService {
   final CollectionReference _walletCollectionReference =
       FirebaseFirestore.instance.collection("Wallet");
+  final CollectionReference _transferCollectionReference =
+      FirebaseFirestore.instance.collection("Transfer");
 
   // var dio = Dio(BaseOptions(followRedirects: false));
 
@@ -69,6 +73,17 @@ class WalletService {
       await _walletCollectionReference.doc(walletId).set(
             walletData.toJson(),
           );
+    } catch (e) {
+      throw HttpException(e.message);
+    }
+  }
+
+  Future createTransferRecord(TransferModel transferData) async {
+    final transferId = Uuid().v1();
+    try {
+      await _transferCollectionReference
+          .doc(transferId)
+          .set(transferData.toJson());
     } catch (e) {
       throw HttpException(e.message);
     }

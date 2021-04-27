@@ -1008,28 +1008,40 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
+        type: BottomNavigationBarType.fixed,
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
+        selectedLabelStyle: TextStyle(color: Colors.blueGrey),
+        unselectedLabelStyle: TextStyle(color: Colors.blueGrey),
+        selectedFontSize: 1.0,
+        unselectedFontSize: 1.0,
+        iconSize: 30.0,
+        backgroundColor: Color(0xFFf4f9f9),
         onTap: (index) {
           switch (index) {
             case 0:
-              Navigator.of(context).pushNamed(TransferScreen.routeName);
+              Navigator.of(context).pushNamed(HomeScreen.routeName);
+
+              // Navigator.push(context,
+              //     CupertinoPageRoute(builder: (context) => TransferScreen()));
               break;
             case 1:
-              Navigator.of(context).pushNamed(HomeScreen.routeName);
+              Navigator.of(context).pushNamed(TransferScreen.routeName);
               break;
+
             case 2:
               Navigator.of(context).pushNamed(ScanScreen.routeName);
               break;
           }
         },
-        type: BottomNavigationBarType.fixed,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        selectedFontSize: 1.0,
-        unselectedFontSize: 1.0,
-        iconSize: 30.0,
-        backgroundColor: Color(0xFFf4f9f9),
         items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.home,
+              color: Color(0xFF002147),
+            ),
+            label: 'Home',
+          ),
           BottomNavigationBarItem(
             icon: Icon(
               Icons.send_to_mobile,
@@ -1037,12 +1049,6 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
             ),
             label: 'Transfer',
           ),
-          BottomNavigationBarItem(
-              icon: Icon(
-                Icons.home,
-                color: Color(0xFF002147),
-              ),
-              label: 'Home'),
           BottomNavigationBarItem(
               icon: Icon(
                 Icons.qr_code_scanner_rounded,

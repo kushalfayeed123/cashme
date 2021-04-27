@@ -21,6 +21,7 @@ class TransactionProvider with ChangeNotifier {
         .getTransacts(userId)
         .asBroadcastStream()
         .listen((transact) {
+      transact.sort((a, b) => b.createdOn.compareTo(a.createdOn));
       _userTransactions = transact;
       notifyListeners();
     });

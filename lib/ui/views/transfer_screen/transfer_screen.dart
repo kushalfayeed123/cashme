@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:barcode_scan_fix/barcode_scan.dart';
 import 'package:cash_me/core/constants.dart';
 import 'package:cash_me/core/models/transaction.model.dart';
 import 'package:cash_me/core/models/transfer.model.dart';
@@ -38,6 +39,10 @@ class _TransferScreenState extends State<TransferScreen> {
   UserModel userPayload;
   WalletModel walletPayload;
   TransactionModel transactionPayload;
+  Map<String, dynamic> qrCodeResult;
+  TransferModel qrPayload;
+
+  // var newValue;
 
   bool _isInit = true;
   TransferModel transferPayload;
@@ -144,6 +149,9 @@ class _TransferScreenState extends State<TransferScreen> {
                           } else {
                             setState(() {
                               transferPayload = TransferModel(
+                                  createdOn: DateTime.now(),
+                                  modifiedOn: DateTime.now(),
+                                  type: QR_TRANSFER,
                                   senderId: currentUser.id,
                                   receiverId: '',
                                   email: currentUser.email,
@@ -194,6 +202,65 @@ class _TransferScreenState extends State<TransferScreen> {
     }
   }
 
+  showSuccessMessageDialog(message) {
+    TextStyle style = TextStyle(fontFamily: 'San Francisco', fontSize: 16.0);
+
+    AwesomeDialog(
+        context: context,
+        animType: AnimType.BOTTOMSLIDE,
+        customHeader: null,
+        dialogType: DialogType.NO_HEADER,
+        // padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 30.0),
+        dismissOnTouchOutside: false,
+        body: Container(
+          height: MediaQuery.of(context).size.height * 0.3,
+          width: MediaQuery.of(context).size.width,
+          padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
+          child: Column(
+            children: [
+              Text(
+                message,
+                style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 18.0,
+                    color: Color(0xFF002147),
+                    fontWeight: FontWeight.w600),
+              ),
+              SizedBox(
+                height: 20.0,
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Material(
+                    elevation: 5.0,
+                    borderRadius: BorderRadius.circular(30.0),
+                    color: Color(0xFF002147),
+                    child: MaterialButton(
+                      minWidth: MediaQuery.of(context).size.width * 0.5,
+                      padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+                      onPressed: () async {
+                        closeDialog();
+                        // await updateSenderWalllet();
+                        Navigator.of(context).pushNamedAndRemoveUntil(
+                            HomeScreen.routeName,
+                            (Route<dynamic> route) => false);
+                      },
+                      child: Text("Ok",
+                          textAlign: TextAlign.center,
+                          style: style.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
+        )).show();
+  }
+
   showErrorMessageDialog(message) {
     AwesomeDialog(
       context: context,
@@ -213,51 +280,54 @@ class _TransferScreenState extends State<TransferScreen> {
 
   prePaymentAction() async {
     openLoadingDialog();
-
-    var connectivityResult = await (Connectivity().checkConnectivity());
+    final _user = Provider.of<UserProvider>(context, listen: false).currentUser;
+    final _wallet =
+        Provider.of<WalletProvider>(context, listen: false).userWallet;
+    final newValue = _wallet.legderBalance + int.parse(qrPayload.transferValue);
+    final connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.none) {
       closeDialog();
-      closeDialog();
+      await showSuccessMessageDialog(
+          'Your account has been credited with the sum of ₦${NumberFormat('#,###,000').format(int.parse(qrPayload.transferValue))}.');
     }
     try {
-      var _user = Provider.of<UserProvider>(context, listen: false).currentUser;
-
-      var _wallet =
-          Provider.of<WalletProvider>(context, listen: false).userWallet;
-      var newValue =
-          _wallet.availableBalance - int.parse(transferPayload.transferValue);
       transactionPayload = TransactionModel(
-          type: DEBIT,
-          value: transferPayload.transferValue.toString(),
+          type: CREDIT,
+          value: qrPayload.transferValue.toString(),
           senderName: _user.cashMeName,
           transactionMode: QR_TRANSFER,
           createdOn: DateTime.now(),
           modifiedOn: DateTime.now(),
-          status: 'Pending',
+          status: 'Completed',
           userId: _user.id);
 
-      walletPayload = WalletModel(
-          legderBalance: _wallet.legderBalance, availableBalance: newValue);
+      walletPayload =
+          WalletModel(legderBalance: newValue, availableBalance: newValue);
       await Provider.of<WalletProvider>(context, listen: false)
           .updateWallet(_wallet.id, walletPayload);
       await Provider.of<TransactionProvider>(context, listen: false)
           .addTransaction(transactionPayload);
-      // setState(() {
-      //   valueGenerated = true;
-      //   // Navigator.of(context).pop();
-      // });
       closeDialog();
-      closeDialog();
-      setState(() {
-        valueGenerated = true;
-      });
+
+      await showSuccessMessageDialog(
+          'Your account has been credited with the sum of ₦${NumberFormat('#,###,000').format(int.parse(qrPayload.transferValue))}.');
     } catch (e) {
       closeDialog();
       throw Exception(e);
     }
   }
 
-  openBottomSheet(String type) {
+  Future<void> openScanner() async {
+    final codeScanner = await BarcodeScanner.scan();
+    qrCodeResult = jsonDecode(codeScanner);
+    setState(() {
+      qrPayload = TransferModel.fromJson(qrCodeResult);
+    });
+
+    prePaymentAction();
+  }
+
+  void openBottomSheet(String type, String mode) {
     final users = Provider.of<UserProvider>(context, listen: false).allUsers;
     final currentUser =
         Provider.of<UserProvider>(context, listen: false).currentUser;
@@ -272,7 +342,7 @@ class _TransferScreenState extends State<TransferScreen> {
         decoration: InputDecoration(
           contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
           suffixIcon: Icon(Icons.money),
-          hintText: "Enter transfer value.",
+          hintText: "How much do you need?",
           border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(32.0),
               borderSide: BorderSide(color: Color(0xff16c79a))),
@@ -310,6 +380,9 @@ class _TransferScreenState extends State<TransferScreen> {
       ),
     );
 
+    final _wallet =
+        Provider.of<WalletProvider>(context, listen: false).userWallet;
+
     showModalBottomSheet(
         context: context,
         isScrollControlled: true,
@@ -331,13 +404,8 @@ class _TransferScreenState extends State<TransferScreen> {
                 child: Container(
                     // padding: EdgeInsets.symmetric(horizontal: 20.0),
                     height: MediaQuery.of(context).size.height,
-                    child: type == 'qr'
-                        ?
-                        // Column(
-                        //   crossAxisAlignment: CrossAxisAlignment.center,
-                        //   mainAxisAlignment: MainAxisAlignment.center,
-                        //   children: [
-                        Stack(
+                    child: type == 'receive'
+                        ? Stack(
                             children: [
                               Align(
                                 alignment: Alignment.topCenter,
@@ -346,7 +414,7 @@ class _TransferScreenState extends State<TransferScreen> {
                                     top: 20,
                                   ),
                                   child: Text(
-                                    'Transfer via QR',
+                                    'Generate QR to Receive Money.',
                                     style: TextStyle(
                                       color: Color(0xFF002147),
                                       fontFamily: 'San Francisco',
@@ -431,7 +499,7 @@ class _TransferScreenState extends State<TransferScreen> {
                                                                         .w600)),
                                                         TextSpan(
                                                             text:
-                                                                ' has been generated and can now be scanned.',
+                                                                ' has been generated, please ensure the sender scans your qr code, then scan the sender\'s qr code to complete this transaction.',
                                                             style: TextStyle(
                                                                 fontFamily:
                                                                     'Montserrat',
@@ -443,21 +511,18 @@ class _TransferScreenState extends State<TransferScreen> {
                                                                         .w600))
                                                       ]),
                                                 )
-                                              // Text(
-                                              //     'QR for the sum of ₦${qrdataFeed.text} has been generated and can now be scanned.',
-                                              //     style: TextStyle(
-                                              //         fontSize: 18.0,
-                                              //         fontWeight: FontWeight.w600,
-                                              //         fontFamily: 'San Francisco',
-                                              //         color: Color(0xFF002147)),
-                                              //   )
                                               : transferEditor,
                                         ),
                                         SizedBox(
-                                          height: MediaQuery.of(context)
-                                                  .size
-                                                  .height *
-                                              0.07,
+                                          height: valueGenerated
+                                              ? MediaQuery.of(context)
+                                                      .size
+                                                      .height *
+                                                  0.02
+                                              : MediaQuery.of(context)
+                                                      .size
+                                                      .height *
+                                                  0.07,
                                         ),
                                         Material(
                                           elevation: 5.0,
@@ -474,35 +539,53 @@ class _TransferScreenState extends State<TransferScreen> {
                                               valueGenerated
                                                   ? setState(() {
                                                       valueGenerated = false;
-                                                      Navigator.of(context)
-                                                          .pushNamedAndRemoveUntil(
-                                                              HomeScreen
-                                                                  .routeName,
-                                                              (Route<dynamic>
-                                                                      route) =>
-                                                                  false);
+                                                      openScanner();
                                                     })
                                                   : mystate(() {
-                                                      showConfirmationDialog();
                                                       transferPayload =
                                                           TransferModel(
-                                                              senderId:
+                                                              walletId:
+                                                                  _wallet.id,
+                                                              senderId: '',
+                                                              receiverId:
                                                                   currentUser
                                                                       .id,
-                                                              receiverId: '',
                                                               email: currentUser
                                                                   .email,
                                                               transferValue:
                                                                   qrdataFeed
                                                                       .text);
-                                                      qrData = qrdataFeed.text;
 
-                                                      valueGenerated = true;
+                                                      // qrData = qrdataFeed.text;
                                                     });
+
+                                              if (qrdataFeed.text.isEmpty) {
+                                                setState(() {
+                                                  qrData = "text";
+                                                });
+                                              } else {
+                                                setState(() {
+                                                  transferPayload =
+                                                      TransferModel(
+                                                          walletId: _wallet.id,
+                                                          senderId: '',
+                                                          receiverId:
+                                                              currentUser.id,
+                                                          email:
+                                                              currentUser.email,
+                                                          transferValue:
+                                                              qrdataFeed.text);
+
+                                                  qrData = qrdataFeed.text;
+                                                });
+                                                // prePaymentAction();
+                                              }
+
+                                              valueGenerated = true;
                                             },
                                             child: Text(
                                                 valueGenerated
-                                                    ? "Done"
+                                                    ? "Scan QR"
                                                     : "Generate",
                                                 textAlign: TextAlign.center,
                                                 style: style.copyWith(
@@ -652,11 +735,11 @@ class _TransferScreenState extends State<TransferScreen> {
         minWidth: MediaQuery.of(context).size.width,
         padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
         onPressed: () {
-          openBottomSheet('username');
+          // openBottomSheet('receive');
           // initiatePayment();
         },
         child: Text(
-          "USERNAME",
+          "RECEIVE MONEY",
           textAlign: TextAlign.center,
           style:
               style.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
@@ -671,12 +754,12 @@ class _TransferScreenState extends State<TransferScreen> {
         minWidth: MediaQuery.of(context).size.width,
         padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
         onPressed: () {
-          openBottomSheet('qr');
+          openBottomSheet('receive', 'Generate');
 
           // initiatePayment();
         },
         child: Text(
-          "QR",
+          "RECEIVE MONEY",
           textAlign: TextAlign.center,
           style:
               style.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
@@ -919,7 +1002,7 @@ class _TransferScreenState extends State<TransferScreen> {
                     bottom: 0),
                 child: SizedBox(
                   child: Text(
-                    'Please choose your preferred mode of transfer',
+                    'Receive money by generating a QR code',
                     style: TextStyle(
                         color: Colors.blueGrey,
                         fontSize: 16,
@@ -939,10 +1022,10 @@ class _TransferScreenState extends State<TransferScreen> {
                 child: Container(
                   child: Wrap(
                     children: [
-                      userButton,
-                      SizedBox(
-                        height: 70,
-                      ),
+                      // userButton,
+                      // SizedBox(
+                      //   height: 70,
+                      // ),
                       qrButton
                     ],
                   ),
@@ -954,8 +1037,10 @@ class _TransferScreenState extends State<TransferScreen> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
+        selectedLabelStyle: TextStyle(color: Colors.blueGrey),
+        unselectedLabelStyle: TextStyle(color: Colors.blueGrey),
         selectedFontSize: 1.0,
         unselectedFontSize: 1.0,
         iconSize: 30.0,
@@ -964,14 +1049,17 @@ class _TransferScreenState extends State<TransferScreen> {
           switch (index) {
             case 0:
               Navigator.of(context).pushNamed(HomeScreen.routeName);
+
+              // Navigator.push(context,
+              //     CupertinoPageRoute(builder: (context) => TransferScreen()));
               break;
             case 1:
-              Navigator.of(context).pushNamed(ScanScreen.routeName);
-
+              Navigator.of(context).pushNamed(TransferScreen.routeName);
               break;
-            // case 2:
-            //   Navigator.of(context).pushNamed(TransferScreen.routeName);
-            //   break;
+
+            case 2:
+              Navigator.of(context).pushNamed(ScanScreen.routeName);
+              break;
           }
         },
         items: const <BottomNavigationBarItem>[
@@ -980,15 +1068,15 @@ class _TransferScreenState extends State<TransferScreen> {
               Icons.home,
               color: Color(0xFF002147),
             ),
-            label: 'Send',
+            label: 'Home',
           ),
-          // BottomNavigationBarItem(
-          //   icon: Icon(
-          //     Icons.add_circle_rounded,
-          //     color: Color(0xff16c79a),
-          //   ),
-          //   label: 'Generate QR',
-          // ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.send_to_mobile,
+              color: Color(0xFF002147),
+            ),
+            label: 'Transfer',
+          ),
           BottomNavigationBarItem(
               icon: Icon(
                 Icons.qr_code_scanner_rounded,
@@ -997,7 +1085,7 @@ class _TransferScreenState extends State<TransferScreen> {
               label: 'Scan QR'),
         ],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: new FloatingActionButton(
         onPressed: () {
           Navigator.of(context)

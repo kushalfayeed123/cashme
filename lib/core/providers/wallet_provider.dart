@@ -1,5 +1,6 @@
 import 'package:cash_me/core/models/bank.model.dart';
 import 'package:cash_me/core/models/charge_response.model.dart';
+import 'package:cash_me/core/models/transfer.model.dart';
 import 'package:cash_me/core/models/wallet.model.dart';
 import 'package:cash_me/core/services/wallet.service.dart';
 import 'package:cash_me/locator.dart';
@@ -18,6 +19,10 @@ class WalletProvider with ChangeNotifier {
 
   Future addWalletData(WalletModel walletData, String _userId) async {
     await _walletService.addWallet(_userId, walletData);
+  }
+
+  Future createTransferRecord(TransferModel transferData) async {
+    await _walletService.createTransferRecord(transferData);
   }
 
   Future loadWallet(url, payload) async {
