@@ -148,12 +148,12 @@ class _ScanScreenState extends State<ScanScreen> {
   senderPayment() async {
     // var message =
     //     'Qr transfer was succe Your account has been credited with the sum of ₦${NumberFormat('#,###,000').format(int.parse(senderPayload.transferValue))}.';
-    openLoadingDialog();
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.none) {
-      closeDialog();
-      // showSuccessMessageDialog(message);
-    }
+    // openLoadingDialog();
+    // var connectivityResult = await (Connectivity().checkConnectivity());
+    // if (connectivityResult == ConnectivityResult.none) {
+    //   closeDialog();
+    //   // showSuccessMessageDialog(message);
+    // }
 
     await Provider.of<UserProvider>(context, listen: false)
         .setUser(qrPayload.email);
@@ -205,7 +205,7 @@ class _ScanScreenState extends State<ScanScreen> {
       await Provider.of<TransactionProvider>(context, listen: false)
           .addTransaction(transactionPayload);
 
-      closeDialog();
+      // closeDialog();
       // showSuccessMessageDialog('Qr transfer was successful.');
     } catch (e) {
       closeDialog();
@@ -214,6 +214,8 @@ class _ScanScreenState extends State<ScanScreen> {
   }
 
   openBottomSheet() async {
+    senderPayment();
+
     await Provider.of<UserProvider>(context, listen: false)
         .setUser(qrPayload.email);
     final currentUser =
@@ -262,7 +264,7 @@ class _ScanScreenState extends State<ScanScreen> {
                             top: 20,
                           ),
                           child: Text(
-                            'Generate QR to Receive Money.',
+                            'Generate QR to Send Money.',
                             style: TextStyle(
                               color: Color(0xFF002147),
                               fontFamily: 'San Francisco',
@@ -407,7 +409,6 @@ class _ScanScreenState extends State<ScanScreen> {
 
     if (qrPayload.senderId == '') {
       openBottomSheet();
-      senderPayment();
     }
     // else {
     //   var newValue = _wallet.legderBalance + int.parse(qrPayload.transferValue);
