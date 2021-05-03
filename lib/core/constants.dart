@@ -1,9 +1,6 @@
 const String LIVE_CHARGE_ENDPOINT =
-    "https://api.ravepay.co/flwv3-pug/getpaidx/api/charge";
+    "https://api.flutterwave.com/v3/charges?type=debit_ng_account";
 const String SANDBOX_CHARGE_ENDPOINT =
-    // "https://api.ravepay.co/flwv3-pug/getpaidx/api/charge";
-
-    // "https://ravesandboxapi.flutterwave.com/flwv3-pug/getpaidx/api/charge";
     "https://api.flutterwave.com/v3/charges?type=debit_ng_account";
 const String BANKS_ENDPOINT =
     'https://api.ravepay.co/flwv3-pug/getpaidx/api/flwpbf-banks.js?json=1';
@@ -24,8 +21,6 @@ const String ENCRYPTION_KEY =
 const CURRENCY = 'NGN';
 const PAYMENTTYPE = 'account';
 const COUNTRY = 'NG';
-// const receivingCountry = 'NG';
-// const network = 'UGX';
 const WEB_HOOK_3DS = 'https://rave-webhook.herokuapp.com/receivepayment';
 const MAX_REQUERY_COUNT = 30;
 

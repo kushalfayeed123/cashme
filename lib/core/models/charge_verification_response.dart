@@ -1,9 +1,10 @@
-class ChargeResponse {
+class ChargeVerificationResponse {
   String status;
   String message;
   Data data;
 
-  ChargeResponse.fromJson(Map<String, dynamic> json, bool isFirstQuery) {
+  ChargeVerificationResponse.fromJson(
+      Map<String, dynamic> json, bool isFirstQuery) {
     if (json == null) {
       return;
     }
@@ -25,7 +26,9 @@ class Data {
   String deviceFingerPrint;
   int amount;
   int appFee;
+  int chargeAmount;
   int merchantFee;
+  String processorResponse;
   String authModel;
   String currency;
   String ip;
@@ -36,9 +39,9 @@ class Data {
   String fraudStatus;
   String createdAt;
   int accountId;
-  Customer customer;
-  Account account;
-  Meta meta;
+  // Customer customer;
+  // Account account;
+  // Meta meta;
 
   Data.fromJson(Map<String, dynamic> json) {
     if (json == null) {
@@ -52,8 +55,10 @@ class Data {
     flwRef = json['flw_ref'];
     deviceFingerPrint = json['device_fingerprint'];
     amount = json['amount'];
+    chargeAmount = json['charged_amount'];
     appFee = json['app_fee'];
     merchantFee = json['merchant_fee'];
+    processorResponse = json['processor_response'];
     authModel = json['auth_model'];
     currency = json['currency'];
     ip = json['ip'];
@@ -64,13 +69,13 @@ class Data {
     fraudStatus = json['fraud_status'];
     createdAt = json['created_at'];
     accountId = json['account_id'];
-    customer = Customer.fromJson(json['customer']);
-    account = Account.fromJson(json['account']);
-    meta = Meta.fromJson(json['meta']);
+    // customer = Customer.fromJson(json['customer']);
+    // account = Account.fromJson(json['account']);
+    // meta = Meta.fromJson(json['meta']);
   }
   @override
   String toString() {
-    return 'Data{ tx_ref: $txRef, flw_ref: $flwRef, device_fingerprint: $deviceFingerPrint, amount: $amount, app_fee: $appFee, merchant_fee: $merchantFee, auth_model: $authModel, currency: $currency, ip: $ip, narration: $narration, status: $status, auth_url: $authUrl, payment_type: $paymentType, fraud_status: $fraudStatus, created_at: $createdAt, account_id: $accountId, customer: $customer, account: $account, meta: $meta}';
+    return 'Data{ tx_ref: $txRef, flw_ref: $flwRef, device_fingerprint: $deviceFingerPrint, amount: $amount, app_fee: $appFee, merchant_fee: $merchantFee, auth_model: $authModel, currency: $currency, ip: $ip, narration: $narration, status: $status, auth_url: $authUrl, payment_type: $paymentType, fraud_status: $fraudStatus, created_at: $createdAt, account_id: $accountId, charged_amount: $chargeAmount, processor_response: $processorResponse}';
   }
 }
 

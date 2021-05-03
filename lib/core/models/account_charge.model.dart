@@ -9,7 +9,7 @@ class AccountCharge {
   final String currency;
   final String paymentType;
   final String country;
-  final int amount;
+  final String amount;
   final String fullname;
   final String lastName;
   final String email;

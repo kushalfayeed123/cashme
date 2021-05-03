@@ -3,7 +3,8 @@ import 'dart:io';
 
 import 'package:cash_me/core/constants.dart';
 import 'package:cash_me/core/models/account_charge.model.dart';
-import 'package:cash_me/core/models/transaction.model.dart';
+import 'package:cash_me/core/models/charge_response.model.dart';
+import 'package:cash_me/core/models/charge_verification_response.dart';
 import 'package:cash_me/core/models/transfer.model.dart';
 import 'package:cash_me/core/models/wallet.model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -49,16 +50,41 @@ class WalletService {
     return jsonDecode(res.body);
   }
 
+  Future verifyCharge(String id) async {
+    var url = 'https://api.flutterwave.com/v3/transactions/$id/verify';
+    try {
+      var res = await http.get(url, headers: headers);
+      print(res.body);
+      return ChargeVerificationResponse.fromJson(jsonDecode(res.body), false);
+    } catch (e) {
+      print(e);
+      throw HttpException(e);
+    }
+  }
+
+  Future validateCharge(payload) async {
+    try {
+      var res = await http.post(VALIDATE_CHARGE_ENDPOINT,
+          body: json.encode(payload), headers: headers);
+      print(res.body);
+      return ChargeResponse.fromJson(jsonDecode(res.body), false);
+    } catch (e) {
+      print(e);
+
+      throw HttpException(e);
+    }
+  }
+
   Future loadWallet(String url, body) async {
     try {
       var res = await http.post(url, body: json.encode(body), headers: headers);
-
       if (res.statusCode == 200 ||
           res.statusCode == 201 ||
           res.statusCode == 204 ||
           res.statusCode == 206) {
+        return ChargeResponse.fromJson(jsonDecode(res.body), false);
       } else {
-        // print('Error: ${res.statusCode}  response : ${res.body}');
+        print('Error: ${res.statusCode}  response : ${res.body}');
         return null;
       }
     } catch (e) {

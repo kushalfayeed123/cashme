@@ -1,5 +1,6 @@
 import 'package:cash_me/core/models/bank.model.dart';
 import 'package:cash_me/core/models/charge_response.model.dart';
+import 'package:cash_me/core/models/charge_verification_response.dart';
 import 'package:cash_me/core/models/transfer.model.dart';
 import 'package:cash_me/core/models/wallet.model.dart';
 import 'package:cash_me/core/services/wallet.service.dart';
@@ -14,6 +15,10 @@ class WalletProvider with ChangeNotifier {
   WalletModel get senderWallet => _senderWallet;
   List<BankModel> _banks;
   List<BankModel> get banks => _banks;
+
+  ChargeVerificationResponse _validateRes;
+  ChargeVerificationResponse get validateRes => _validateRes;
+
   ChargeResponse _res;
   ChargeResponse get res => _res;
 
@@ -32,6 +37,13 @@ class WalletProvider with ChangeNotifier {
   // Future getUserWallet(String userId) async {
   //   await _walletService.getWallet(userId);
   // }
+  //
+  Future verifyCharge(String id) async {
+    _walletService.verifyCharge(id).asStream().listen((res) {
+      _validateRes = res;
+      notifyListeners();
+    });
+  }
 
   Future setUserWallet(String userId) async {
     _walletService.getWallet(userId).asBroadcastStream().listen((wallet) {

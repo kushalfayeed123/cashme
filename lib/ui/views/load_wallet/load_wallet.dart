@@ -40,7 +40,9 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
     with SingleTickerProviderStateMixin {
   // BuildContext context;
   BuildContext bcontext;
-
+  bool showOtpField = false;
+  String flwRef;
+  TextEditingController _otpController = new TextEditingController();
   TextEditingController _accountController = new TextEditingController();
   TextEditingController _dobController = new TextEditingController();
   TextEditingController _bvnController = new TextEditingController();
@@ -50,7 +52,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
   UserModel userPayload;
   WalletModel walletPayload;
   TransactionModel transactionPayload;
-  var banks = new List<BankModel>();
+  var banks = <BankModel>[];
   var selectedBank;
   var _requeryUrl, _queryCount = 0, _reQueryTxCount = 0, _waitDuration = 0;
   bool isFirst;
@@ -59,9 +61,9 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
   void initState() {
     super.initState();
     getBanks();
-    var _transactions = Provider.of<TransactionProvider>(context, listen: false)
-        .userTransactions;
-    if (_transactions == null || _transactions.length < 1) {
+    final wallet =
+        Provider.of<WalletProvider>(context, listen: false).userWallet;
+    if (wallet.accountNumber.isEmpty || wallet.accountbank.isEmpty) {
       isFirst = true;
     } else {
       isFirst = false;
@@ -115,46 +117,6 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
     // lastName = accountName.split()[1];
   }
 
-  void _requeryTx(String flwRef) async {
-    if (_reQueryTxCount < MAX_REQUERY_COUNT) {
-      _reQueryTxCount++;
-      final requeryRequestBody = {"PBFPubKey": PUBLIC_KEY, "flw_ref": flwRef};
-
-      var response = await WalletService()
-          .loadWallet(REQUERY_ENDPOINT, requeryRequestBody);
-      //  await Provider.of<WalletProvider>(context, listen: false)
-      //     .loadWallet(REQUERY_ENDPOINT, requeryRequestBody);
-
-      if (response == null) {
-        closeDialog();
-        showErrorMessageDialog(
-            'Payment processing failed. Please try again later.');
-      } else {
-        var requeryResponse = RequeryResponse.fromJson(response);
-        if (requeryResponse.data == null) {
-        } else if (requeryResponse.data.chargeResponseCode == '02' &&
-            requeryResponse.data.status != 'failed') {
-          _onPollingComplete(flwRef);
-        } else if (requeryResponse.data.chargeResponseCode == '00') {
-          _onPaymentSuccessful();
-        } else {
-          showErrorMessageDialog('payment failed');
-          closeDialog();
-
-          // _showToast(
-          //     context, 'Payment processing failed. Please try again later.');
-          // _dismissMobileMoneyDialog(false);
-        }
-      }
-    } else if (_reQueryTxCount == MAX_REQUERY_COUNT) {
-      showErrorMessageDialog('Request Timed out');
-      print('timeout');
-      // _showToast(
-      //     context, 'Payment processing timeout. Please try again later.');
-      // _dismissMobileMoneyDialog(false);
-    }
-  }
-
   logout() async {
     final _authProvider =
         Provider.of<AuthenticationProvider>(context, listen: false);
@@ -182,108 +144,55 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
     }
   }
 
-  _continueProcessingAfterCharge(
-      Map<String, dynamic> response, bool firstQuery) {
-    print('charge continued');
-    var chargeResponse = ChargeResponse.fromJson(response, firstQuery);
-    if (chargeResponse.data != null && chargeResponse.data.flwRef != null) {
-      _requeryTx(chargeResponse.data.flwRef);
-    } else {
-      if (chargeResponse.status == 'success' &&
-          chargeResponse.data.pingUrl != null) {
-        _waitDuration = chargeResponse.data.wait;
-        _requeryUrl = '${chargeResponse.data.pingUrl}?use_polling=1';
-        Timer(Duration(milliseconds: chargeResponse.data.wait), () {
-          _chargeAgainAfterDuration(chargeResponse.data.pingUrl);
-        });
-      } else if (chargeResponse.status == 'success' &&
-          chargeResponse.data.status == 'pending') {
-        Timer(Duration(milliseconds: _waitDuration), () {
-          _chargeAgainAfterDuration(_requeryUrl);
-        });
-      } else if (chargeResponse.status == 'success' &&
-          chargeResponse.data.status == 'completed' &&
-          chargeResponse.data.flwRef != null) {
-        _requeryTx(chargeResponse.data.flwRef);
-      } else {
-        showErrorMessageDialog('Payment failed');
-        closeDialog();
-        print('payment failed');
-        // _showToast(
-        //     context, 'Payment processing failed. Please try again later.');
-        // _dismissMobileMoneyDialog(false);
-      }
-    }
-  }
+  void postPaymentAction(int amount) async {
+    // openLoadingDialog();
 
-  void _chargeAgainAfterDuration(String url) async {
-    _queryCount++;
-    print('Charging Again after $_queryCount Charge calls');
-    var response = await WalletService().getResponseFromEndpoint(url);
-
-    if (response == null) {
-      // _showToast(
-      //     context, 'Payment processing failed. Please try again later.');
-      // _dismissMobileMoneyDialog(false);
-    } else {
-      _continueProcessingAfterCharge(response, false);
-    }
-  }
-
-  void _onPollingComplete(String flwRef) {
-    Timer(Duration(milliseconds: 5000), () {
-      _requeryTx(flwRef);
-    });
-  }
-
-  void _onPaymentSuccessful() async {
-    postPaymentAction();
-  }
-
-  void postPaymentAction() async {
-    openLoadingDialog();
-
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.none) {
-      closeDialog();
-      showSuccessMessageDialog(
-          'Sorry, you can not load your wallet at the moment because you may not be connected to the internet. Please connect and try again.');
-      return;
-    }
     try {
       var _user = Provider.of<UserProvider>(context, listen: false).currentUser;
       var _wallet =
           Provider.of<WalletProvider>(context, listen: false).userWallet;
 
-      var newValue = _wallet.legderBalance + int.parse(_amountController.text);
+      userPayload = UserModel(
+          pin: _pinController.text,
+          fullName: '',
+          phoneNumber: _phoneController.text,
+          modifiedOn: DateTime.now(),
+          modifiedBy: _user.cashMeName);
 
-      if (isFirst) {
-        await Provider.of<UserProvider>(context, listen: false)
-            .updateUserData(_user.id, userPayload);
-        await Provider.of<WalletProvider>(context, listen: false)
-            .initialUpdate(_wallet.id, walletPayload);
-        await Provider.of<TransactionProvider>(context, listen: false)
-            .addTransaction(transactionPayload);
-      } else {
-        walletPayload =
-            WalletModel(legderBalance: newValue, availableBalance: newValue);
-        await Provider.of<WalletProvider>(context, listen: false)
-            .updateWallet(_wallet.id, walletPayload);
-        await Provider.of<TransactionProvider>(context, listen: false)
-            .addTransaction(transactionPayload);
-        closeDialog();
+      // walletPayload = WalletModel(
+      //     accountNumber: _accountController.text,
+      //     accountbank: selectedBank,
+      //     bvn: _bvnController.text,
+      //     availableBalance: int.parse(_amountController.text),
+      //     legderBalance: int.parse(_amountController.text));
 
-        showSuccessMessageDialog(
-            'You have successfully loaded your wallet with the sum of ₦${NumberFormat('#,###,000').format(int.parse(_amountController.text))}');
-        Future.delayed(Duration(microseconds: 300));
-        // closeDialog();
-        // Future.delayed(Duration(microseconds: 300));
+      transactionPayload = TransactionModel(
+        userId: _user.id,
+        type: CREDIT,
+        status: 'Completed',
+        value: _amountController.text,
+        senderName: _user.cashMeName,
+        transactionMode: WALLET_LOAD,
+        modifiedOn: DateTime.now(),
+        createdOn: DateTime.now(),
+      );
 
-      }
+      var newValue = _wallet.legderBalance + amount;
+
+      walletPayload =
+          WalletModel(legderBalance: newValue, availableBalance: newValue);
+      await Provider.of<WalletProvider>(context, listen: false)
+          .updateWallet(_wallet.id, walletPayload);
+      await Provider.of<TransactionProvider>(context, listen: false)
+          .addTransaction(transactionPayload);
+      closeDialog();
+
+      showSuccessMessageDialog(
+          'You have successfully loaded your wallet with the sum of ₦${NumberFormat('#,###,000').format(int.parse(_amountController.text))}');
+      Future.delayed(Duration(microseconds: 300));
     } catch (e) {
       closeDialog();
       throw Exception(e);
-      // }
     }
   }
 
@@ -384,95 +293,87 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
 
   void initiatePayment() async {
     // verifyAccountNumber();
+    openLoadingDialog();
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.none) {
+      closeDialog();
+      showSuccessMessageDialog(
+          'Sorry, you can not load your wallet at the moment because you may not be connected to the internet. Please connect and try again.');
+      return;
+    }
     final _user = Provider.of<UserProvider>(context, listen: false).currentUser;
-
-    userPayload = UserModel(
-        pin: _pinController.text,
-        fullName: '',
-        phoneNumber: _phoneController.text,
-        modifiedOn: DateTime.now(),
-        modifiedBy: _user.cashMeName);
-
-    walletPayload = WalletModel(
-        accountNumber: _accountController.text,
-        accountbank: selectedBank,
-        bvn: _bvnController.text,
-        availableBalance: int.parse(_amountController.text),
-        legderBalance: int.parse(_amountController.text));
-
-    transactionPayload = TransactionModel(
-      userId: _user.id,
-      type: CREDIT,
-      status: 'Completed',
-      value: _amountController.text,
-      senderName: _user.cashMeName,
-      transactionMode: WALLET_LOAD,
-      modifiedOn: DateTime.now(),
-      createdOn: DateTime.now(),
-    );
+    final _userWallet =
+        Provider.of<WalletProvider>(context, listen: false).userWallet;
 
     var payLoad = {
-      // "PBFPubKey": PUBLIC_KEY.toString().trim(),
-      "account_bank": selectedBank.toString().trim(),
-      "account_number": _accountController.text.toString().trim(),
-      "amount": int.parse(_amountController.text),
+      "account_bank": _userWallet.accountbank.isEmpty
+          ? selectedBank.toString().trim()
+          : _userWallet.accountbank.trim(),
+      "account_number": _userWallet.accountNumber.isEmpty
+          ? _accountController.text.trim()
+          : _userWallet.accountNumber.trim(),
+      "amount": _amountController.text.trim(),
       "email": _user.email.toString().trim(),
+      // "email": 'segunajanaku617@gmail.com',
       "tx_ref": 'MC-' + DateTime.now().toIso8601String(),
-      "firstname": 'Forest '.toString().trim(),
-      "lastname": ' Green'.toString().trim(),
-      // "phone_number": _phoneController.text.toString().trim(),
-
       "currency": CURRENCY.toString().trim(),
-      // "payment_type": 'debit_ng_account'.toString().trim(),
-      // "country": COUNTRY.toString().trim(),
-      // "lastname": 'Green'.toString().trim(),
+      "fullname": 'Forest',
+      "firstname": 'Forest',
+      "lastname": 'Green',
+      "phone_number": _user.phoneNumber.trim(),
     };
 
-    AccountCharge chargePayload = AccountCharge(
-      // pbfPubKey: PUBLIC_KEY,
-      accountbank: selectedBank,
-      accountnumber: _accountController.text,
-      currency: CURRENCY,
-      // paymentType: PAYMENTTYPE,
-      // country: COUNTRY,
-      amount: int.parse(_amountController.text),
-      email: _user.email,
-      // passcode: _dobController.text,
-      // bvn: _bvnController.text,
-      phonenumber: _phoneController.text,
-      fullname: 'Forest',
-      // lastName: 'Green',
-      // ip: '',
-      txRef: "MC-" + DateTime.now().toString(),
-      // deviceFingerprint: '',
-    );
     try {
-      postPaymentAction();
+      await Provider.of<WalletProvider>(context, listen: false)
+          .loadWallet('$SANDBOX_CHARGE_ENDPOINT', payLoad);
 
-      // var requestBody = encryptJsonPayload(ENCRYPTION_KEY, PUBLIC_KEY, payLoad);
-      // print(payLoad);
+      final response = Provider.of<WalletProvider>(context, listen: false).res;
 
-      // // await Provider.of<WalletProvider>(context, listen: false)
-      // //     .loadWallet('$SANDBOX_CHARGE_ENDPOINT?use_polling=1', requestBody);
-
-      // var response = await locator<WalletService>()
-      //     .loadWallet('$SANDBOX_CHARGE_ENDPOINT', payLoad);
-
-      // if (response == null) {
-      //   closeDialog();
-
-      //   showErrorMessageDialog(
-      //       'Sorry, we could not load your wallet. Please try again later.');
-      // } else {
-      //   print(response);
-      //   _continueProcessingAfterCharge(response, true);
-      // }
+      if (response == null) {
+        closeDialog();
+        showErrorMessageDialog(
+            'Sorry, we could not load your wallet. Please try again later.');
+      } else {
+        setState(() {
+          showOtpField = true;
+          flwRef = response.data.flwRef;
+        });
+        if (response.data.status == 'successful') {
+          postPaymentAction(response.data.amount);
+        } else {
+          print(response.data.status);
+        }
+      }
     } catch (e) {
       closeDialog();
-      print(e);
-      // showErrorMessageDialog(e.message);
+      showErrorMessageDialog(e.message);
     }
   }
+
+  verifyCharge(String id) async {
+    await Provider.of<WalletProvider>(context, listen: false).verifyCharge(id);
+    var res = Provider.of<WalletProvider>(context, listen: false).validateRes;
+    // print(res.data);
+  }
+
+  // validateCharge() async {
+  //   final payload = {
+  //     "otp": '12345',
+  //     "flw_ref": flwRef.trim(),
+  //     "type": 'account',
+  //     "pubKey": PUBLIC_KEY.trim()
+  //   };
+  //   try {
+  //     await Provider.of<WalletProvider>(context, listen: false)
+  //         .validateCharge(payload);
+  //     final validateRes =
+  //         Provider.of<WalletProvider>(context, listen: false).validateRes;
+  //     print(validateRes);
+  //   } catch (e) {
+  //     closeDialog();
+  //     print(e);
+  //   }
+  // }
 
   encryptJsonPayload(String encryptionKey, String publicKey, payload) {
     String encoded = jsonEncode(payload);
@@ -497,38 +398,9 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
     return i;
   }
 
-  // _handlePaymentInitialization() async {
-  //   final flutterwave = Flutterwave.forUIPayment(
-  //     amount: this.amountController.text.toString().trim(),
-  //     currency: this.currencyController.text,
-  //     context: this.context,
-  //     publicKey: this.publicKeyController.text.trim(),
-  //     encryptionKey: this.encryptionKeyController.text.trim(),
-  //     email: this.emailController.text.trim(),
-  //     fullName: "Test User",
-  //     txRef: DateTime.now().toIso8601String(),
-  //     narration: "Example Project",
-  //     isDebugMode: this.isDebug,
-  //     phoneNumber: this.phoneNumberController.text.trim(),
-  //     acceptAccountPayment: true,
-  //     acceptCardPayment: true,
-  //     acceptUSSDPayment: true
-  //   );
-  //   final response = await flutterwave.initializeForUiPayments();
-  //   if (response != null) {
-  //     this.showLoading(response.data.status);
-  //   } else {
-  //     this.showLoading("No Response!");
-  //   }
-  // }
-
   int _selectedIndex = 0;
   DateTime selectedDate = DateTime.now();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-
-  // home() {
-  //   Navigator.of(context).pushNamed(HomeScreen.routeName);
-  // }
 
   _selectDate(BuildContext context) async {
     final DateTime picked = await showDatePicker(
@@ -594,7 +466,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
         decoration: InputDecoration(
           contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
           suffixIcon: Icon(Icons.lock),
-          hintText: isFirst ? "Create your pin" : "Enter your pin",
+          hintText: "Enter your pin",
           border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(32.0),
               borderSide: BorderSide(color: Color(0xff16c79a))),
@@ -982,16 +854,16 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
                         crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
-                          isFirst ? SizedBox(height: 15.0) : Container(),
-                          isFirst ? bankField : Container(),
-                          isFirst ? SizedBox(height: 15.0) : Container(),
-                          isFirst ? accNumberField : Container(),
-                          isFirst ? SizedBox(height: 15.0) : Container(),
-                          isFirst ? phoneField : Container(),
-                          isFirst ? SizedBox(height: 15.0) : Container(),
-                          isFirst ? bvnField : Container(),
-                          isFirst ? SizedBox(height: 15.0) : Container(),
-                          isFirst ? dobField : Container(),
+                          SizedBox(height: 15.0),
+                          bankField,
+                          SizedBox(height: 15.0),
+                          accNumberField,
+                          // isFirst ? SizedBox(height: 15.0) : Container(),
+                          // isFirst ? phoneField : Container(),
+                          // isFirst ? SizedBox(height: 15.0) : Container(),
+                          // isFirst ? bvnField : Container(),
+                          // isFirst ? SizedBox(height: 15.0) : Container(),
+                          // isFirst ? dobField : Container(),
                           SizedBox(height: 15.0),
                           amountField,
                           SizedBox(height: 15.0),
