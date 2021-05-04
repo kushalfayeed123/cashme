@@ -306,20 +306,16 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
         Provider.of<WalletProvider>(context, listen: false).userWallet;
 
     var payLoad = {
-      "account_bank": _userWallet.accountbank.isEmpty
-          ? selectedBank.toString().trim()
-          : _userWallet.accountbank.trim(),
-      "account_number": _userWallet.accountNumber.isEmpty
-          ? _accountController.text.trim()
-          : _userWallet.accountNumber.trim(),
+      "account_bank": selectedBank.toString().trim(),
+      "account_number": _accountController.text.trim(),
       "amount": _amountController.text.trim(),
       "email": _user.email.toString().trim(),
       // "email": 'segunajanaku617@gmail.com',
       "tx_ref": 'MC-' + DateTime.now().toIso8601String(),
       "currency": CURRENCY.toString().trim(),
-      "fullname": 'Forest',
-      "firstname": 'Forest',
-      "lastname": 'Green',
+      // "fullname": 'Forest',
+      "firstname": _user.cashMeName,
+      "lastname": _user.cashMeName,
       "phone_number": _user.phoneNumber.trim(),
     };
 
@@ -328,25 +324,16 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
           .loadWallet('$SANDBOX_CHARGE_ENDPOINT', payLoad);
 
       final response = Provider.of<WalletProvider>(context, listen: false).res;
+      print(response.message);
 
-      if (response == null) {
-        closeDialog();
-        showErrorMessageDialog(
-            'Sorry, we could not load your wallet. Please try again later.');
+      if (response.status != 'error') {
+        postPaymentAction(response.data.amount);
       } else {
-        setState(() {
-          showOtpField = true;
-          flwRef = response.data.flwRef;
-        });
-        if (response.data.status == 'successful') {
-          postPaymentAction(response.data.amount);
-        } else {
-          print(response.data.status);
-        }
+        closeDialog();
+        showErrorMessageDialog(response.message);
       }
     } catch (e) {
-      closeDialog();
-      showErrorMessageDialog(e.message);
+      print(e);
     }
   }
 

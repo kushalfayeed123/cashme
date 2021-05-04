@@ -54,7 +54,6 @@ class WalletService {
     var url = 'https://api.flutterwave.com/v3/transactions/$id/verify';
     try {
       var res = await http.get(url, headers: headers);
-      print(res.body);
       return ChargeVerificationResponse.fromJson(jsonDecode(res.body), false);
     } catch (e) {
       print(e);
@@ -84,8 +83,8 @@ class WalletService {
           res.statusCode == 206) {
         return ChargeResponse.fromJson(jsonDecode(res.body), false);
       } else {
-        print('Error: ${res.statusCode}  response : ${res.body}');
-        return null;
+        // print('Error: ${res.statusCode}  response : ${res.body}');
+        return ChargeResponse.fromJson(jsonDecode(res.body), false);
       }
     } catch (e) {
       print('Exception $e');
