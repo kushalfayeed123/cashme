@@ -30,7 +30,7 @@ class ThemeProvider with ChangeNotifier {
         : theme == CmThemeMode.dark;
 
     // AppColors.darkMode = _isDarkMode;
-    Settings.themeMode = theme;
+    // Settings.themeMode = theme;
     notifyListeners();
   }
 
@@ -43,7 +43,7 @@ class ThemeProvider with ChangeNotifier {
     //     :
     // _currentTheme == CmThemeMode.light;
 
-    Settings.themeMode = _currentTheme;
+    // Settings.themeMode = _currentTheme;
     notifyListeners();
   }
 }

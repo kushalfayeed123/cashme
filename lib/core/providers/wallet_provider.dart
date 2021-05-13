@@ -1,7 +1,8 @@
 import 'package:cash_me/core/models/bank.model.dart';
 import 'package:cash_me/core/models/charge_response.model.dart';
-import 'package:cash_me/core/models/charge_verification_response.dart';
+import 'package:cash_me/core/models/validate_charge_response.model.dart';
 import 'package:cash_me/core/models/transfer.model.dart';
+import 'package:cash_me/core/models/verify_charge_response.model.dart';
 import 'package:cash_me/core/models/wallet.model.dart';
 import 'package:cash_me/core/services/wallet.service.dart';
 import 'package:cash_me/locator.dart';
@@ -16,8 +17,11 @@ class WalletProvider with ChangeNotifier {
   List<BankModel> _banks;
   List<BankModel> get banks => _banks;
 
-  ChargeVerificationResponse _validateRes;
-  ChargeVerificationResponse get validateRes => _validateRes;
+  ValidateChargeResponse _validateRes;
+  ValidateChargeResponse get validateRes => _validateRes;
+
+  VerifyChargeResponse _verifyRes;
+  VerifyChargeResponse get verifyRes => _verifyRes;
 
   ChargeResponse _res;
   ChargeResponse get res => _res;
@@ -38,9 +42,13 @@ class WalletProvider with ChangeNotifier {
   //   await _walletService.getWallet(userId);
   // }
   //
-  Future verifyCharge(String id) async {
+  Future validateCharge(payload) async {
+    _validateRes = await _walletService.validateCharge(payload);
+  }
+
+  Future verifyCharge(int id) async {
     _walletService.verifyCharge(id).asStream().listen((res) {
-      _validateRes = res;
+      _verifyRes = res;
       notifyListeners();
     });
   }

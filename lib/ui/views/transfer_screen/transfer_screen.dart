@@ -7,11 +7,13 @@ import 'package:cash_me/core/models/transaction.model.dart';
 import 'package:cash_me/core/models/transfer.model.dart';
 import 'package:cash_me/core/models/user.model.dart';
 import 'package:cash_me/core/models/wallet.model.dart';
+import 'package:cash_me/core/providers/authentication_provider.dart';
 import 'package:cash_me/core/providers/transaction_provider.dart';
 import 'package:cash_me/core/providers/user_provider.dart';
 import 'package:cash_me/core/providers/wallet_provider.dart';
 import 'package:cash_me/ui/views/home/home_screen.dart';
 import 'package:cash_me/ui/views/load_wallet/load_wallet.dart';
+import 'package:cash_me/ui/views/login/login_screen.dart';
 import 'package:cash_me/ui/views/scan_screen/scan_screen.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
@@ -120,7 +122,7 @@ class _TransferScreenState extends State<TransferScreen> {
             child: Column(
               children: [
                 Text(
-                  'You are about to transfer the sum of ₦${NumberFormat('#,###,000').format(int.parse(qrdataFeed.text))}. Are you sure you want to continue?',
+                  'You are about to transfer the sum of ₦${NumberFormat('#,###,#00').format(int.parse(qrdataFeed.text))}. Are you sure you want to continue?',
                   style: TextStyle(
                       fontFamily: 'Montserrat',
                       fontSize: 18.0,
@@ -156,7 +158,9 @@ class _TransferScreenState extends State<TransferScreen> {
                                   receiverId: '',
                                   email: currentUser.email,
                                   transferValue: qrdataFeed.text,
-                                  walletId: _wallet.id);
+                                  walletId: _wallet.id,
+                                  id: '',
+                                  senderAvailableBalance: '');
                               qrData = qrdataFeed.text;
                               // valueGenerated = true;
                             });
@@ -288,7 +292,7 @@ class _TransferScreenState extends State<TransferScreen> {
     if (connectivityResult == ConnectivityResult.none) {
       closeDialog();
       await showSuccessMessageDialog(
-          'Your account has been credited with the sum of ₦${NumberFormat('#,###,000').format(int.parse(qrPayload.transferValue))}.');
+          'Your account has been credited with the sum of ₦${NumberFormat('#,###,#00').format(int.parse(qrPayload.transferValue))}.');
     }
     try {
       transactionPayload = TransactionModel(
@@ -299,10 +303,17 @@ class _TransferScreenState extends State<TransferScreen> {
           createdOn: DateTime.now(),
           modifiedOn: DateTime.now(),
           status: 'Completed',
-          userId: _user.id);
+          userId: _user.id,
+          id: '');
 
-      walletPayload =
-          WalletModel(legderBalance: newValue, availableBalance: newValue);
+      walletPayload = WalletModel(
+          legderBalance: newValue,
+          availableBalance: newValue,
+          accountbank: '',
+          accountNumber: '',
+          bvn: '',
+          id: '',
+          userId: '');
       await Provider.of<WalletProvider>(context, listen: false)
           .updateWallet(_wallet.id, walletPayload);
       await Provider.of<TransactionProvider>(context, listen: false)
@@ -310,11 +321,19 @@ class _TransferScreenState extends State<TransferScreen> {
       closeDialog();
 
       await showSuccessMessageDialog(
-          'Your account has been credited with the sum of ₦${NumberFormat('#,###,000').format(int.parse(qrPayload.transferValue))}.');
+          'Your account has been credited with the sum of ₦${NumberFormat('#,###,#00').format(int.parse(qrPayload.transferValue))}.');
     } catch (e) {
       closeDialog();
       throw Exception(e);
     }
+  }
+
+  void logout() async {
+    final _authProvider =
+        Provider.of<AuthenticationProvider>(context, listen: false);
+    _authProvider.signOut();
+    Navigator.of(context).pushNamedAndRemoveUntil(
+        LoginScreen.routeName, (Route<dynamic> route) => false);
   }
 
   Future<void> openScanner() async {
@@ -355,15 +374,14 @@ class _TransferScreenState extends State<TransferScreen> {
         width: MediaQuery.of(context).size.width,
         padding: EdgeInsets.only(left: 20, right: 20),
         decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey[400]),
+            border: Border.all(color: Color(0xFFBDBDBD)),
             borderRadius: BorderRadius.all(Radius.circular(30))),
         child: DropdownButtonHideUnderline(
           child: new DropdownButton<String>(
             hint: new Text('Select the user you want to transfer to'),
             value: selectedUser,
             isDense: false,
-            onChanged: (String value) {
-              // getSelectedBank(value);
+            onChanged: (value) {
               setState(() {
                 selectedUser = value;
               });
@@ -487,7 +505,7 @@ class _TransferScreenState extends State<TransferScreen> {
                                                       children: <TextSpan>[
                                                         TextSpan(
                                                             text:
-                                                                ' ₦${NumberFormat('#,###,000').format(int.parse(qrdataFeed.text))}',
+                                                                ' ₦${NumberFormat('#,###,#00').format(int.parse(qrdataFeed.text))}',
                                                             style: TextStyle(
                                                                 fontFamily:
                                                                     'Montserrat',
@@ -554,7 +572,17 @@ class _TransferScreenState extends State<TransferScreen> {
                                                                   .email,
                                                               transferValue:
                                                                   qrdataFeed
-                                                                      .text);
+                                                                      .text,
+                                                              createdOn:
+                                                                  DateTime
+                                                                      .now(),
+                                                              id: '',
+                                                              modifiedOn:
+                                                                  DateTime
+                                                                      .now(),
+                                                              senderAvailableBalance:
+                                                                  '',
+                                                              type: '');
 
                                                       // qrData = qrdataFeed.text;
                                                     });
@@ -574,7 +602,15 @@ class _TransferScreenState extends State<TransferScreen> {
                                                           email:
                                                               currentUser.email,
                                                           transferValue:
-                                                              qrdataFeed.text);
+                                                              qrdataFeed.text,
+                                                          createdOn:
+                                                              DateTime.now(),
+                                                          id: '',
+                                                          modifiedOn:
+                                                              DateTime.now(),
+                                                          senderAvailableBalance:
+                                                              '',
+                                                          type: '');
 
                                                   qrData = qrdataFeed.text;
                                                 });
@@ -759,7 +795,7 @@ class _TransferScreenState extends State<TransferScreen> {
           // initiatePayment();
         },
         child: Text(
-          "RECEIVE MONEY",
+          "TRANSFER MONEY",
           textAlign: TextAlign.center,
           style:
               style.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
@@ -824,7 +860,7 @@ class _TransferScreenState extends State<TransferScreen> {
               ),
               GestureDetector(
                 onTap: () {
-                  // logout();
+                  logout();
                 },
                 child: Row(
                   children: [
@@ -934,7 +970,7 @@ class _TransferScreenState extends State<TransferScreen> {
                             Padding(
                               padding: const EdgeInsets.only(left: 35.0),
                               child: Text(
-                                '₦${_wallet.availableBalance > 0 ? NumberFormat('#,###,000').format(_wallet?.availableBalance) : _wallet?.availableBalance}',
+                                '₦${_wallet.availableBalance > 0 ? NumberFormat('#,###,#00').format(_wallet.availableBalance) : _wallet.availableBalance}',
                                 style: TextStyle(
                                     fontFamily: 'Montserrat',
                                     fontSize: 33,
@@ -981,7 +1017,7 @@ class _TransferScreenState extends State<TransferScreen> {
                     Padding(
                       padding: const EdgeInsets.only(left: 10.0),
                       child: Text(
-                        '₦${_wallet.legderBalance > 0 ? NumberFormat('#,###,000').format(_wallet?.legderBalance) : _wallet?.legderBalance}',
+                        '₦${_wallet.legderBalance > 0 ? NumberFormat('#,###,#00').format(_wallet.legderBalance) : _wallet.legderBalance}',
                         style: TextStyle(
                             color: Colors.grey[200],
                             fontSize: 16,
@@ -1037,12 +1073,8 @@ class _TransferScreenState extends State<TransferScreen> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        selectedLabelStyle: TextStyle(color: Colors.blueGrey),
-        unselectedLabelStyle: TextStyle(color: Colors.blueGrey),
-        selectedFontSize: 1.0,
-        unselectedFontSize: 1.0,
+        selectedItemColor: Color(0xFF002147),
+        unselectedItemColor: Color(0xFF002147),
         iconSize: 30.0,
         backgroundColor: Color(0xFFf4f9f9),
         onTap: (index) {
@@ -1064,12 +1096,12 @@ class _TransferScreenState extends State<TransferScreen> {
         },
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(
-              Icons.home,
-              color: Color(0xFF002147),
-            ),
-            label: 'Home',
-          ),
+              icon: Icon(
+                Icons.home,
+                color: Color(0xFF002147),
+              ),
+              label: 'Home',
+              backgroundColor: Color(0xFF002147)),
           BottomNavigationBarItem(
             icon: Icon(
               Icons.send_to_mobile,

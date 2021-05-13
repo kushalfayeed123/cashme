@@ -17,7 +17,7 @@ class UserService {
       var users = await _userCollectionReference.get();
       return users.docs.map((e) => UserModel.fromData(e)).toList();
     } catch (e) {
-      throw HttpException(e);
+      throw HttpException(e.toString());
     }
   }
 
@@ -33,7 +33,8 @@ class UserService {
         modifiedBy: cashMeName,
         modifiedOn: DateTime.now(),
         keyReference: uid,
-        phoneNumber: null);
+        phoneNumber: '',
+        id: uid);
     final userId = Uuid().v1();
     try {
       await _userCollectionReference.doc(userId).set(
@@ -43,12 +44,13 @@ class UserService {
           availableBalance: 0,
           legderBalance: 0,
           userId: userId,
-          accountbank: null,
-          accountNumber: null,
-          bvn: null);
+          accountbank: '',
+          accountNumber: '',
+          bvn: '',
+          id: '');
       await locator<WalletService>().addWallet(userId, walletData);
     } catch (e) {
-      throw HttpException(e.message);
+      throw HttpException(e.toString());
     }
   }
 
@@ -60,7 +62,7 @@ class UserService {
           .get();
       return UserModel.fromData(userRes.docs[0]);
     } catch (e) {
-      throw HttpException(e);
+      throw HttpException(e.toString());
     }
   }
 
@@ -72,7 +74,7 @@ class UserService {
           .get();
       return UserModel.fromData(userRes.docs[0]);
     } catch (e) {
-      throw HttpException(e);
+      throw HttpException(e.toString());
     }
   }
 
@@ -86,7 +88,7 @@ class UserService {
         'modifiedBy': payload.modifiedBy
       });
     } catch (e) {
-      throw HttpException(e);
+      throw HttpException(e.toString());
     }
   }
 }

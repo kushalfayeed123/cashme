@@ -15,7 +15,7 @@ class TransactionService {
             transactData.toJson(),
           );
     } catch (e) {
-      throw HttpException(e.message);
+      throw HttpException(e.toString());
     }
   }
 
@@ -28,7 +28,7 @@ class TransactionService {
           .asyncMap((doc) =>
               doc.docs.map((e) => TransactionModel.fromData(e)).toList());
     } catch (e) {
-      throw HttpException(e);
+      throw HttpException(e.toString());
     }
   }
 

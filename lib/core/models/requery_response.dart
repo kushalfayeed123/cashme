@@ -3,9 +3,6 @@ class RequeryResponse {
   Data data;
 
   RequeryResponse.fromJson(Map<String, dynamic> json) {
-    if (json == null) {
-      return;
-    }
     status = json['status'];
     data = Data.fromJson(json['data']);
   }
@@ -24,18 +21,11 @@ class Data {
   String currency;
 
   Data.fromJson(Map<String, dynamic> json) {
-    if (json == null) {
-      return;
-    }
     status = json['status'];
     chargeResponseCode = json['chargeResponseCode'];
     flwRef = json['flwref'];
     amount = json['amount'];
     currency = json['currency'];
-
-    if (chargeResponseCode == null) {
-      chargeResponseCode = json['chargecode'];
-    }
   }
 
   @override

@@ -7,11 +7,13 @@ import 'package:cash_me/core/models/transaction.model.dart';
 import 'package:cash_me/core/models/transfer.model.dart';
 import 'package:cash_me/core/models/user.model.dart';
 import 'package:cash_me/core/models/wallet.model.dart';
+import 'package:cash_me/core/providers/authentication_provider.dart';
 import 'package:cash_me/core/providers/transaction_provider.dart';
 import 'package:cash_me/core/providers/user_provider.dart';
 import 'package:cash_me/core/providers/wallet_provider.dart';
 import 'package:cash_me/ui/views/home/home_screen.dart';
 import 'package:cash_me/ui/views/load_wallet/load_wallet.dart';
+import 'package:cash_me/ui/views/login/login_screen.dart';
 import 'package:cash_me/ui/views/transfer_screen/transfer_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -65,6 +67,14 @@ class _ScanScreenState extends State<ScanScreen> {
     } catch (e) {
       print(e);
     }
+  }
+
+  void logout() async {
+    final _authProvider =
+        Provider.of<AuthenticationProvider>(context, listen: false);
+    _authProvider.signOut();
+    Navigator.of(context).pushNamedAndRemoveUntil(
+        LoginScreen.routeName, (Route<dynamic> route) => false);
   }
 
   showSuccessMessageDialog(message) {
@@ -147,6 +157,25 @@ class _ScanScreenState extends State<ScanScreen> {
     AwesomeDialog(context: context).dissmiss();
   }
 
+  showErrorMessageDialog(message) {
+    AwesomeDialog(
+        context: context,
+        animType: AnimType.BOTTOMSLIDE,
+        padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 30.0),
+        showCloseIcon: true,
+        customHeader: null,
+        dialogType: DialogType.NO_HEADER,
+        dismissOnTouchOutside: false,
+        body: Container(
+          padding: EdgeInsets.all(20),
+          child: Text(
+            message,
+            style: TextStyle(
+                fontFamily: 'San Fransisco', fontSize: 14, color: Colors.red),
+          ),
+        )).show();
+  }
+
   senderPayment() async {
     // var message =
     //     'Qr transfer was succe Your account has been credited with the sum of ₦${NumberFormat('#,###,000').format(int.parse(senderPayload.transferValue))}.';
@@ -172,7 +201,12 @@ class _ScanScreenState extends State<ScanScreen> {
           senderId: currentUser.id,
           receiverId: qrPayload.receiverId,
           email: qrPayload.email,
-          transferValue: qrPayload.transferValue);
+          transferValue: qrPayload.transferValue,
+          createdOn: DateTime.now(),
+          id: '',
+          modifiedOn: DateTime.now(),
+          senderAvailableBalance: '',
+          type: '');
     });
 
     transferPayload = TransferModel(
@@ -183,29 +217,44 @@ class _ScanScreenState extends State<ScanScreen> {
         receiverId: senderPayload.receiverId,
         email: currentUser.email,
         transferValue: senderPayload.transferValue,
-        walletId: _wallet.id);
+        walletId: _wallet.id,
+        id: '',
+        senderAvailableBalance: '');
     try {
       var _wallet =
           Provider.of<WalletProvider>(context, listen: false).userWallet;
-      var newValue =
-          _wallet.availableBalance - int.parse(transferPayload.transferValue);
+      if (int.parse(transferPayload.transferValue) > _wallet.availableBalance) {
+        closeDialog();
+        showErrorMessageDialog(
+            'You do not have sufficient balance to complete this transaction.');
+      } else {
+        var newValue =
+            _wallet.availableBalance - int.parse(transferPayload.transferValue);
 
-      transactionPayload = TransactionModel(
-          type: DEBIT,
-          value: transferPayload.transferValue.toString(),
-          senderName: currentUser.cashMeName,
-          transactionMode: QR_TRANSFER,
-          createdOn: DateTime.now(),
-          modifiedOn: DateTime.now(),
-          status: 'Completed',
-          userId: currentUser.id);
+        transactionPayload = TransactionModel(
+            type: DEBIT,
+            value: transferPayload.transferValue.toString(),
+            senderName: currentUser.cashMeName,
+            transactionMode: QR_TRANSFER,
+            createdOn: DateTime.now(),
+            modifiedOn: DateTime.now(),
+            status: 'Completed',
+            userId: currentUser.id,
+            id: '');
 
-      walletPayload =
-          WalletModel(legderBalance: newValue, availableBalance: newValue);
-      await Provider.of<WalletProvider>(context, listen: false)
-          .updateWallet(_wallet.id, walletPayload);
-      await Provider.of<TransactionProvider>(context, listen: false)
-          .addTransaction(transactionPayload);
+        walletPayload = WalletModel(
+            legderBalance: newValue,
+            availableBalance: newValue,
+            accountbank: '',
+            accountNumber: '',
+            bvn: '',
+            id: '',
+            userId: '');
+        await Provider.of<WalletProvider>(context, listen: false)
+            .updateWallet(_wallet.id, walletPayload);
+        await Provider.of<TransactionProvider>(context, listen: false)
+            .addTransaction(transactionPayload);
+      }
 
       // closeDialog();
       // showSuccessMessageDialog('Qr transfer was successful.');
@@ -233,7 +282,12 @@ class _ScanScreenState extends State<ScanScreen> {
           senderId: currentUser.id,
           receiverId: qrPayload.receiverId,
           email: qrPayload.email,
-          transferValue: qrPayload.transferValue);
+          transferValue: qrPayload.transferValue,
+          createdOn: DateTime.now(),
+          id: '',
+          modifiedOn: DateTime.now(),
+          senderAvailableBalance: '',
+          type: '');
     });
 
     showModalBottomSheet(
@@ -327,7 +381,7 @@ class _ScanScreenState extends State<ScanScreen> {
                                         children: <TextSpan>[
                                           TextSpan(
                                               text:
-                                                  ' ₦${NumberFormat('#,###,000').format(int.parse(qrPayload.transferValue))}',
+                                                  ' ₦${NumberFormat('#,###,#00').format(int.parse(qrPayload.transferValue))}',
                                               style: TextStyle(
                                                   fontFamily: 'Montserrat',
                                                   fontSize: 18.0,
@@ -348,42 +402,47 @@ class _ScanScreenState extends State<ScanScreen> {
                                   height:
                                       MediaQuery.of(context).size.height * 0.02,
                                 ),
-                                showButton
-                                    ? Material(
-                                        elevation: 5.0,
-                                        borderRadius:
-                                            BorderRadius.circular(30.0),
-                                        color: Color(0xFF002147),
-                                        child: MaterialButton(
-                                          minWidth:
-                                              MediaQuery.of(context).size.width,
-                                          padding: EdgeInsets.fromLTRB(
-                                              20.0, 15.0, 20.0, 15.0),
-                                          onPressed: () async {
-                                            mystate(() {
-                                              senderPayload = TransferModel(
-                                                  walletId: _wallet.id,
-                                                  senderId: currentUser.id,
-                                                  receiverId:
-                                                      senderPayload.receiverId,
-                                                  email: currentUser.email,
-                                                  transferValue: senderPayload
-                                                      .transferValue);
-                                            });
-                                            Navigator.of(context)
-                                                .pushNamedAndRemoveUntil(
-                                                    HomeScreen.routeName,
-                                                    (Route<dynamic> route) =>
-                                                        false);
-                                          },
-                                          child: Text("DONE",
-                                              textAlign: TextAlign.center,
-                                              style: style.copyWith(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold)),
-                                        ),
-                                      )
-                                    : Container(),
+                                if (showButton)
+                                  Material(
+                                    elevation: 5.0,
+                                    borderRadius: BorderRadius.circular(30.0),
+                                    color: Color(0xFF002147),
+                                    child: MaterialButton(
+                                      minWidth:
+                                          MediaQuery.of(context).size.width,
+                                      padding: EdgeInsets.fromLTRB(
+                                          20.0, 15.0, 20.0, 15.0),
+                                      onPressed: () async {
+                                        mystate(() {
+                                          senderPayload = TransferModel(
+                                              walletId: _wallet.id,
+                                              senderId: currentUser.id,
+                                              receiverId:
+                                                  senderPayload.receiverId,
+                                              email: currentUser.email,
+                                              transferValue:
+                                                  senderPayload.transferValue,
+                                              createdOn: DateTime.now(),
+                                              id: '',
+                                              modifiedOn: DateTime.now(),
+                                              senderAvailableBalance: '',
+                                              type: '');
+                                        });
+                                        Navigator.of(context)
+                                            .pushNamedAndRemoveUntil(
+                                                HomeScreen.routeName,
+                                                (Route<dynamic> route) =>
+                                                    false);
+                                      },
+                                      child: Text("DONE",
+                                          textAlign: TextAlign.center,
+                                          style: style.copyWith(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold)),
+                                    ),
+                                  )
+                                else
+                                  Container(),
                               ],
                             ),
                           ),
@@ -411,7 +470,14 @@ class _ScanScreenState extends State<ScanScreen> {
       senderPayload = TransferModel(
           senderId: _user.id,
           receiverId: qrPayload.receiverId,
-          transferValue: qrPayload.transferValue);
+          transferValue: qrPayload.transferValue,
+          createdOn: DateTime.now(),
+          email: '',
+          id: '',
+          modifiedOn: DateTime.now(),
+          senderAvailableBalance: '',
+          type: '',
+          walletId: '');
     });
 
     if (qrPayload.senderId == '') {
@@ -517,7 +583,7 @@ class _ScanScreenState extends State<ScanScreen> {
                 ),
                 GestureDetector(
                   onTap: () {
-                    // logout();
+                    logout();
                   },
                   child: Row(
                     children: [
@@ -628,7 +694,7 @@ class _ScanScreenState extends State<ScanScreen> {
                               Padding(
                                 padding: const EdgeInsets.only(left: 35.0),
                                 child: Text(
-                                  '₦${_wallet.availableBalance > 0 ? NumberFormat('#,###,000').format(_wallet?.availableBalance) : _wallet?.availableBalance}',
+                                  '₦${_wallet.availableBalance > 0 ? NumberFormat('#,###,#00').format(_wallet.availableBalance) : _wallet.availableBalance}',
                                   style: TextStyle(
                                       fontFamily: 'Montserrat',
                                       fontSize: 33,
@@ -675,7 +741,7 @@ class _ScanScreenState extends State<ScanScreen> {
                       Padding(
                         padding: const EdgeInsets.only(left: 10.0),
                         child: Text(
-                          '₦${_wallet.legderBalance > 0 ? NumberFormat('#,###,000').format(_wallet?.legderBalance) : _wallet?.legderBalance}',
+                          '₦${_wallet.legderBalance > 0 ? NumberFormat('#,###,#00').format(_wallet.legderBalance) : _wallet.legderBalance}',
                           style: TextStyle(
                               color: Colors.grey[200],
                               fontSize: 16,
@@ -727,12 +793,8 @@ class _ScanScreenState extends State<ScanScreen> {
         ),
         bottomNavigationBar: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
-          showSelectedLabels: true,
-          showUnselectedLabels: true,
-          selectedLabelStyle: TextStyle(color: Colors.blueGrey),
-          unselectedLabelStyle: TextStyle(color: Colors.blueGrey),
-          selectedFontSize: 1.0,
-          unselectedFontSize: 1.0,
+          selectedItemColor: Color(0xFF002147),
+          unselectedItemColor: Color(0xFF002147),
           iconSize: 30.0,
           backgroundColor: Color(0xFFf4f9f9),
           onTap: (index) {

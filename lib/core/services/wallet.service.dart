@@ -4,8 +4,9 @@ import 'dart:io';
 import 'package:cash_me/core/constants.dart';
 import 'package:cash_me/core/models/account_charge.model.dart';
 import 'package:cash_me/core/models/charge_response.model.dart';
-import 'package:cash_me/core/models/charge_verification_response.dart';
+import 'package:cash_me/core/models/validate_charge_response.model.dart';
 import 'package:cash_me/core/models/transfer.model.dart';
+import 'package:cash_me/core/models/verify_charge_response.model.dart';
 import 'package:cash_me/core/models/wallet.model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
@@ -20,10 +21,9 @@ class WalletService {
   // var dio = Dio(BaseOptions(followRedirects: false));
 
   Map<String, String> get headers => {
-        "Authorization":
-            //     // "Bearer FLWSECK-2e71fb7432ce8d2baba8e2ddb320d6bf-X",
+        "Authorization": "Bearer FLWSECK-2e71fb7432ce8d2baba8e2ddb320d6bf-X",
 
-            "Bearer FLWSECK_TEST-88e6e737751438039c0a2875396babc1-X",
+        // "Bearer FLWSECK_TEST-88e6e737751438039c0a2875396babc1-X",
         "Content-Type": " application/json",
         "Accept": " application/json"
       };
@@ -50,14 +50,14 @@ class WalletService {
     return jsonDecode(res.body);
   }
 
-  Future verifyCharge(String id) async {
+  Future verifyCharge(int id) async {
     var url = 'https://api.flutterwave.com/v3/transactions/$id/verify';
     try {
       var res = await http.get(url, headers: headers);
-      return ChargeVerificationResponse.fromJson(jsonDecode(res.body), false);
+      return VerifyChargeResponse.fromJson(jsonDecode(res.body));
     } catch (e) {
       print(e);
-      throw HttpException(e);
+      throw HttpException(e.toString());
     }
   }
 
@@ -65,29 +65,19 @@ class WalletService {
     try {
       var res = await http.post(VALIDATE_CHARGE_ENDPOINT,
           body: json.encode(payload), headers: headers);
-      print(res.body);
-      return ChargeResponse.fromJson(jsonDecode(res.body), false);
+      return ValidateChargeResponse.fromJson(jsonDecode(res.body));
     } catch (e) {
       print(e);
 
-      throw HttpException(e);
+      throw HttpException(e.toString());
     }
   }
 
   Future loadWallet(String url, body) async {
     try {
       var res = await http.post(url, body: json.encode(body), headers: headers);
-      if (res.statusCode == 200 ||
-          res.statusCode == 201 ||
-          res.statusCode == 204 ||
-          res.statusCode == 206) {
-        return ChargeResponse.fromJson(jsonDecode(res.body), false);
-      } else {
-        // print('Error: ${res.statusCode}  response : ${res.body}');
-        return ChargeResponse.fromJson(jsonDecode(res.body), false);
-      }
+      return ChargeResponse.fromJson(jsonDecode(res.body));
     } catch (e) {
-      print('Exception $e');
       return null;
     }
   }
@@ -99,7 +89,7 @@ class WalletService {
             walletData.toJson(),
           );
     } catch (e) {
-      throw HttpException(e.message);
+      throw HttpException(e.toString());
     }
   }
 
@@ -110,7 +100,7 @@ class WalletService {
           .doc(transferId)
           .set(transferData.toJson());
     } catch (e) {
-      throw HttpException(e.message);
+      throw HttpException(e.toString());
     }
   }
 
@@ -122,7 +112,7 @@ class WalletService {
           .asyncMap((doc) =>
               doc.docs.map((e) => WalletModel.fromData(e)).toList()[0]);
     } catch (e) {
-      throw HttpException(e);
+      throw HttpException(e.toString());
     }
   }
 
@@ -137,7 +127,7 @@ class WalletService {
     } catch (e) {
       print(e);
 
-      throw HttpException(e);
+      throw HttpException(e.toString());
     }
   }
 
@@ -151,7 +141,7 @@ class WalletService {
         'LegderBalance': payload.legderBalance
       });
     } catch (e) {
-      throw HttpException(e);
+      throw HttpException(e.toString());
     }
   }
 
@@ -162,7 +152,7 @@ class WalletService {
         'LegderBalance': payload.legderBalance
       });
     } catch (e) {
-      throw HttpException(e);
+      throw HttpException(e.toString());
     }
   }
 }

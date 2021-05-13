@@ -27,6 +27,8 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:tripledes/tripledes.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+
 // import 'package:flutterwave/flutterwave.dart';
 
 class LoadWalletScreen extends StatefulWidget {
@@ -54,8 +56,9 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
   TransactionModel transactionPayload;
   var banks = <BankModel>[];
   var selectedBank;
-  var _requeryUrl, _queryCount = 0, _reQueryTxCount = 0, _waitDuration = 0;
   bool isFirst;
+  final _formKey = GlobalKey<FormState>();
+  String selectedDate;
 
   @override
   void initState() {
@@ -110,6 +113,22 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
       destbankcode: selectedBank,
       pbfPubKey: PUBLIC_KEY.toString(),
       recipientaccount: _accountController.text,
+      accountbank: '',
+      accountnumber: '',
+      amount: '',
+      bvn: '',
+      country: '',
+      currency: '',
+      deviceFingerprint: '',
+      email: '',
+      fullname: '',
+      ip: '',
+      lastName: '',
+      passcode: '',
+      paymentType: '',
+      phonenumber: '',
+      redirectUrl: '',
+      txRef: '',
     );
 
     accountName = await locator<WalletService>().verifyAccount(chargePayload);
@@ -117,11 +136,12 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
     // lastName = accountName.split()[1];
   }
 
-  logout() async {
+  void logout() async {
     final _authProvider =
         Provider.of<AuthenticationProvider>(context, listen: false);
     _authProvider.signOut();
-    Navigator.of(context).pushNamed(LoginScreen.routeName);
+    Navigator.of(context).pushNamedAndRemoveUntil(
+        LoginScreen.routeName, (Route<dynamic> route) => false);
   }
 
   getBanks() async {
@@ -157,7 +177,13 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
           fullName: '',
           phoneNumber: _phoneController.text,
           modifiedOn: DateTime.now(),
-          modifiedBy: _user.cashMeName);
+          modifiedBy: _user.cashMeName,
+          cashMeName: '',
+          createdBy: '',
+          createdOn: DateTime.now(),
+          email: '',
+          id: '',
+          keyReference: '');
 
       // walletPayload = WalletModel(
       //     accountNumber: _accountController.text,
@@ -175,12 +201,19 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
         transactionMode: WALLET_LOAD,
         modifiedOn: DateTime.now(),
         createdOn: DateTime.now(),
+        id: '',
       );
 
       var newValue = _wallet.legderBalance + amount;
 
-      walletPayload =
-          WalletModel(legderBalance: newValue, availableBalance: newValue);
+      walletPayload = WalletModel(
+          legderBalance: newValue,
+          availableBalance: newValue,
+          accountbank: '',
+          accountNumber: '',
+          bvn: '',
+          id: '',
+          userId: '');
       await Provider.of<WalletProvider>(context, listen: false)
           .updateWallet(_wallet.id, walletPayload);
       await Provider.of<TransactionProvider>(context, listen: false)
@@ -188,7 +221,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
       closeDialog();
 
       showSuccessMessageDialog(
-          'You have successfully loaded your wallet with the sum of ₦${NumberFormat('#,###,000').format(int.parse(_amountController.text))}');
+          'You have successfully loaded your wallet with the sum of ₦${NumberFormat('#,###,##0').format(int.parse(_amountController.text))}');
       Future.delayed(Duration(microseconds: 300));
     } catch (e) {
       closeDialog();
@@ -263,20 +296,58 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
   }
 
   showErrorMessageDialog(message) {
+    TextStyle style = TextStyle(fontFamily: 'San Francisco', fontSize: 16.0);
+
     AwesomeDialog(
         context: context,
+        padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 20.0),
         animType: AnimType.BOTTOMSLIDE,
-        padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 30.0),
-        showCloseIcon: true,
+        showCloseIcon: false,
         customHeader: null,
         dialogType: DialogType.NO_HEADER,
         dismissOnTouchOutside: false,
         body: Container(
-          padding: EdgeInsets.all(20),
-          child: Text(
-            message,
-            style: TextStyle(
-                fontFamily: 'San Fransisco', fontSize: 14, color: Colors.red),
+          height: MediaQuery.of(context).size.height * 0.27,
+          width: MediaQuery.of(context).size.width,
+          padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
+          child: Column(
+            children: [
+              Text(
+                'Sorry! $message',
+                style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 18.0,
+                    color: Colors.redAccent,
+                    fontWeight: FontWeight.w600),
+              ),
+              SizedBox(
+                height: 20.0,
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Material(
+                    elevation: 5.0,
+                    borderRadius: BorderRadius.circular(30.0),
+                    color: Color(0xFF002147),
+                    child: MaterialButton(
+                      minWidth: MediaQuery.of(context).size.width * 0.3,
+                      padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+                      onPressed: () async {
+                        closeDialog();
+                        // AwesomeDialog(context: context).dissmiss();
+                      },
+                      child: Text("CLOSE",
+                          textAlign: TextAlign.center,
+                          style: style.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              )
+            ],
           ),
         )).show();
   }
@@ -291,8 +362,88 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
     super.dispose();
   }
 
+  void showOtpForm(flwRef) {
+    closeDialog();
+    TextStyle style = TextStyle(fontFamily: 'San Francisco', fontSize: 16.0);
+    final otpField = new Theme(
+      data: new ThemeData(primaryColor: Color(0xff16c79a)),
+      child: TextFormField(
+        // validator: (value) => validateForm(value, 'pin'),
+        keyboardType: TextInputType.number,
+        controller: _otpController,
+        obscureText: true,
+        style: style,
+        decoration: InputDecoration(
+          contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+          suffixIcon: Icon(Icons.lock),
+          hintText: "Enter OTP here",
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(32.0),
+              borderSide: BorderSide(color: Color(0xff16c79a))),
+        ),
+      ),
+    );
+
+    AwesomeDialog(
+        context: context,
+        padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 30.0),
+        animType: AnimType.BOTTOMSLIDE,
+        showCloseIcon: false,
+        customHeader: null,
+        dialogType: DialogType.NO_HEADER,
+        dismissOnTouchOutside: false,
+        body: Container(
+          height: MediaQuery.of(context).size.height * 0.45,
+          width: MediaQuery.of(context).size.width,
+          padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
+          child: Column(
+            children: [
+              Text(
+                'Please enter the otp that was sent to you',
+                style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 20.0,
+                    color: Color(0xFF002147),
+                    fontWeight: FontWeight.w600),
+              ),
+              SizedBox(
+                height: 25.0,
+              ),
+              Form(
+                child: otpField,
+              ),
+              SizedBox(
+                height: 20.0,
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Material(
+                    elevation: 5.0,
+                    borderRadius: BorderRadius.circular(30.0),
+                    color: Color(0xFF002147),
+                    child: MaterialButton(
+                      minWidth: MediaQuery.of(context).size.width * 0.3,
+                      padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+                      onPressed: () async {
+                        validateCharge(flwRef);
+                      },
+                      child: Text("SUBMIT",
+                          textAlign: TextAlign.center,
+                          style: style.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
+        )).show();
+  }
+
   void initiatePayment() async {
-    // verifyAccountNumber();
     openLoadingDialog();
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.none) {
@@ -302,21 +453,19 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
       return;
     }
     final _user = Provider.of<UserProvider>(context, listen: false).currentUser;
-    final _userWallet =
-        Provider.of<WalletProvider>(context, listen: false).userWallet;
 
     var payLoad = {
+      "tx_ref": 'MC-' + DateTime.now().toIso8601String(),
+      "amount": _amountController.text.trim(),
       "account_bank": selectedBank.toString().trim(),
       "account_number": _accountController.text.trim(),
-      "amount": _amountController.text.trim(),
-      "email": _user.email.toString().trim(),
-      // "email": 'segunajanaku617@gmail.com',
-      "tx_ref": 'MC-' + DateTime.now().toIso8601String(),
       "currency": CURRENCY.toString().trim(),
-      // "fullname": 'Forest',
-      "firstname": _user.cashMeName,
-      "lastname": _user.cashMeName,
+      "email": _user.email.toString().trim(),
       "phone_number": _user.phoneNumber.trim(),
+      "fullname": _user.cashMeName,
+      "passcode": selectedDate
+      // "firstname": _user.cashMeName,
+      // "lastname": _user.cashMeName,
     };
 
     try {
@@ -324,43 +473,72 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
           .loadWallet('$SANDBOX_CHARGE_ENDPOINT', payLoad);
 
       final response = Provider.of<WalletProvider>(context, listen: false).res;
-      print(response.message);
 
-      if (response.status != 'error') {
-        postPaymentAction(response.data.amount);
+      if (response != null) {
+        if (response.status == 'success') {
+          if (response.data.meta.authorization.mode == 'otp') {
+            showOtpForm(response.data.flwRef);
+          } else {
+            validateCharge(response.data.flwRef);
+          }
+        } else {
+          closeDialog();
+          showErrorMessageDialog(response.message);
+        }
       } else {
         closeDialog();
-        showErrorMessageDialog(response.message);
+        showErrorMessageDialog(
+            'An error occured, please try again in a few minutes or contact support for further help.');
       }
     } catch (e) {
+      closeDialog();
+      print(e);
+      // showSuccessMessageDialog(e);
+    }
+  }
+
+  void verifyCharge(int id) async {
+    try {
+      await Provider.of<WalletProvider>(context, listen: false)
+          .verifyCharge(id);
+
+      final res = Provider.of<WalletProvider>(context, listen: false).verifyRes;
+
+      if (res.data.status == 'successful' &&
+          res.data.amount >= int.parse(_amountController.text)) {
+        postPaymentAction(res.data.amount);
+      } else {
+        closeDialog();
+        showErrorMessageDialog(res.message);
+      }
+    } catch (e) {
+      closeDialog();
       print(e);
     }
   }
 
-  verifyCharge(String id) async {
-    await Provider.of<WalletProvider>(context, listen: false).verifyCharge(id);
-    var res = Provider.of<WalletProvider>(context, listen: false).validateRes;
-    // print(res.data);
+  void validateCharge(flwRef) async {
+    openLoadingDialog();
+    final payload = {
+      "otp": _otpController.text,
+      "flw_ref": flwRef.trim(),
+      "type": 'account'
+    };
+    try {
+      await Provider.of<WalletProvider>(context, listen: false)
+          .validateCharge(payload);
+      var response =
+          Provider.of<WalletProvider>(context, listen: false).validateRes;
+      if (response != null) {
+        if (response.data.processorResponse == 'Successful') {
+          verifyCharge(response.data.id);
+        }
+      }
+    } catch (e) {
+      closeDialog();
+      print(e);
+    }
   }
-
-  // validateCharge() async {
-  //   final payload = {
-  //     "otp": '12345',
-  //     "flw_ref": flwRef.trim(),
-  //     "type": 'account',
-  //     "pubKey": PUBLIC_KEY.trim()
-  //   };
-  //   try {
-  //     await Provider.of<WalletProvider>(context, listen: false)
-  //         .validateCharge(payload);
-  //     final validateRes =
-  //         Provider.of<WalletProvider>(context, listen: false).validateRes;
-  //     print(validateRes);
-  //   } catch (e) {
-  //     closeDialog();
-  //     print(e);
-  //   }
-  // }
 
   encryptJsonPayload(String encryptionKey, String publicKey, payload) {
     String encoded = jsonEncode(payload);
@@ -385,22 +563,40 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
     return i;
   }
 
-  int _selectedIndex = 0;
-  DateTime selectedDate = DateTime.now();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
-  _selectDate(BuildContext context) async {
-    final DateTime picked = await showDatePicker(
-      context: context,
-      initialDate: selectedDate,
-      firstDate: DateTime(1908),
-      lastDate: DateTime.now(),
-    );
-    if (picked != null && picked != selectedDate)
-      setState(() {
-        selectedDate = picked;
-      });
-    _dobController.text = selectedDate.toString();
+  validateForm(value, type) {
+    final user = Provider.of<UserProvider>(context, listen: false).currentUser;
+    if (value == null || value.isEmpty) {
+      if (type == 'accNum') {
+        return 'Account Number is required';
+      }
+      if (type == 'amount') {
+        return 'Amount is required';
+      }
+      if (type == 'pin') {
+        return 'pin is required';
+      }
+
+      return 'This field is required';
+    }
+
+    if (type == 'pin') {
+      if (_pinController.text.length != 4) {
+        return 'Pin must be 4 digits.';
+      }
+      if (user.pin != _pinController.text) {
+        return 'Pin is incorrect';
+      }
+    }
+    return null;
+  }
+
+  String formatDate(DateTime date) {
+    var year = date.year;
+    var month = date.month;
+    var day = date.day;
+    return '$day$month$year';
   }
 
   @override
@@ -417,19 +613,18 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
         width: MediaQuery.of(context).size.width,
         padding: EdgeInsets.only(left: 20, right: 20),
         decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey[400]),
+            border: Border.all(color: Color(0xFFBDBDBD)),
             borderRadius: BorderRadius.all(Radius.circular(30))),
         child: DropdownButtonHideUnderline(
           child: new DropdownButton<String>(
             hint: new Text('Select your bank'),
             value: selectedBank,
             isDense: false,
-            onChanged: (String value) {
+            onChanged: (value) {
               getSelectedBank(value);
               setState(() {
                 selectedBank = value;
               });
-              print(selectedBank);
             },
             items: banks.map((BankModel map) {
               return new DropdownMenuItem<String>(
@@ -445,7 +640,8 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
 
     final pinField = new Theme(
       data: new ThemeData(primaryColor: Color(0xff16c79a)),
-      child: TextField(
+      child: TextFormField(
+        validator: (value) => validateForm(value, 'pin'),
         keyboardType: TextInputType.number,
         controller: _pinController,
         obscureText: true,
@@ -481,7 +677,8 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
 
     final accNumberField = new Theme(
       data: new ThemeData(primaryColor: Color(0xff16c79a)),
-      child: TextField(
+      child: TextFormField(
+        validator: (value) => validateForm(value, 'accNum'),
         keyboardType: TextInputType.number,
         controller: _accountController,
         obscureText: false,
@@ -498,38 +695,38 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
     );
 
     final dobField = new Theme(
-      data: new ThemeData(primaryColor: Color(0xff16c79a)),
-      child: GestureDetector(
+      data: new ThemeData(primaryColor: Color(0xFF002147)),
+      child: TextFormField(
+        readOnly: true,
         onTap: () {
-          _selectDate(context);
+          DatePicker.showDatePicker(context,
+              showTitleActions: true,
+              minTime: DateTime(1920, 1, 1),
+              maxTime: DateTime.now(), onConfirm: (date) {
+            _dobController.text = DateFormat("yyyy-MM-dd").format(date);
+            setState(() {
+              selectedDate = formatDate(date);
+            });
+          }, currentTime: DateTime.now(), locale: LocaleType.en);
         },
-        child: TextField(
-          enabled: false,
-          keyboardType: TextInputType.number,
-          controller: _dobController,
-          obscureText: false,
-          style: style,
-          decoration: InputDecoration(
-            contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-            suffixIcon: Icon(Icons.date_range),
-            hintText: "Your date of birth",
-            border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(32.0),
-                borderSide: BorderSide(color: Color(0xff16c79a))),
-          ),
+        keyboardType: TextInputType.text,
+        controller: _dobController,
+        obscureText: false,
+        style: style,
+        decoration: InputDecoration(
+          contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+          suffixIcon: Icon(Icons.person),
+          hintText: "Date of Birth",
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(32.0),
+              borderSide: BorderSide(color: Color(0xff16c79a))),
         ),
       ),
     );
 
-    // new MaterialButton(
-    //     color: Color(0xff16c79a),
-    //     onPressed: () {
-    //       _selectDate(context);
-    //     },
-    //     child: new Text("Pick date range"));
     final bvnField = new Theme(
       data: new ThemeData(primaryColor: Color(0xff16c79a)),
-      child: TextField(
+      child: TextFormField(
         keyboardType: TextInputType.number,
         controller: _bvnController,
         obscureText: false,
@@ -546,7 +743,8 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
     );
     final amountField = new Theme(
       data: new ThemeData(primaryColor: Color(0xff16c79a)),
-      child: TextField(
+      child: TextFormField(
+        validator: (value) => validateForm(value, 'amount'),
         keyboardType: TextInputType.number,
         controller: _amountController,
         obscureText: false,
@@ -569,7 +767,9 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
         minWidth: MediaQuery.of(context).size.width,
         padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
         onPressed: () {
-          initiatePayment();
+          if (_formKey.currentState.validate()) {
+            initiatePayment();
+          }
         },
         child: Text(
           "Load Wallet",
@@ -713,167 +913,168 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
         },
         child: Container(
           height: double.infinity,
-          child: Stack(
-            children: [
-              Align(
-                alignment: Alignment.topLeft,
-                child: Container(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height * 0.255,
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(15),
-                          bottomRight: Radius.circular(15)),
-                      color: Color(0xff16c79a)),
+          child: Form(
+            key: _formKey,
+            child: Stack(
+              children: [
+                Align(
+                  alignment: Alignment.topLeft,
                   child: Container(
-                      padding: EdgeInsets.only(
-                        top: MediaQuery.of(context).size.height * 0.046,
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height * 0.255,
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                            bottomLeft: Radius.circular(15),
+                            bottomRight: Radius.circular(15)),
+                        color: Color(0xff16c79a)),
+                    child: Container(
+                        padding: EdgeInsets.only(
+                          top: MediaQuery.of(context).size.height * 0.046,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 35.0, top: 20.0),
+                                  child: Text(
+                                    'Available Balance:',
+                                    style: TextStyle(
+                                        fontFamily: 'Montserrat',
+                                        fontSize: 16,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 35.0),
+                                  child: Text(
+                                    '₦${_wallet.availableBalance > 0 ? NumberFormat('#,###,#00').format(_wallet.availableBalance) : _wallet.availableBalance}',
+                                    style: TextStyle(
+                                        fontFamily: 'Montserrat',
+                                        fontSize: 33,
+                                        color: Color(0xFF002147),
+                                        fontWeight: FontWeight.w700),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            // SizedBox(
+                            //     height:
+                            //         MediaQuery.of(context).size.height * 0.041),
+                          ],
+                        )),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: Container(
+                    margin: EdgeInsets.only(
+                        top: MediaQuery.of(context).size.height * 0.2),
+                    height: 50,
+                    width: MediaQuery.of(context).size.width,
+                    decoration: BoxDecoration(
+                      color: Color(0xFF002147),
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(15),
+                        bottomRight: Radius.circular(15),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 35.0, top: 20.0),
-                                child: Text(
-                                  'Available Balance:',
-                                  style: TextStyle(
-                                      fontFamily: 'Montserrat',
-                                      fontSize: 16,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w500),
-                                ),
-                              ),
-                              SizedBox(height: 10),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 35.0),
-                                child: Text(
-                                  '₦${_wallet.availableBalance > 0 ? NumberFormat('#,###,000').format(_wallet?.availableBalance) : _wallet?.availableBalance}',
-                                  style: TextStyle(
-                                      fontFamily: 'Montserrat',
-                                      fontSize: 33,
-                                      color: Color(0xFF002147),
-                                      fontWeight: FontWeight.w700),
-                                ),
-                              ),
-                            ],
+                    ),
+                    child: Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 20.0),
+                          child: Text(
+                            'Total Balance:',
+                            style: TextStyle(
+                                color: Colors.grey[200],
+                                fontSize: 16,
+                                fontFamily: 'Montserrat',
+                                fontWeight: FontWeight.normal),
                           ),
-                          // SizedBox(
-                          //     height:
-                          //         MediaQuery.of(context).size.height * 0.041),
-                        ],
-                      )),
-                ),
-              ),
-              Align(
-                alignment: Alignment.topLeft,
-                child: Container(
-                  margin: EdgeInsets.only(
-                      top: MediaQuery.of(context).size.height * 0.2),
-                  height: 50,
-                  width: MediaQuery.of(context).size.width,
-                  decoration: BoxDecoration(
-                    color: Color(0xFF002147),
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(15),
-                      bottomRight: Radius.circular(15),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 20.0),
-                        child: Text(
-                          'Total Balance:',
-                          style: TextStyle(
-                              color: Colors.grey[200],
-                              fontSize: 16,
-                              fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.normal),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 10.0),
-                        child: Text(
-                          '₦${_wallet.legderBalance > 0 ? NumberFormat('#,###,000').format(_wallet?.legderBalance) : _wallet?.legderBalance}',
-                          style: TextStyle(
-                              color: Colors.grey[200],
-                              fontSize: 16,
-                              fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.normal),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-              ),
-              Align(
-                alignment: Alignment.topLeft,
-                child: Container(
-                  padding: EdgeInsets.only(
-                      left: MediaQuery.of(context).size.width * 0.09,
-                      top: MediaQuery.of(context).size.height * 0.33,
-                      bottom: 50),
-                  child: SizedBox(
-                    child: Text(
-                      'Load Your Wallet',
-                      style: TextStyle(
-                          color: Colors.blueGrey,
-                          fontSize: 16,
-                          fontFamily: 'San Francisco',
-                          fontWeight: FontWeight.w600),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 10.0),
+                          child: Text(
+                            '₦${_wallet.legderBalance > 0 ? NumberFormat('#,###,#00').format(_wallet.legderBalance) : _wallet.legderBalance}',
+                            style: TextStyle(
+                                color: Colors.grey[200],
+                                fontSize: 16,
+                                fontFamily: 'Montserrat',
+                                fontWeight: FontWeight.normal),
+                          ),
+                        )
+                      ],
                     ),
                   ),
                 ),
-              ),
-              Align(
-                  alignment: Alignment.center,
-                  child: Padding(
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: Container(
                     padding: EdgeInsets.only(
-                        top: MediaQuery.of(context).size.height * 0.36,
-                        left: 30.0,
-                        right: 30.0),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          SizedBox(height: 15.0),
-                          bankField,
-                          SizedBox(height: 15.0),
-                          accNumberField,
-                          // isFirst ? SizedBox(height: 15.0) : Container(),
-                          // isFirst ? phoneField : Container(),
-                          // isFirst ? SizedBox(height: 15.0) : Container(),
-                          // isFirst ? bvnField : Container(),
-                          // isFirst ? SizedBox(height: 15.0) : Container(),
-                          // isFirst ? dobField : Container(),
-                          SizedBox(height: 15.0),
-                          amountField,
-                          SizedBox(height: 15.0),
-                          pinField,
-                          SizedBox(height: 15.0),
-                          payButon,
-                          SizedBox(height: 15.0),
-                        ],
+                        left: MediaQuery.of(context).size.width * 0.09,
+                        top: MediaQuery.of(context).size.height * 0.33,
+                        bottom: 50),
+                    child: SizedBox(
+                      child: Text(
+                        'Load Your Wallet',
+                        style: TextStyle(
+                            color: Colors.blueGrey,
+                            fontSize: 16,
+                            fontFamily: 'San Francisco',
+                            fontWeight: FontWeight.w600),
                       ),
                     ),
-                  ))
-            ],
+                  ),
+                ),
+                Align(
+                    alignment: Alignment.center,
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                          top: MediaQuery.of(context).size.height * 0.36,
+                          left: 30.0,
+                          right: 30.0),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            SizedBox(height: 15.0),
+                            bankField,
+                            SizedBox(height: 15.0),
+                            accNumberField,
+                            SizedBox(height: 15.0),
+                            selectedBank == '057' ? dobField : Container(),
+                            // isFirst ? SizedBox(height: 15.0) : Container(),
+                            // isFirst ? phoneField : Container(),
+                            // isFirst ? SizedBox(height: 15.0) : Container(),
+                            // isFirst ? bvnField : Container(),
+                            // isFirst ? SizedBox(height: 15.0) : Container(),
+                            // isFirst ? dobField : Container(),
+                            SizedBox(height: 15.0),
+                            amountField,
+                            SizedBox(height: 15.0),
+                            pinField,
+                            SizedBox(height: 15.0),
+                            payButon,
+                            SizedBox(height: 15.0),
+                          ],
+                        ),
+                      ),
+                    ))
+              ],
+            ),
           ),
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        selectedLabelStyle: TextStyle(color: Colors.blueGrey),
-        unselectedLabelStyle: TextStyle(color: Colors.blueGrey),
-        selectedFontSize: 1.0,
-        unselectedFontSize: 1.0,
+        selectedItemColor: Color(0xFF002147),
+        unselectedItemColor: Color(0xFF002147),
         iconSize: 30.0,
         backgroundColor: Color(0xFFf4f9f9),
         onTap: (index) {

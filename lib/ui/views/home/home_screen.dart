@@ -54,11 +54,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
-  logout() async {
+  void logout() async {
     final _authProvider =
         Provider.of<AuthenticationProvider>(context, listen: false);
     _authProvider.signOut();
-    Navigator.of(context).pushNamed(LoginScreen.routeName);
+    Navigator.of(context).pushNamedAndRemoveUntil(
+        LoginScreen.routeName, (Route<dynamic> route) => false);
   }
 
   var transactionData;
@@ -326,7 +327,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     left: 30.0,
                                     right: 40.0),
                                 child: Text(
-                                  '₦${_wallet.availableBalance > 0 ? NumberFormat('#,###,000').format(_wallet?.availableBalance) : _wallet?.availableBalance}',
+                                  '₦${_wallet.availableBalance > 0 ? NumberFormat('#,###,#00').format(_wallet.availableBalance) : _wallet.availableBalance}',
                                   style: TextStyle(
                                     color: Color(0xFF002147),
                                     fontFamily: 'San Francisco',
@@ -369,7 +370,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       left: MediaQuery.of(context).size.width * 0.036),
                   child: Row(
                     children: [
-                      _transactions?.length == 0
+                      _transactions.length == 0
                           ? Container(
                               padding: EdgeInsets.only(
                                   left:
@@ -389,7 +390,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: ListView.separated(
                                   padding: const EdgeInsets.all(8),
                                   shrinkWrap: true,
-                                  itemCount: _transactions?.length,
+                                  itemCount: _transactions.length,
                                   itemBuilder:
                                       (BuildContext context, int index) {
                                     var _timeago = DateFormatter(
@@ -402,7 +403,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           ListTile(
                                             title: Text(
                                               _transactions[index]
-                                                  ?.transactionMode,
+                                                  .transactionMode,
                                               style: TextStyle(
                                                 color: Color(0xFF002147),
                                                 fontFamily: 'San Francisco',
@@ -411,7 +412,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               ),
                                             ),
                                             subtitle: Text(
-                                              _transactions[index]?.type,
+                                              _transactions[index].type,
                                               style: TextStyle(
                                                 color: Colors.blueGrey,
                                                 fontFamily: 'San Francisco',
@@ -421,10 +422,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                             ),
                                             trailing: Column(
                                               children: [
-                                                _transactions[index]?.type ==
+                                                _transactions[index].type ==
                                                         DEBIT
                                                     ? Text(
-                                                        '-${_transactions[index]?.value}',
+                                                        '-${_transactions[index].value}',
                                                         style: TextStyle(
                                                           color: Colors.red,
                                                           fontFamily:
@@ -435,7 +436,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                         ),
                                                       )
                                                     : Text(
-                                                        '+${_transactions[index]?.value}',
+                                                        '+${_transactions[index].value}',
                                                         style: TextStyle(
                                                           color:
                                                               Color(0xff16c79a),
@@ -448,7 +449,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                       ),
                                                 SizedBox(height: 10),
                                                 Text(
-                                                  '${DateFormat.yMMMd().format(_transactions[index]?.createdOn)} at ${DateFormat.jm().format(_transactions[index]?.createdOn)}',
+                                                  '${DateFormat.yMMMd().format(_transactions[index].createdOn)} at ${DateFormat.jm().format(_transactions[index].createdOn)}',
                                                   style: TextStyle(
                                                     color: Colors.blueGrey,
                                                     fontFamily: 'San Francisco',
@@ -481,12 +482,8 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        selectedLabelStyle: TextStyle(color: Colors.blueGrey),
-        unselectedLabelStyle: TextStyle(color: Colors.blueGrey),
-        selectedFontSize: 1.0,
-        unselectedFontSize: 1.0,
+        selectedItemColor: Color(0xFF002147),
+        unselectedItemColor: Color(0xFF002147),
         iconSize: 30.0,
         backgroundColor: Color(0xFFf4f9f9),
         onTap: (index) {
@@ -508,12 +505,12 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(
-              Icons.home,
-              color: Color(0xFF002147),
-            ),
-            label: 'Home',
-          ),
+              icon: Icon(
+                Icons.home,
+                color: Color(0xFF002147),
+              ),
+              label: 'Home',
+              backgroundColor: Color(0xFF002147)),
           BottomNavigationBarItem(
             icon: Icon(
               Icons.send_to_mobile,

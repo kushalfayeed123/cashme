@@ -19,7 +19,7 @@ class AuthenticationService {
       await _firebaseAuth.signInWithEmailAndPassword(
           email: email, password: password);
     } catch (e) {
-      throw HttpException(e.message);
+      throw HttpException(e.toString());
     }
   }
 
@@ -39,16 +39,19 @@ class AuthenticationService {
       await locator<UserService>()
           .addUserData(user.uid, email, fullName, cashMeName, pin);
     } catch (e) {
-      throw HttpException(e.message);
+      throw HttpException(e.toString());
     }
   }
 
   Future<bool> isUserLoggedIn() async {
     try {
       User user = _firebaseAuth.currentUser;
-      return user != null;
+      if (user.email.isNotEmpty) {
+        return true;
+      }
+      return false;
     } catch (e) {
-      throw HttpException(e.message);
+      throw HttpException(e.toString());
     }
   }
 
@@ -56,7 +59,7 @@ class AuthenticationService {
     try {
       await _firebaseAuth.signOut();
     } catch (e) {
-      throw HttpException(e.message);
+      throw HttpException(e.toString());
     }
   }
 }
