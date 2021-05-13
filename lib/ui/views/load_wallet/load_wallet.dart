@@ -532,14 +532,17 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
       var response =
           Provider.of<WalletProvider>(context, listen: false).validateRes;
       if (response != null) {
-        if (response.data.status == 'successful') {
-          verifyCharge(response.data.id);
+        if (response.data.status == 'successful' &&
+            response.data.amount >= int.parse(_amountController.text)) {
+          // verifyCharge(response.data.id);
           postPaymentAction(response.data.amount);
         }
+      } else {
+        showErrorMessageDialog('An error occured please try again');
       }
     } catch (e) {
       closeDialog();
-      print(e);
+      showErrorMessageDialog(e.message);
     }
   }
 
