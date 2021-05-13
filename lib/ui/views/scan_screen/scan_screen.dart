@@ -381,7 +381,7 @@ class _ScanScreenState extends State<ScanScreen> {
                                         children: <TextSpan>[
                                           TextSpan(
                                               text:
-                                                  ' ₦${NumberFormat('#,###,#00').format(int.parse(qrPayload.transferValue))}',
+                                                  ' ₦${NumberFormat('#,###,##0').format(int.parse(qrPayload.transferValue))}',
                                               style: TextStyle(
                                                   fontFamily: 'Montserrat',
                                                   fontSize: 18.0,
@@ -694,7 +694,7 @@ class _ScanScreenState extends State<ScanScreen> {
                               Padding(
                                 padding: const EdgeInsets.only(left: 35.0),
                                 child: Text(
-                                  '₦${_wallet.availableBalance > 0 ? NumberFormat('#,###,#00').format(_wallet.availableBalance) : _wallet.availableBalance}',
+                                  '₦${_wallet.availableBalance > 0 ? NumberFormat('#,###,##0').format(_wallet.availableBalance) : _wallet.availableBalance}',
                                   style: TextStyle(
                                       fontFamily: 'Montserrat',
                                       fontSize: 33,
@@ -741,7 +741,7 @@ class _ScanScreenState extends State<ScanScreen> {
                       Padding(
                         padding: const EdgeInsets.only(left: 10.0),
                         child: Text(
-                          '₦${_wallet.legderBalance > 0 ? NumberFormat('#,###,#00').format(_wallet.legderBalance) : _wallet.legderBalance}',
+                          '₦${_wallet.legderBalance > 0 ? NumberFormat('#,###,##0').format(_wallet.legderBalance) : _wallet.legderBalance}',
                           style: TextStyle(
                               color: Colors.grey[200],
                               fontSize: 16,

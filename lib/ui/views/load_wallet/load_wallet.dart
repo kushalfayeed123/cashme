@@ -467,6 +467,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
       // "firstname": _user.cashMeName,
       // "lastname": _user.cashMeName,
     };
+    print(payLoad);
 
     try {
       await Provider.of<WalletProvider>(context, listen: false)
@@ -506,7 +507,8 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
 
       if (res.data.status == 'successful' &&
           res.data.amount >= int.parse(_amountController.text)) {
-        postPaymentAction(res.data.amount);
+        print('success');
+        // postPaymentAction(res.data.amount);
       } else {
         closeDialog();
         showErrorMessageDialog(res.message);
@@ -530,8 +532,9 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
       var response =
           Provider.of<WalletProvider>(context, listen: false).validateRes;
       if (response != null) {
-        if (response.data.processorResponse == 'Successful') {
+        if (response.data.status == 'successful') {
           verifyCharge(response.data.id);
+          postPaymentAction(response.data.amount);
         }
       }
     } catch (e) {
@@ -953,7 +956,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
                                 Padding(
                                   padding: const EdgeInsets.only(left: 35.0),
                                   child: Text(
-                                    '₦${_wallet.availableBalance > 0 ? NumberFormat('#,###,#00').format(_wallet.availableBalance) : _wallet.availableBalance}',
+                                    '₦${_wallet.availableBalance > 0 ? NumberFormat('#,###,##0').format(_wallet.availableBalance) : _wallet.availableBalance}',
                                     style: TextStyle(
                                         fontFamily: 'Montserrat',
                                         fontSize: 33,
@@ -1000,7 +1003,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
                         Padding(
                           padding: const EdgeInsets.only(left: 10.0),
                           child: Text(
-                            '₦${_wallet.legderBalance > 0 ? NumberFormat('#,###,#00').format(_wallet.legderBalance) : _wallet.legderBalance}',
+                            '₦${_wallet.legderBalance > 0 ? NumberFormat('#,###,##0').format(_wallet.legderBalance) : _wallet.legderBalance}',
                             style: TextStyle(
                                 color: Colors.grey[200],
                                 fontSize: 16,

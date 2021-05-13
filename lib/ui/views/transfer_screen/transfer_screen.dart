@@ -122,7 +122,7 @@ class _TransferScreenState extends State<TransferScreen> {
             child: Column(
               children: [
                 Text(
-                  'You are about to transfer the sum of ₦${NumberFormat('#,###,#00').format(int.parse(qrdataFeed.text))}. Are you sure you want to continue?',
+                  'You are about to transfer the sum of ₦${NumberFormat('#,###,##0').format(int.parse(qrdataFeed.text))}. Are you sure you want to continue?',
                   style: TextStyle(
                       fontFamily: 'Montserrat',
                       fontSize: 18.0,
@@ -292,7 +292,7 @@ class _TransferScreenState extends State<TransferScreen> {
     if (connectivityResult == ConnectivityResult.none) {
       closeDialog();
       await showSuccessMessageDialog(
-          'Your account has been credited with the sum of ₦${NumberFormat('#,###,#00').format(int.parse(qrPayload.transferValue))}.');
+          'Your account has been credited with the sum of ₦${NumberFormat('#,###,##0').format(int.parse(qrPayload.transferValue))}.');
     }
     try {
       transactionPayload = TransactionModel(
@@ -321,7 +321,7 @@ class _TransferScreenState extends State<TransferScreen> {
       closeDialog();
 
       await showSuccessMessageDialog(
-          'Your account has been credited with the sum of ₦${NumberFormat('#,###,#00').format(int.parse(qrPayload.transferValue))}.');
+          'Your account has been credited with the sum of ₦${NumberFormat('#,###,##0').format(int.parse(qrPayload.transferValue))}.');
     } catch (e) {
       closeDialog();
       throw Exception(e);
@@ -505,7 +505,7 @@ class _TransferScreenState extends State<TransferScreen> {
                                                       children: <TextSpan>[
                                                         TextSpan(
                                                             text:
-                                                                ' ₦${NumberFormat('#,###,#00').format(int.parse(qrdataFeed.text))}',
+                                                                ' ₦${NumberFormat('#,###,##0').format(int.parse(qrdataFeed.text))}',
                                                             style: TextStyle(
                                                                 fontFamily:
                                                                     'Montserrat',
@@ -970,7 +970,7 @@ class _TransferScreenState extends State<TransferScreen> {
                             Padding(
                               padding: const EdgeInsets.only(left: 35.0),
                               child: Text(
-                                '₦${_wallet.availableBalance > 0 ? NumberFormat('#,###,#00').format(_wallet.availableBalance) : _wallet.availableBalance}',
+                                '₦${_wallet.availableBalance > 0 ? NumberFormat('#,###,##0').format(_wallet.availableBalance) : _wallet.availableBalance}',
                                 style: TextStyle(
                                     fontFamily: 'Montserrat',
                                     fontSize: 33,
@@ -1017,7 +1017,7 @@ class _TransferScreenState extends State<TransferScreen> {
                     Padding(
                       padding: const EdgeInsets.only(left: 10.0),
                       child: Text(
-                        '₦${_wallet.legderBalance > 0 ? NumberFormat('#,###,#00').format(_wallet.legderBalance) : _wallet.legderBalance}',
+                        '₦${_wallet.legderBalance > 0 ? NumberFormat('#,###,##0').format(_wallet.legderBalance) : _wallet.legderBalance}',
                         style: TextStyle(
                             color: Colors.grey[200],
                             fontSize: 16,

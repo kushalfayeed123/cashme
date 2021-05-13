@@ -327,7 +327,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     left: 30.0,
                                     right: 40.0),
                                 child: Text(
-                                  '₦${_wallet.availableBalance > 0 ? NumberFormat('#,###,#00').format(_wallet.availableBalance) : _wallet.availableBalance}',
+                                  '₦${_wallet.availableBalance > 0 ? NumberFormat('#,###,##0').format(_wallet.availableBalance) : _wallet.availableBalance}',
                                   style: TextStyle(
                                     color: Color(0xFF002147),
                                     fontFamily: 'San Francisco',
