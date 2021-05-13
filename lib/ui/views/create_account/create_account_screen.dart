@@ -75,10 +75,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   }
 
   void _createAccount() async {
-    // spinkit();
-    // setState(() => _autoValidate = true);
-    // if (!_formKey.currentState.validate()) return null;
-    // _formKey.currentState.save();
     openLoadingDialog();
     try {
       await Provider.of<AuthenticationProvider>(context, listen: false)
@@ -96,7 +92,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       });
     } catch (e) {
       closeDialog();
-      showErrorMessageDialog(e);
+      showErrorMessageDialog(e.message);
     }
   }
 
@@ -280,7 +276,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         decoration: InputDecoration(
           contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
           suffixIcon: Icon(Icons.lock),
-          hintText: "Pin",
+          hintText: "Create pin",
           border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(32.0),
               borderSide: BorderSide(color: Color(0xff16c79a))),
