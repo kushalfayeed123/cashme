@@ -202,16 +202,12 @@ class _ScanScreenState extends State<ScanScreen> {
           receiverId: qrPayload.receiverId,
           email: qrPayload.email,
           transferValue: qrPayload.transferValue,
-          createdOn: DateTime.now(),
           id: '',
-          modifiedOn: DateTime.now(),
           senderAvailableBalance: '',
           type: '');
     });
 
     transferPayload = TransferModel(
-        createdOn: DateTime.now(),
-        modifiedOn: DateTime.now(),
         type: QR_TRANSFER,
         senderId: currentUser.id,
         receiverId: senderPayload.receiverId,
@@ -283,9 +279,7 @@ class _ScanScreenState extends State<ScanScreen> {
           receiverId: qrPayload.receiverId,
           email: qrPayload.email,
           transferValue: qrPayload.transferValue,
-          createdOn: DateTime.now(),
           id: '',
-          modifiedOn: DateTime.now(),
           senderAvailableBalance: '',
           type: '');
     });
@@ -422,9 +416,7 @@ class _ScanScreenState extends State<ScanScreen> {
                                               email: currentUser.email,
                                               transferValue:
                                                   senderPayload.transferValue,
-                                              createdOn: DateTime.now(),
                                               id: '',
-                                              modifiedOn: DateTime.now(),
                                               senderAvailableBalance: '',
                                               type: '');
                                         });
@@ -471,10 +463,8 @@ class _ScanScreenState extends State<ScanScreen> {
           senderId: _user.id,
           receiverId: qrPayload.receiverId,
           transferValue: qrPayload.transferValue,
-          createdOn: DateTime.now(),
           email: '',
           id: '',
-          modifiedOn: DateTime.now(),
           senderAvailableBalance: '',
           type: '',
           walletId: '');
