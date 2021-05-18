@@ -824,10 +824,10 @@ class _ScanScreenState extends State<ScanScreen> {
             ),
             BottomNavigationBarItem(
               icon: Icon(
-                Icons.send_to_mobile,
+                Icons.system_update_rounded,
                 color: Color(0xFF002147),
               ),
-              label: 'Transfer',
+              label: 'Receive Money',
             ),
             BottomNavigationBarItem(
                 icon: Icon(

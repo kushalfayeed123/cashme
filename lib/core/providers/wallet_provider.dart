@@ -14,8 +14,8 @@ class WalletProvider with ChangeNotifier {
   WalletModel get userWallet => _userWallet;
   WalletModel _senderWallet;
   WalletModel get senderWallet => _senderWallet;
-  List<BankModel> _banks;
-  List<BankModel> get banks => _banks;
+  BankModel _banks;
+  BankModel get banks => _banks;
 
   ValidateChargeResponse _validateRes;
   ValidateChargeResponse get validateRes => _validateRes;
@@ -53,6 +53,13 @@ class WalletProvider with ChangeNotifier {
     });
   }
 
+  Future setBanks() async {
+    _walletService.getBanks().asStream().listen((bank) {
+      _banks = bank;
+      notifyListeners();
+    });
+  }
+
   Future setUserWallet(String userId) async {
     _walletService.getWallet(userId).asBroadcastStream().listen((wallet) {
       _userWallet = wallet;
@@ -74,11 +81,4 @@ class WalletProvider with ChangeNotifier {
   Future updateWallet(String walletId, WalletModel payload) async {
     await _walletService.updateWallet(walletId, payload);
   }
-
-  // Future setBanks() async {
-  //   _walletService.getBanks().asStream().listen((bank) {
-  //     _banks = bank.map((model) => BankModel.fromJson(model)).toList();
-  //   });
-  //   notifyListeners();
-  // }
 }

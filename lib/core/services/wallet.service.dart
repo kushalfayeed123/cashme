@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:cash_me/core/constants.dart';
 import 'package:cash_me/core/models/account_charge.model.dart';
+import 'package:cash_me/core/models/bank.model.dart';
 import 'package:cash_me/core/models/charge_response.model.dart';
 import 'package:cash_me/core/models/validate_charge_response.model.dart';
 import 'package:cash_me/core/models/transfer.model.dart';
@@ -61,6 +62,16 @@ class WalletService {
     }
   }
 
+  Future getBanks() async {
+    try {
+      var res = await http.get(BANKS_ENDPOINT, headers: headers);
+      return BankModel.fromJson(jsonDecode(res.body));
+    } catch (e) {
+      print(e);
+      throw HttpException(e.toString());
+    }
+  }
+
   Future validateCharge(payload) async {
     try {
       var res = await http.post(VALIDATE_CHARGE_ENDPOINT,
@@ -76,6 +87,7 @@ class WalletService {
   Future loadWallet(String url, body) async {
     try {
       var res = await http.post(url, body: json.encode(body), headers: headers);
+      print(res.body);
       return ChargeResponse.fromJson(jsonDecode(res.body));
     } catch (e) {
       return null;
@@ -112,21 +124,6 @@ class WalletService {
           .asyncMap((doc) =>
               doc.docs.map((e) => WalletModel.fromData(e)).toList()[0]);
     } catch (e) {
-      throw HttpException(e.toString());
-    }
-  }
-
-  static Future getBanks() {
-    try {
-      return http.get(BANKS_ENDPOINT);
-      // if (response.statusCode == 200) {
-      //   return postFromJson(response.body);
-      // } else {
-      //   throw Exception('Failed to load');
-      // }
-    } catch (e) {
-      print(e);
-
       throw HttpException(e.toString());
     }
   }

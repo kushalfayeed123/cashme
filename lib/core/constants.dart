@@ -2,8 +2,7 @@ const String LIVE_CHARGE_ENDPOINT =
     "https://api.flutterwave.com/v3/charges?type=debit_ng_account";
 const String SANDBOX_CHARGE_ENDPOINT =
     "https://api.flutterwave.com/v3/charges?type=debit_ng_account";
-const String BANKS_ENDPOINT =
-    'https://api.ravepay.co/flwv3-pug/getpaidx/api/flwpbf-banks.js?json=1';
+const String BANKS_ENDPOINT = 'https://api.flutterwave.com/v3/banks/NG';
 const String VALIDATE_CHARGE_ENDPOINT =
     "https://api.flutterwave.com/v3/validate-charge";
 const String REQUERY_ENDPOINT =

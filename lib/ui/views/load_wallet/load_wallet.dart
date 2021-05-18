@@ -51,10 +51,12 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
   TextEditingController _amountController = new TextEditingController();
   TextEditingController _pinController = new TextEditingController();
   TextEditingController _phoneController = new TextEditingController();
+  TextEditingController _firstNameController = new TextEditingController();
+  TextEditingController _lastNameController = new TextEditingController();
   UserModel userPayload;
   WalletModel walletPayload;
   TransactionModel transactionPayload;
-  var banks = <BankModel>[];
+  BankModel banks;
   var selectedBank;
   bool isFirst;
   final _formKey = GlobalKey<FormState>();
@@ -105,6 +107,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
   var lastName;
 
   getSelectedBank(value) {
+    print(value);
     accCode = value;
   }
 
@@ -144,13 +147,8 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
         LoginScreen.routeName, (Route<dynamic> route) => false);
   }
 
-  getBanks() async {
-    await WalletService.getBanks().then((res) {
-      setState(() {
-        Iterable list = json.decode(res.body);
-        banks = list.map((model) => BankModel.fromJson(model)).toList();
-      });
-    });
+  Future<void> getBanks() async {
+    await Provider.of<WalletProvider>(context, listen: false).setBanks();
   }
 
   void getWallet() async {
@@ -313,7 +311,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
           child: Column(
             children: [
               Text(
-                'Sorry! $message',
+                '$message',
                 style: TextStyle(
                     fontFamily: 'Montserrat',
                     fontSize: 18.0,
@@ -454,6 +452,8 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
     }
     final _user = Provider.of<UserProvider>(context, listen: false).currentUser;
 
+    final fullName = '${_firstNameController.text.trim()}'
+        ' ${_lastNameController.text.trim()}';
     var payLoad = {
       "tx_ref": 'MC-' + DateTime.now().toIso8601String(),
       "amount": _amountController.text.trim(),
@@ -462,10 +462,10 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
       "currency": CURRENCY.toString().trim(),
       "email": _user.email.toString().trim(),
       "phone_number": _user.phoneNumber.trim(),
-      "fullname": _user.cashMeName,
-      "passcode": selectedDate
-      // "firstname": _user.cashMeName,
-      // "lastname": _user.cashMeName,
+      "fullname": fullName,
+      "passcode": selectedDate,
+      // "firstname": _firstNameController.text,
+      // "lastname": _lastNameController.text,
     };
     print(payLoad);
 
@@ -608,6 +608,8 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
   @override
   Widget build(BuildContext context) {
     final _wallet = Provider.of<WalletProvider>(context).userWallet;
+    final _banks = Provider.of<WalletProvider>(context, listen: false).banks;
+    final bankData = _banks.data;
 
     setState(() => this.bcontext = context);
 
@@ -623,6 +625,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
             borderRadius: BorderRadius.all(Radius.circular(30))),
         child: DropdownButtonHideUnderline(
           child: new DropdownButton<String>(
+            isExpanded: true,
             hint: new Text('Select your bank'),
             value: selectedBank,
             isDense: false,
@@ -632,11 +635,11 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
                 selectedBank = value;
               });
             },
-            items: banks.map((BankModel map) {
+            items: bankData.map((e) {
               return new DropdownMenuItem<String>(
-                value: map.bankcode,
-                child: new Text(map.bankname,
-                    style: new TextStyle(color: Colors.black)),
+                value: e.code,
+                child:
+                    new Text(e.name, style: new TextStyle(color: Colors.black)),
               );
             }).toList(),
           ),
@@ -674,6 +677,40 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
           contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
           suffixIcon: Icon(Icons.lock),
           hintText: "Your phone number",
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(32.0),
+              borderSide: BorderSide(color: Color(0xff16c79a))),
+        ),
+      ),
+    );
+    final firstNameField = new Theme(
+      data: new ThemeData(primaryColor: Color(0xff16c79a)),
+      child: TextField(
+        keyboardType: TextInputType.name,
+        controller: _firstNameController,
+        obscureText: false,
+        style: style,
+        decoration: InputDecoration(
+          contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+          suffixIcon: Icon(Icons.person),
+          hintText: "Your first name",
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(32.0),
+              borderSide: BorderSide(color: Color(0xff16c79a))),
+        ),
+      ),
+    );
+    final lastNameField = new Theme(
+      data: new ThemeData(primaryColor: Color(0xff16c79a)),
+      child: TextField(
+        keyboardType: TextInputType.name,
+        controller: _lastNameController,
+        obscureText: false,
+        style: style,
+        decoration: InputDecoration(
+          contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+          suffixIcon: Icon(Icons.person),
+          hintText: "Your last name",
           border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(32.0),
               borderSide: BorderSide(color: Color(0xff16c79a))),
@@ -1054,6 +1091,10 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
                             SizedBox(height: 15.0),
                             accNumberField,
                             SizedBox(height: 15.0),
+                            firstNameField,
+                            SizedBox(height: 15.0),
+                            lastNameField,
+                            SizedBox(height: 15.0),
                             selectedBank == '057' ? dobField : Container(),
                             // isFirst ? SizedBox(height: 15.0) : Container(),
                             // isFirst ? phoneField : Container(),
@@ -1110,10 +1151,10 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
           ),
           BottomNavigationBarItem(
             icon: Icon(
-              Icons.send_to_mobile,
+              Icons.system_update_rounded,
               color: Color(0xFF002147),
             ),
-            label: 'Transfer',
+            label: 'Receive Money',
           ),
           BottomNavigationBarItem(
               icon: Icon(

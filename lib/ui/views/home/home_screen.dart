@@ -22,7 +22,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   BuildContext bcontext;
 
-  void _getUserInfo() async {
+  Future<void> _getUserInfo() async {
     try {
       final _user =
           Provider.of<UserProvider>(context, listen: false).currentUser;
@@ -40,15 +40,21 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void didChangeDependencies() {
     if (_isInit) {
-      _getUserInfo();
-
-      _isInit = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await getBanks();
+        setState(() => _isInit = false);
+      });
     }
     super.didChangeDependencies();
   }
 
+  Future<void> getBanks() async {
+    await Provider.of<WalletProvider>(context, listen: false).setBanks();
+  }
+
   @override
   void initState() {
+    _getUserInfo();
     super.initState();
   }
 
@@ -513,10 +519,10 @@ class _HomeScreenState extends State<HomeScreen> {
               backgroundColor: Color(0xFF002147)),
           BottomNavigationBarItem(
             icon: Icon(
-              Icons.send_to_mobile,
+              Icons.system_update_rounded,
               color: Color(0xFF002147),
             ),
-            label: 'Transfer',
+            label: 'Receive Money',
           ),
           BottomNavigationBarItem(
               icon: Icon(

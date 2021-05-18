@@ -151,8 +151,6 @@ class _TransferScreenState extends State<TransferScreen> {
                           } else {
                             setState(() {
                               transferPayload = TransferModel(
-                                  createdOn: DateTime.now(),
-                                  modifiedOn: DateTime.now(),
                                   type: QR_TRANSFER,
                                   senderId: currentUser.id,
                                   receiverId: '',
@@ -573,13 +571,7 @@ class _TransferScreenState extends State<TransferScreen> {
                                                               transferValue:
                                                                   qrdataFeed
                                                                       .text,
-                                                              createdOn:
-                                                                  DateTime
-                                                                      .now(),
                                                               id: '',
-                                                              modifiedOn:
-                                                                  DateTime
-                                                                      .now(),
                                                               senderAvailableBalance:
                                                                   '',
                                                               type: '');
@@ -603,11 +595,6 @@ class _TransferScreenState extends State<TransferScreen> {
                                                               currentUser.email,
                                                           transferValue:
                                                               qrdataFeed.text,
-                                                          createdOn:
-                                                              DateTime.now(),
-                                                          id: '',
-                                                          modifiedOn:
-                                                              DateTime.now(),
                                                           senderAvailableBalance:
                                                               '',
                                                           type: '');
@@ -670,7 +657,7 @@ class _TransferScreenState extends State<TransferScreen> {
                                     width: MediaQuery.of(context).size.width *
                                         0.68,
                                     child: Icon(
-                                      Icons.send_to_mobile,
+                                      Icons.system_update_rounded,
                                       size: 70,
                                     ),
                                   ),
@@ -795,7 +782,7 @@ class _TransferScreenState extends State<TransferScreen> {
           // initiatePayment();
         },
         child: Text(
-          "TRANSFER MONEY",
+          "Generate QR",
           textAlign: TextAlign.center,
           style:
               style.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
@@ -1104,10 +1091,10 @@ class _TransferScreenState extends State<TransferScreen> {
               backgroundColor: Color(0xFF002147)),
           BottomNavigationBarItem(
             icon: Icon(
-              Icons.send_to_mobile,
+              Icons.system_update_rounded,
               color: Color(0xFF002147),
             ),
-            label: 'Transfer',
+            label: 'Receive Money',
           ),
           BottomNavigationBarItem(
               icon: Icon(
