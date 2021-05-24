@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:cash_me/core/constants.dart';
 import 'package:cash_me/core/models/account_charge.model.dart';
 import 'package:cash_me/core/models/bank.model.dart';
+import 'package:cash_me/core/models/bank_transfer_response.model.dart';
 import 'package:cash_me/core/models/charge_response.model.dart';
 import 'package:cash_me/core/models/validate_charge_response.model.dart';
 import 'package:cash_me/core/models/transfer.model.dart';
@@ -84,11 +85,12 @@ class WalletService {
     }
   }
 
-  Future loadWallet(String url, body) async {
+  Future loadWallet(body) async {
     try {
-      var res = await http.post(url, body: json.encode(body), headers: headers);
+      var res = await http.post(BANK_TRANSFER_ENDPOINT,
+          body: json.encode(body), headers: headers);
       print(res.body);
-      return ChargeResponse.fromJson(jsonDecode(res.body));
+      return BankTransferResponse.fromJson(jsonDecode(res.body));
     } catch (e) {
       return null;
     }

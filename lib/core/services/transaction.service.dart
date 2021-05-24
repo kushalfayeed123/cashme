@@ -23,6 +23,7 @@ class TransactionService {
     try {
       return _trasactCollectionReference
           .where('UserId', isEqualTo: userId)
+          .where('Status', isEqualTo: 'Completed')
           // .orderBy('ModifiedOn')
           .snapshots()
           .asyncMap((doc) =>

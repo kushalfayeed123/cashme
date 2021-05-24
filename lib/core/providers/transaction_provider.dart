@@ -23,6 +23,7 @@ class TransactionProvider with ChangeNotifier {
         .listen((transact) {
       transact.sort((a, b) => b.createdOn.compareTo(a.createdOn));
       _userTransactions = transact;
+      // print(_userTransactions[0].status);
       notifyListeners();
     });
   }

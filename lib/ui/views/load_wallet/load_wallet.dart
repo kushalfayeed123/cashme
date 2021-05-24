@@ -5,6 +5,7 @@ import 'package:cash_me/core/constants.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cash_me/core/models/account_charge.model.dart';
 import 'package:cash_me/core/models/bank.model.dart';
+import 'package:cash_me/core/models/bank_transfer_response.model.dart';
 import 'package:cash_me/core/models/charge_response.model.dart';
 import 'package:cash_me/core/models/requery_response.dart';
 import 'package:cash_me/core/models/transaction.model.dart';
@@ -219,7 +220,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
       closeDialog();
 
       showSuccessMessageDialog(
-          'You have successfully loaded your wallet with the sum of ₦${NumberFormat('#,###,##0').format(int.parse(_amountController.text))}');
+          'You have successfully loaded your wallet with the sum of ₦${NumberFormat('#,##0.00').format(int.parse(_amountController.text))}');
       Future.delayed(Duration(microseconds: 300));
     } catch (e) {
       closeDialog();
@@ -305,7 +306,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
         dialogType: DialogType.NO_HEADER,
         dismissOnTouchOutside: false,
         body: Container(
-          height: MediaQuery.of(context).size.height * 0.27,
+          height: MediaQuery.of(context).size.height * 0.4,
           width: MediaQuery.of(context).size.width,
           padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
           child: Column(
@@ -391,7 +392,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
         dialogType: DialogType.NO_HEADER,
         dismissOnTouchOutside: false,
         body: Container(
-          height: MediaQuery.of(context).size.height * 0.45,
+          height: MediaQuery.of(context).size.height * 0.30,
           width: MediaQuery.of(context).size.width,
           padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
           child: Column(
@@ -441,6 +442,101 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
         )).show();
   }
 
+  void showBankDetails(BankTransferResponse payload) {
+    closeDialog();
+    TextStyle style = TextStyle(fontFamily: 'San Francisco', fontSize: 16.0);
+
+    AwesomeDialog(
+        context: context,
+        padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 30.0),
+        animType: AnimType.BOTTOMSLIDE,
+        showCloseIcon: false,
+        customHeader: null,
+        dialogType: DialogType.NO_HEADER,
+        dismissOnTouchOutside: false,
+        body: Container(
+          height: MediaQuery.of(context).size.height * 0.41,
+          width: MediaQuery.of(context).size.width,
+          padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
+          child: Column(
+            children: [
+              Text(
+                payload.meta.authorization.transferNote,
+                style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 20.0,
+                    color: Color(0xFF002147),
+                    fontWeight: FontWeight.w600),
+              ),
+              SizedBox(
+                height: 25.0,
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Bank Name: ${payload.meta.authorization.transferBank}',
+                    style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontSize: 16.0,
+                        color: Color(0xFF002147),
+                        fontWeight: FontWeight.w500),
+                  ),
+                  SizedBox(
+                    height: 15.0,
+                  ),
+                  Text(
+                    'Account Number: ${payload.meta.authorization.transferAccount}',
+                    style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontSize: 16.0,
+                        color: Color(0xFF002147),
+                        fontWeight: FontWeight.w500),
+                  ),
+                  // SizedBox(
+                  //   height: 15.0,
+                  // ),
+                  // Text(
+                  //   'Amount: ${payload.meta.authorization.transferAmount}',
+                  //   style: TextStyle(
+                  //       fontFamily: 'Montserrat',
+                  //       fontSize: 16.0,
+                  //       color: Color(0xFF002147),
+                  //       fontWeight: FontWeight.w500),
+                  // ),
+                ],
+              ),
+              SizedBox(
+                height: 10.0,
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Material(
+                    elevation: 5.0,
+                    borderRadius: BorderRadius.circular(30.0),
+                    color: Color(0xFF002147),
+                    child: MaterialButton(
+                      minWidth: MediaQuery.of(context).size.width * 0.3,
+                      padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+                      onPressed: () async {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text("Ok",
+                          textAlign: TextAlign.center,
+                          style: style.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
+        )).show();
+  }
+
   void initiatePayment() async {
     openLoadingDialog();
     var connectivityResult = await (Connectivity().checkConnectivity());
@@ -451,19 +547,25 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
       return;
     }
     final _user = Provider.of<UserProvider>(context, listen: false).currentUser;
+    final transactionRef = 'MC-' + DateTime.now().toIso8601String();
 
     final fullName = '${_firstNameController.text.trim()}'
         ' ${_lastNameController.text.trim()}';
     var payLoad = {
-      "tx_ref": 'MC-' + DateTime.now().toIso8601String(),
+      "tx_ref": transactionRef,
       "amount": _amountController.text.trim(),
-      "account_bank": selectedBank.toString().trim(),
-      "account_number": _accountController.text.trim(),
-      "currency": CURRENCY.toString().trim(),
+      // "account_bank": selectedBank.toString().trim(),
+      // "account_number": _accountController.text.trim(),
       "email": _user.email.toString().trim(),
-      "phone_number": _user.phoneNumber.trim(),
-      "fullname": fullName,
-      "passcode": selectedDate,
+      // "phone_number": '07015902708',
+
+      "currency": CURRENCY.toString().trim(),
+      "duration": 2,
+      "frequency": 5,
+      "narration": "CashMe",
+      "is_permanent": true
+      // "fullname": fullName,
+      // "passcode": selectedDate,
       // "firstname": _firstNameController.text,
       // "lastname": _lastNameController.text,
     };
@@ -471,16 +573,34 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
 
     try {
       await Provider.of<WalletProvider>(context, listen: false)
-          .loadWallet('$SANDBOX_CHARGE_ENDPOINT', payLoad);
+          .loadWallet(payLoad);
 
       final response = Provider.of<WalletProvider>(context, listen: false).res;
 
       if (response != null) {
         if (response.status == 'success') {
-          if (response.data.meta.authorization.mode == 'otp') {
-            showOtpForm(response.data.flwRef);
-          } else {
-            validateCharge(response.data.flwRef);
+          // if (response.data.meta.authorization.mode == 'otp') {
+          //   showOtpForm(response.data.flwRef);
+          // } else {
+          //   validateCharge(response.data.flwRef);
+          // }
+
+          if (response.meta.authorization.mode == 'banktransfer') {
+            transactionPayload = TransactionModel(
+                userId: _user.id,
+                type: CREDIT,
+                status: 'Pending',
+                value: _amountController.text,
+                senderName: _user.cashMeName,
+                transactionMode: WALLET_LOAD,
+                modifiedOn: DateTime.now(),
+                createdOn: DateTime.now(),
+                id: '',
+                transactionRef: transactionRef);
+
+            await Provider.of<TransactionProvider>(context, listen: false)
+                .addTransaction(transactionPayload);
+            showBankDetails(response);
           }
         } else {
           closeDialog();
@@ -1043,7 +1163,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
                         Padding(
                           padding: const EdgeInsets.only(left: 10.0),
                           child: Text(
-                            '₦${_wallet.legderBalance > 0 ? NumberFormat('#,###,##0').format(_wallet.legderBalance) : _wallet.legderBalance}',
+                            '₦${_wallet.availableBalance > 0 ? NumberFormat('#,###,##0').format(_wallet.availableBalance) : _wallet.availableBalance}',
                             style: TextStyle(
                                 color: Colors.grey[200],
                                 fontSize: 16,
@@ -1086,16 +1206,16 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
                           crossAxisAlignment: CrossAxisAlignment.center,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
-                            SizedBox(height: 15.0),
-                            bankField,
-                            SizedBox(height: 15.0),
-                            accNumberField,
-                            SizedBox(height: 15.0),
-                            firstNameField,
-                            SizedBox(height: 15.0),
-                            lastNameField,
-                            SizedBox(height: 15.0),
-                            selectedBank == '057' ? dobField : Container(),
+                            // SizedBox(height: 15.0),
+                            // bankField,
+                            // SizedBox(height: 15.0),
+                            // accNumberField,
+                            // SizedBox(height: 15.0),
+                            // firstNameField,
+                            // SizedBox(height: 15.0),
+                            // lastNameField,
+                            // SizedBox(height: 15.0),
+                            // selectedBank == '057' ? dobField : Container(),
                             // isFirst ? SizedBox(height: 15.0) : Container(),
                             // isFirst ? phoneField : Container(),
                             // isFirst ? SizedBox(height: 15.0) : Container(),

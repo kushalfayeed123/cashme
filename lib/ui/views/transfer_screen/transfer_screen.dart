@@ -1004,7 +1004,7 @@ class _TransferScreenState extends State<TransferScreen> {
                     Padding(
                       padding: const EdgeInsets.only(left: 10.0),
                       child: Text(
-                        '₦${_wallet.legderBalance > 0 ? NumberFormat('#,###,##0').format(_wallet.legderBalance) : _wallet.legderBalance}',
+                        '₦${_wallet.availableBalance > 0 ? NumberFormat('#,###,##0').format(_wallet.availableBalance) : _wallet.availableBalance}',
                         style: TextStyle(
                             color: Colors.grey[200],
                             fontSize: 16,
