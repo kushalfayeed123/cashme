@@ -1,3 +1,4 @@
+import 'package:cash_me/ui/views/cash_out/cash_out_screen.dart';
 import 'package:cash_me/ui/views/create_account/create_account_screen.dart';
 import 'package:cash_me/ui/views/home/home_screen.dart';
 import 'package:cash_me/ui/views/load_wallet/load_wallet.dart';
@@ -15,4 +16,5 @@ final routes = {
   LoadWalletScreen.routeName: (context) => LoadWalletScreen(),
   TransferScreen.routeName: (context) => TransferScreen(),
   ScanScreen.routeName: (context) => ScanScreen(),
+  CashoutScreen.routeName: (context) => CashoutScreen(),
 };

@@ -17,6 +17,7 @@ import 'package:cash_me/core/providers/user_provider.dart';
 import 'package:cash_me/core/providers/wallet_provider.dart';
 import 'package:cash_me/core/services/wallet.service.dart';
 import 'package:cash_me/locator.dart';
+import 'package:cash_me/ui/views/cash_out/cash_out_screen.dart';
 import 'package:cash_me/ui/views/home/home_screen.dart';
 import 'package:cash_me/ui/views/login/login_screen.dart';
 import 'package:cash_me/ui/views/scan_screen/scan_screen.dart';
@@ -239,14 +240,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
         customHeader: null,
         dialogType: DialogType.NO_HEADER,
         dismissOnTouchOutside: false,
-        body:
-
-            // Text(
-            //   message,
-            //   style: TextStyle(fontFamily: 'San Fransisco', fontSize: 14),
-            // )
-            //
-            Container(
+        body: Container(
           height: MediaQuery.of(context).size.height * 0.35,
           width: MediaQuery.of(context).size.width,
           padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
@@ -493,17 +487,17 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
                         color: Color(0xFF002147),
                         fontWeight: FontWeight.w500),
                   ),
-                  // SizedBox(
-                  //   height: 15.0,
-                  // ),
-                  // Text(
-                  //   'Amount: ${payload.meta.authorization.transferAmount}',
-                  //   style: TextStyle(
-                  //       fontFamily: 'Montserrat',
-                  //       fontSize: 16.0,
-                  //       color: Color(0xFF002147),
-                  //       fontWeight: FontWeight.w500),
-                  // ),
+                  SizedBox(
+                    height: 15.0,
+                  ),
+                  Text(
+                    'Amount: ${_amountController.text}',
+                    style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontSize: 16.0,
+                        color: Color(0xFF002147),
+                        fontWeight: FontWeight.w500),
+                  ),
                 ],
               ),
               SizedBox(
@@ -955,7 +949,9 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               GestureDetector(
-                onTap: () {},
+                onTap: () {
+                  Navigator.of(context).pushNamed(CashoutScreen.routeName);
+                },
                 child: Row(
                   children: [
                     Icon(Icons.monetization_on, color: Color(0xFF002147)),

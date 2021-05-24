@@ -1,5 +1,6 @@
 import 'package:cash_me/core/models/bank.model.dart';
 import 'package:cash_me/core/models/bank_transfer_response.model.dart';
+import 'package:cash_me/core/models/cashout_response.model.dart';
 import 'package:cash_me/core/models/charge_response.model.dart';
 import 'package:cash_me/core/models/validate_charge_response.model.dart';
 import 'package:cash_me/core/models/transfer.model.dart';
@@ -18,6 +19,9 @@ class WalletProvider with ChangeNotifier {
   BankModel _banks;
   BankModel get banks => _banks;
 
+  CashoutResponse _transfer;
+  CashoutResponse get transfer => _transfer;
+
   ValidateChargeResponse _validateRes;
   ValidateChargeResponse get validateRes => _validateRes;
 
@@ -26,6 +30,9 @@ class WalletProvider with ChangeNotifier {
 
   BankTransferResponse _res;
   BankTransferResponse get res => _res;
+
+  CashoutResponse _cashOutRes;
+  CashoutResponse get cashOutRes => _cashOutRes;
 
   Future addWalletData(WalletModel walletData, String _userId) async {
     await _walletService.addWallet(_userId, walletData);
@@ -37,6 +44,10 @@ class WalletProvider with ChangeNotifier {
 
   Future loadWallet(payload) async {
     _res = await _walletService.loadWallet(payload);
+  }
+
+  Future cashOut(payload) async {
+    _cashOutRes = await _walletService.cashOut(payload);
   }
 
   // Future getUserWallet(String userId) async {
@@ -57,6 +68,13 @@ class WalletProvider with ChangeNotifier {
   Future setBanks() async {
     _walletService.getBanks().asStream().listen((bank) {
       _banks = bank;
+      notifyListeners();
+    });
+  }
+
+  Future setTransfer(int id) async {
+    _walletService.getTransfer(id).asStream().listen((transfer) {
+      _transfer = transfer;
       notifyListeners();
     });
   }

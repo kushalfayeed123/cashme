@@ -9,6 +9,7 @@ const String REQUERY_ENDPOINT =
     "https://api.ravepay.co/flwv3-pug/getpaidx/api/verify";
 const String BANK_TRANSFER_ENDPOINT =
     "https://api.flutterwave.com/v3/charges?type=bank_transfer";
+const String CASHOUT_ENDPOINT = "https://api.flutterwave.com/v3/transfers";
 
 const String ACCOUNT_VERIFICATION_ENDPOINT =
     "https://api.ravepay.co/flwv3-pug/getpaidx/api/resolve_account";

@@ -4,6 +4,7 @@ import 'package:cash_me/core/providers/transaction_provider.dart';
 import 'package:cash_me/core/providers/user_provider.dart';
 import 'package:cash_me/core/providers/wallet_provider.dart';
 import 'package:cash_me/ui/shared/utils/date_format.dart';
+import 'package:cash_me/ui/views/cash_out/cash_out_screen.dart';
 import 'package:cash_me/ui/views/load_wallet/load_wallet.dart';
 import 'package:cash_me/ui/views/login/login_screen.dart';
 import 'package:cash_me/ui/views/scan_screen/scan_screen.dart';
@@ -94,7 +95,9 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               GestureDetector(
-                onTap: () {},
+                onTap: () {
+                  Navigator.of(context).pushNamed(CashoutScreen.routeName);
+                },
                 child: Row(
                   children: [
                     Icon(Icons.monetization_on, color: Color(0xFF002147)),

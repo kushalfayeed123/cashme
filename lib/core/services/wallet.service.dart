@@ -5,6 +5,7 @@ import 'package:cash_me/core/constants.dart';
 import 'package:cash_me/core/models/account_charge.model.dart';
 import 'package:cash_me/core/models/bank.model.dart';
 import 'package:cash_me/core/models/bank_transfer_response.model.dart';
+import 'package:cash_me/core/models/cashout_response.model.dart';
 import 'package:cash_me/core/models/charge_response.model.dart';
 import 'package:cash_me/core/models/validate_charge_response.model.dart';
 import 'package:cash_me/core/models/transfer.model.dart';
@@ -93,6 +94,28 @@ class WalletService {
       return BankTransferResponse.fromJson(jsonDecode(res.body));
     } catch (e) {
       return null;
+    }
+  }
+
+  Future cashOut(body) async {
+    try {
+      var res = await http.post(CASHOUT_ENDPOINT,
+          body: json.encode(body), headers: headers);
+      print(res.body);
+      return CashoutResponse.fromJson(jsonDecode(res.body));
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future getTransfer(int id) async {
+    try {
+      var res = await http.get('$CASHOUT_ENDPOINT/$id', headers: headers);
+      print(res.body);
+      return CashoutResponse.fromJson(jsonDecode(res.body));
+    } catch (e) {
+      print(e);
+      throw HttpException(e.toString());
     }
   }
 
