@@ -130,6 +130,14 @@ class WalletService {
     }
   }
 
+  Future startJob(payload) async {
+    try {
+      await http.post(JOB_ENDPOINT, body: jsonEncode(payload));
+    } catch (e) {
+      throw HttpException(e.toString());
+    }
+  }
+
   Future createTransferRecord(TransferModel transferData) async {
     final transferId = Uuid().v1();
     try {

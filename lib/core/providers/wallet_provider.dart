@@ -34,6 +34,9 @@ class WalletProvider with ChangeNotifier {
   CashoutResponse _cashOutRes;
   CashoutResponse get cashOutRes => _cashOutRes;
 
+  var _jobRes;
+  get jobRes => _jobRes;
+
   Future addWalletData(WalletModel walletData, String _userId) async {
     await _walletService.addWallet(_userId, walletData);
   }
@@ -48,6 +51,10 @@ class WalletProvider with ChangeNotifier {
 
   Future cashOut(payload) async {
     _cashOutRes = await _walletService.cashOut(payload);
+  }
+
+  Future startJob(payload) async {
+    await _walletService.startJob(payload);
   }
 
   // Future getUserWallet(String userId) async {

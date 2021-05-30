@@ -306,7 +306,6 @@ class _TransferScreenState extends State<TransferScreen> {
           id: '');
 
       walletPayload = WalletModel(
-          legderBalance: newValue,
           availableBalance: newValue,
           accountbank: '',
           accountNumber: '',
@@ -996,7 +995,7 @@ class _TransferScreenState extends State<TransferScreen> {
                     Padding(
                       padding: const EdgeInsets.only(left: 20.0),
                       child: Text(
-                        'Total Balance:',
+                        'Ledger Balance:',
                         style: TextStyle(
                             color: Colors.grey[200],
                             fontSize: 16,
@@ -1007,7 +1006,7 @@ class _TransferScreenState extends State<TransferScreen> {
                     Padding(
                       padding: const EdgeInsets.only(left: 10.0),
                       child: Text(
-                        '₦${_wallet.availableBalance > 0 ? NumberFormat('#,###,##0').format(_wallet.availableBalance) : _wallet.availableBalance}',
+                        '₦${_wallet.legderBalance > 0 ? NumberFormat('#,###,##0').format(_wallet.legderBalance) : _wallet.legderBalance}',
                         style: TextStyle(
                             color: Colors.grey[200],
                             fontSize: 16,

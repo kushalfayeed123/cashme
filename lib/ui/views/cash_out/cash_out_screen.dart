@@ -245,7 +245,7 @@ class _CashoutScreenState extends State<CashoutScreen>
     final wallet =
         Provider.of<WalletProvider>(context, listen: false).userWallet;
 
-    var payload = {
+    final payload = {
       "account_bank": accCode,
       "account_number": _accountController.text.trim(),
       "amount": int.parse(_amountController.text),
@@ -254,6 +254,8 @@ class _CashoutScreenState extends State<CashoutScreen>
       "tx_ref": transactionRef,
       "debit_currency": CURRENCY,
       "email": user.email,
+      "callback_url": 'https://cashme-webhook.herokuapp.com/cashout'
+      // 'https://webhook.site/62515594-c78a-4c9c-89c2-24863a47c13c'
     };
 
     try {
@@ -266,62 +268,35 @@ class _CashoutScreenState extends State<CashoutScreen>
             .cashOut(payload);
         final cashOutRes =
             Provider.of<WalletProvider>(context, listen: false).cashOutRes;
+        final transactionPayload = TransactionModel(
+            type: 'Debit',
+            value: _amountController.text,
+            senderName: user.cashMeName,
+            transactionMode: 'Cashout',
+            createdOn: DateTime.now(),
+            modifiedOn: DateTime.now(),
+            status: 'Pending',
+            userId: user.id,
+            transactionRef: cashOutRes.data.reference);
+        await Provider.of<TransactionProvider>(context, listen: false)
+            .addTransaction(transactionPayload);
+        closeDialog();
+        showSuccessMessageDialog(
+            'Your cashout transaction is in progress. You will be notified once it is done.',
+            true);
         if (cashOutRes.status == 'success') {
           await Provider.of<WalletProvider>(context, listen: false)
               .setTransfer(cashOutRes.data.id);
           final transferVerificationRes =
               Provider.of<WalletProvider>(context, listen: false).transfer;
-          // print(transferVerificationRes.data.completeMessage);
-
-          if (transferVerificationRes.data.status == 'PENDING' ||
-              transferVerificationRes.data.status == 'NEW') {
-            closeDialog();
-            showSuccessMessageDialog(
-                'Your Cashout transaction is in progress. You will be notified once it is done',
-                true);
-            Timer.periodic(Duration(seconds: 20), (timer) async {
-              await Provider.of<WalletProvider>(context, listen: false)
-                  .setTransfer(cashOutRes.data.id);
-              final transferVerificationRes =
-                  Provider.of<WalletProvider>(context, listen: false).transfer;
-              if (transferVerificationRes.status == 'SUCCESSFUL' &&
-                  transferVerificationRes.data.completeMessage ==
-                      'Transaction was successful') {
-                final newValue = wallet.availableBalance -
-                    transferVerificationRes.data.amount;
-                final walletPayload = WalletModel(
-                    availableBalance: newValue,
-                    legderBalance: newValue,
-                    accountbank: selectedBank,
-                    accountNumber: _accountController.text,
-                    bvn: '',
-                    userId: user.id);
-                final transactionPayload = TransactionModel(
-                    type: 'CashOut',
-                    value: _amountController.text,
-                    senderName: user.cashMeName,
-                    transactionMode: 'Debit',
-                    createdOn: DateTime.now(),
-                    modifiedOn: DateTime.now(),
-                    status: 'Completed',
-                    userId: user.id,
-                    transactionRef: transactionRef);
-                await Provider.of<WalletProvider>(context, listen: false)
-                    .updateWallet(wallet.id, walletPayload);
-                await Provider.of<TransactionProvider>(context, listen: false)
-                    .addTransaction(transactionPayload);
-                // closeDialog();
-
-                showSuccessMessageDialog(
-                    'Cashout has been completed successfully.', false);
-                timer.cancel();
-              }
-            });
-          } else if (transferVerificationRes.data.status == 'FAILED') {
+          if (transferVerificationRes.data.status == 'FAILED') {
             closeDialog();
             showErrorMessageDialog(
                 transferVerificationRes.data.completeMessage);
           }
+        } else {
+          closeDialog();
+          showErrorMessageDialog(cashOutRes.message);
         }
       }
     } catch (e) {
@@ -329,10 +304,6 @@ class _CashoutScreenState extends State<CashoutScreen>
       print(e);
       // showErrorMessageDialog(e);
     }
-  }
-
-  verifyCashout(context, cashOutRes) async {
-    print('got here');
   }
 
   @override
@@ -658,7 +629,7 @@ class _CashoutScreenState extends State<CashoutScreen>
                         Padding(
                           padding: const EdgeInsets.only(left: 20.0),
                           child: Text(
-                            'Total Balance:',
+                            'Ledger Balance:',
                             style: TextStyle(
                                 color: Colors.grey[200],
                                 fontSize: 16,
@@ -669,7 +640,7 @@ class _CashoutScreenState extends State<CashoutScreen>
                         Padding(
                           padding: const EdgeInsets.only(left: 10.0),
                           child: Text(
-                            '₦${_wallet.availableBalance > 0 ? NumberFormat('#,###,##0').format(_wallet.availableBalance) : _wallet.availableBalance}',
+                            '₦${_wallet.legderBalance > 0 ? NumberFormat('#,###,##0').format(_wallet.legderBalance) : _wallet.legderBalance}',
                             style: TextStyle(
                                 color: Colors.grey[200],
                                 fontSize: 16,

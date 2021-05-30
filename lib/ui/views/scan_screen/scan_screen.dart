@@ -240,7 +240,6 @@ class _ScanScreenState extends State<ScanScreen> {
             id: '');
 
         walletPayload = WalletModel(
-            legderBalance: newValue,
             availableBalance: newValue,
             accountbank: '',
             accountNumber: '',
@@ -721,7 +720,7 @@ class _ScanScreenState extends State<ScanScreen> {
                       Padding(
                         padding: const EdgeInsets.only(left: 20.0),
                         child: Text(
-                          'Total Balance:',
+                          'Legder Balance:',
                           style: TextStyle(
                               color: Colors.grey[200],
                               fontSize: 16,
@@ -732,7 +731,7 @@ class _ScanScreenState extends State<ScanScreen> {
                       Padding(
                         padding: const EdgeInsets.only(left: 10.0),
                         child: Text(
-                          '₦${_wallet.availableBalance > 0 ? NumberFormat('#,###,##0').format(_wallet.availableBalance) : _wallet.availableBalance}',
+                          '₦${_wallet.legderBalance > 0 ? NumberFormat('#,###,##0').format(_wallet.legderBalance) : _wallet.legderBalance}',
                           style: TextStyle(
                               color: Colors.grey[200],
                               fontSize: 16,
