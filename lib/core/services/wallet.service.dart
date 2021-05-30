@@ -90,7 +90,6 @@ class WalletService {
     try {
       var res = await http.post(BANK_TRANSFER_ENDPOINT,
           body: json.encode(body), headers: headers);
-      print(res.body);
       return BankTransferResponse.fromJson(jsonDecode(res.body));
     } catch (e) {
       return null;
@@ -101,7 +100,6 @@ class WalletService {
     try {
       var res = await http.post(CASHOUT_ENDPOINT,
           body: json.encode(body), headers: headers);
-      print(res.body);
       return CashoutResponse.fromJson(jsonDecode(res.body));
     } catch (e) {
       return null;
@@ -111,7 +109,6 @@ class WalletService {
   Future getTransfer(int id) async {
     try {
       var res = await http.get('$CASHOUT_ENDPOINT/$id', headers: headers);
-      print(res.body);
       return CashoutResponse.fromJson(jsonDecode(res.body));
     } catch (e) {
       print(e);
@@ -132,7 +129,8 @@ class WalletService {
 
   Future startJob(payload) async {
     try {
-      await http.post(JOB_ENDPOINT, body: jsonEncode(payload));
+      var res = await http.post(JOB_ENDPOINT, body: jsonEncode(payload));
+      print(res);
     } catch (e) {
       throw HttpException(e.toString());
     }

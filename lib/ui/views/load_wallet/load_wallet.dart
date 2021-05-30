@@ -451,7 +451,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
         body: Container(
           height: MediaQuery.of(context).size.height * 0.41,
           width: MediaQuery.of(context).size.width,
-          padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
+          padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
           child: Column(
             children: [
               Text(
@@ -501,7 +501,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
                 ],
               ),
               SizedBox(
-                height: 10.0,
+                height: 15.0,
               ),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -563,7 +563,6 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
       // "firstname": _firstNameController.text,
       // "lastname": _lastNameController.text,
     };
-    print(payLoad);
 
     try {
       await Provider.of<WalletProvider>(context, listen: false)
@@ -592,8 +591,12 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
                 id: '',
                 transactionRef: transactionRef);
 
+            final jobPayload = {"id": _user.id};
+
             await Provider.of<TransactionProvider>(context, listen: false)
                 .addTransaction(transactionPayload);
+            await Provider.of<WalletProvider>(context, listen: false)
+                .startJob(jobPayload);
             showBankDetails(response);
           }
         } else {

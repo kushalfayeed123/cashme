@@ -70,7 +70,6 @@ class _CashoutScreenState extends State<CashoutScreen>
   }
 
   getSelectedBank(value) {
-    print(value);
     accCode = value;
   }
 

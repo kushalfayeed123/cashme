@@ -27,7 +27,7 @@ class WalletModel {
       : id = snapshot.id,
         userId = snapshot.data()['UserId'],
         availableBalance = snapshot.data()['AvailableBalance'] ?? 0,
-        legderBalance = snapshot.data()['LegderBalance'] ?? 0,
+        legderBalance = snapshot.data()['LedgerBalance'] ?? 0,
         accountNumber = snapshot.data()['AccountNumber'],
         accountbank = snapshot.data()['Accountbank'],
         bvn = snapshot.data()['Bvn'];
@@ -38,7 +38,7 @@ class WalletModel {
     return {
       'UserId': userId,
       'AvailableBalance': availableBalance,
-      'LegderBalance': legderBalance,
+      'LedgerBalance': legderBalance,
       'AccountNumber': accountNumber,
       'Accountbank': accountbank,
       'Bvn': bvn,
