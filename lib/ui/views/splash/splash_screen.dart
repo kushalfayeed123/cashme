@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cash_me/core/models/user.model.dart';
 import 'package:cash_me/core/providers/authentication_provider.dart';
+import 'package:cash_me/core/providers/transaction_provider.dart';
 import 'package:cash_me/core/providers/user_provider.dart';
 import 'package:cash_me/core/providers/wallet_provider.dart';
 import 'package:cash_me/ui/views/home/home_screen.dart';
@@ -29,6 +30,7 @@ class _SplashScreenState extends State<SplashScreenUi>
     _textAnimationController =
         AnimationController(vsync: this, duration: Duration(seconds: 3))
           ..repeat();
+
     super.initState();
   }
 
@@ -49,6 +51,19 @@ class _SplashScreenState extends State<SplashScreenUi>
     super.didChangeDependencies();
   }
 
+  Future<void> _getUserInfo() async {
+    try {
+      final _user =
+          Provider.of<UserProvider>(context, listen: false).currentUser;
+      await Provider.of<WalletProvider>(context, listen: false)
+          .setUserWallet(_user.id);
+      await Provider.of<TransactionProvider>(context, listen: false)
+          .setUserTransactions(_user.id);
+    } catch (e) {
+      print(e);
+    }
+  }
+
   startTime() async {
     var duration = new Duration(seconds: 5);
     return new Timer(duration, () => route());
@@ -61,13 +76,7 @@ class _SplashScreenState extends State<SplashScreenUi>
       if (isLoggedIn) {
         await Provider.of<UserProvider>(context, listen: false)
             .setCurrentUser(false);
-        UserModel _user =
-            Provider.of<UserProvider>(context, listen: false).currentUser;
-        await Provider.of<WalletProvider>(context, listen: false)
-            .setUserWallet(_user.id);
-
-        // await Provider.of<NotificationProvider>(context, listen: false)
-        //     .setUserNotifications(_user?.id);
+        _getUserInfo();
         Navigator.of(context).pushNamedAndRemoveUntil(
             HomeScreen.routeName, (Route<dynamic> route) => false);
       } else {

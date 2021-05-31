@@ -67,14 +67,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
   @override
   void initState() {
     super.initState();
-    getBanks();
-    final wallet =
-        Provider.of<WalletProvider>(context, listen: false).userWallet;
-    if (wallet.accountNumber.isEmpty || wallet.accountbank.isEmpty) {
-      isFirst = true;
-    } else {
-      isFirst = false;
-    }
+    // getBanks();
   }
 
   openLoadingDialog() {
@@ -109,7 +102,6 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
   var lastName;
 
   getSelectedBank(value) {
-    print(value);
     accCode = value;
   }
 
@@ -725,44 +717,10 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
   @override
   Widget build(BuildContext context) {
     final _wallet = Provider.of<WalletProvider>(context).userWallet;
-    final _banks = Provider.of<WalletProvider>(context, listen: false).banks;
-    final bankData = _banks.data;
 
     setState(() => this.bcontext = context);
 
     TextStyle style = TextStyle(fontFamily: 'San Francisco', fontSize: 16.0);
-
-    final bankField = new Theme(
-      data: new ThemeData(primaryColor: Color(0xff16c79a)),
-      child: Container(
-        width: MediaQuery.of(context).size.width,
-        padding: EdgeInsets.only(left: 20, right: 20),
-        decoration: BoxDecoration(
-            border: Border.all(color: Color(0xFFBDBDBD)),
-            borderRadius: BorderRadius.all(Radius.circular(30))),
-        child: DropdownButtonHideUnderline(
-          child: new DropdownButton<String>(
-            isExpanded: true,
-            hint: new Text('Select your bank'),
-            value: selectedBank,
-            isDense: false,
-            onChanged: (value) {
-              getSelectedBank(value);
-              setState(() {
-                selectedBank = value;
-              });
-            },
-            items: bankData.map((e) {
-              return new DropdownMenuItem<String>(
-                value: e.code,
-                child:
-                    new Text(e.name, style: new TextStyle(color: Colors.black)),
-              );
-            }).toList(),
-          ),
-        ),
-      ),
-    );
 
     final pinField = new Theme(
       data: new ThemeData(primaryColor: Color(0xff16c79a)),
