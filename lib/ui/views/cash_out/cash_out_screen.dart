@@ -274,6 +274,8 @@ class _CashoutScreenState extends State<CashoutScreen>
             .cashOut(payload);
         final cashOutRes =
             Provider.of<WalletProvider>(context, listen: false).cashOutRes;
+        final wallet =
+            Provider.of<WalletProvider>(context, listen: false).userWallet;
         final transactionPayload = TransactionModel(
             type: 'Debit',
             value: _amountController.text,
@@ -284,6 +286,17 @@ class _CashoutScreenState extends State<CashoutScreen>
             status: 'Pending',
             userId: user.id,
             transactionRef: cashOutRes.data.reference);
+        final newValue =
+            wallet.availableBalance - int.parse(_amountController.text);
+        final walletPayload = WalletModel(
+            userId: user.id,
+            availableBalance: newValue,
+            legderBalance: wallet.legderBalance,
+            accountNumber: '',
+            accountbank: '',
+            bvn: '');
+        await Provider.of<WalletProvider>(context, listen: false)
+            .updateWallet(wallet.id, walletPayload);
         await Provider.of<TransactionProvider>(context, listen: false)
             .addTransaction(transactionPayload);
         closeDialog();
@@ -293,13 +306,6 @@ class _CashoutScreenState extends State<CashoutScreen>
         if (cashOutRes.status == 'success') {
           await Provider.of<WalletProvider>(context, listen: false)
               .setTransfer(cashOutRes.data.id);
-          final transferVerificationRes =
-              Provider.of<WalletProvider>(context, listen: false).transfer;
-          if (transferVerificationRes.data.status == 'FAILED') {
-            closeDialog();
-            showErrorMessageDialog(
-                transferVerificationRes.data.completeMessage);
-          }
         } else {
           closeDialog();
           showErrorMessageDialog(cashOutRes.message);

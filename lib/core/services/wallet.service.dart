@@ -100,6 +100,7 @@ class WalletService {
     try {
       var res = await http.post(CASHOUT_ENDPOINT,
           body: json.encode(body), headers: headers);
+
       return CashoutResponse.fromJson(jsonDecode(res.body));
     } catch (e) {
       return null;
@@ -177,7 +178,7 @@ class WalletService {
     try {
       _walletCollectionReference.doc(walletId).update({
         'AvailableBalance': payload.availableBalance,
-        'LegderBalance': payload.legderBalance
+        'LedgerBalance': payload.legderBalance
       });
     } catch (e) {
       throw HttpException(e.toString());
