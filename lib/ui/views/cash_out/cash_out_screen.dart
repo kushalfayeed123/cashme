@@ -12,6 +12,7 @@ import 'package:cash_me/ui/views/home/home_screen.dart';
 import 'package:cash_me/ui/views/load_wallet/load_wallet.dart';
 import 'package:cash_me/ui/views/scan_screen/scan_screen.dart';
 import 'package:cash_me/ui/views/transfer_screen/transfer_screen.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
@@ -41,8 +42,9 @@ class _CashoutScreenState extends State<CashoutScreen>
 
   @override
   void initState() {
-    super.initState();
     getBanks();
+
+    super.initState();
   }
 
   @override
@@ -55,7 +57,12 @@ class _CashoutScreenState extends State<CashoutScreen>
   }
 
   Future<void> getBanks() async {
-    await Provider.of<WalletProvider>(context, listen: false).setBanks();
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.none) {
+      return;
+    } else {
+      await Provider.of<WalletProvider>(context, listen: false).setBanks();
+    }
   }
 
   void getWallet() async {
@@ -309,7 +316,7 @@ class _CashoutScreenState extends State<CashoutScreen>
   Widget build(BuildContext context) {
     final _wallet = Provider.of<WalletProvider>(context).userWallet;
     final _banks = Provider.of<WalletProvider>(context, listen: false).banks;
-    final bankData = _banks.data;
+    final bankData = _banks?.data ?? [];
     TextStyle style = TextStyle(fontFamily: 'San Francisco', fontSize: 16.0);
 
     final bankField = new Theme(
