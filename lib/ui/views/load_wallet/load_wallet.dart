@@ -194,6 +194,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
         modifiedOn: DateTime.now(),
         createdOn: DateTime.now(),
         id: '',
+        transactionRef: '',
       );
 
       var newValue = _wallet.legderBalance + amount;
@@ -296,6 +297,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
           width: MediaQuery.of(context).size.width,
           padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 '$message',
@@ -549,7 +551,8 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
       "duration": 2,
       "frequency": 5,
       "narration": "CashMe",
-      "is_permanent": true
+      "is_permanent": true,
+      // "bvn": "2226187119"
       // "fullname": fullName,
       // "passcode": selectedDate,
       // "firstname": _firstNameController.text,
@@ -587,8 +590,8 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
 
             await Provider.of<TransactionProvider>(context, listen: false)
                 .addTransaction(transactionPayload);
-            await Provider.of<WalletProvider>(context, listen: false)
-                .startJob(jobPayload);
+            // await Provider.of<WalletProvider>(context, listen: false)
+            //     .startJob(jobPayload);
             showBankDetails(response);
           }
         } else {

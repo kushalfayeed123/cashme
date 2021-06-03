@@ -280,7 +280,7 @@ class _CashoutScreenState extends State<CashoutScreen>
             type: 'Debit',
             value: _amountController.text,
             senderName: user.cashMeName,
-            transactionMode: 'Cashout',
+            transactionMode: CASHOUT,
             createdOn: DateTime.now(),
             modifiedOn: DateTime.now(),
             status: 'Pending',

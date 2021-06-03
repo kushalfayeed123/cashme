@@ -1,4 +1,6 @@
 import 'package:cash_me/core/constants.dart';
+import 'package:cash_me/core/models/user.model.dart';
+import 'package:cash_me/core/models/wallet.model.dart';
 import 'package:cash_me/core/providers/authentication_provider.dart';
 import 'package:cash_me/core/providers/transaction_provider.dart';
 import 'package:cash_me/core/providers/user_provider.dart';
@@ -10,6 +12,7 @@ import 'package:cash_me/ui/views/login/login_screen.dart';
 import 'package:cash_me/ui/views/scan_screen/scan_screen.dart';
 import 'package:cash_me/ui/views/transfer_screen/transfer_screen.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -23,15 +26,26 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   BuildContext bcontext;
+  FirebaseMessaging messaging;
 
-  Future<void> _getUserInfo() async {
+  Future<void> _getUserInfo(token) async {
     try {
       final _user =
           Provider.of<UserProvider>(context, listen: false).currentUser;
+
+      final _wallet =
+          Provider.of<WalletProvider>(context, listen: false).userWallet;
+      var payload = WalletModel(
+          userId: _user.id,
+          availableBalance: _wallet.availableBalance,
+          legderBalance: _wallet.legderBalance,
+          accountNumber: _wallet.accountNumber,
+          accountbank: _wallet.accountbank,
+          bvn: _wallet.bvn,
+          pushToken: token);
+
       await Provider.of<WalletProvider>(context, listen: false)
-          .setUserWallet(_user.id);
-      await Provider.of<TransactionProvider>(context, listen: false)
-          .setUserTransactions(_user.id);
+          .initialUpdate(_wallet.id, payload);
     } catch (e) {
       print(e);
     }
@@ -43,7 +57,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void didChangeDependencies() {
     if (_isInit) {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        await _getUserInfo();
         await getBanks();
         setState(() => _isInit = false);
       });
@@ -60,10 +73,17 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  String token = '';
+
   @override
   void initState() {
-    _getUserInfo();
+    final _user = Provider.of<UserProvider>(context, listen: false).currentUser;
+    Provider.of<WalletProvider>(context, listen: false).setUserWallet(_user.id);
+    Provider.of<TransactionProvider>(context, listen: false)
+        .setUserTransactions(_user.id);
     super.initState();
+    messaging = FirebaseMessaging.instance;
+    messaging.getToken().then((value) => {_getUserInfo(value)});
   }
 
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();

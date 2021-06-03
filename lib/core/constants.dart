@@ -9,6 +9,7 @@ const String REQUERY_ENDPOINT =
     "https://api.ravepay.co/flwv3-pug/getpaidx/api/verify";
 const String BANK_TRANSFER_ENDPOINT =
     "https://api.flutterwave.com/v3/charges?type=bank_transfer";
+// "https://api.flutterwave.com/v3/bank_transfer";
 const String CASHOUT_ENDPOINT = "https://api.flutterwave.com/v3/transfers";
 const String JOB_ENDPOINT = "https://cashme-webhook.herokuapp.com/job";
 
@@ -23,7 +24,6 @@ const String ENCRYPTION_KEY =
 const CURRENCY = 'NGN';
 const PAYMENTTYPE = 'account';
 const COUNTRY = 'NG';
-const WEB_HOOK_3DS = 'https://rave-webhook.herokuapp.com/receivepayment';
 const MAX_REQUERY_COUNT = 30;
 
 const DEBIT = 'Debit';

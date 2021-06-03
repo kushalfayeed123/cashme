@@ -13,6 +13,7 @@ class UserModel {
   final DateTime modifiedOn;
   final String keyReference;
   final String phoneNumber;
+  // final String pushToken;
 
   const UserModel({
     this.id,
@@ -26,15 +27,17 @@ class UserModel {
     @required this.modifiedOn,
     @required this.keyReference,
     @required this.phoneNumber,
+    // @required this.pushToken,
   });
 
-  UserModel.fromData(DocumentSnapshot snapshot)
+  UserModel.fromData(DocumentSnapshot<Map<String, dynamic>> snapshot)
       : id = snapshot.id,
         fullName = snapshot.data()['FullName'],
         email = snapshot.data()['Email'],
         keyReference = snapshot.data()['KeyReference'],
         pin = snapshot.data()['Pin'],
         phoneNumber = snapshot.data()['PhoneNumber'],
+        // pushToken = snapshot.data()['PushToken'],
         cashMeName = snapshot.data()['CashMeName'],
         createdBy = snapshot.data()['CreatedBy'],
         createdOn = snapshot.data()['CreatedOn'].toDate(),
@@ -53,6 +56,7 @@ class UserModel {
       'CreatedOn': createdOn,
       'ModifiedBy': modifiedBy,
       'ModifiedOn': modifiedOn,
+      // 'PushToken': pushToken,
     };
   }
 }

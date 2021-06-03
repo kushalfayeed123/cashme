@@ -16,9 +16,9 @@ import 'package:uuid/uuid.dart';
 import 'package:http/http.dart' as http;
 
 class WalletService {
-  final CollectionReference _walletCollectionReference =
+  final CollectionReference<Map<String, dynamic>> _walletCollectionReference =
       FirebaseFirestore.instance.collection("Wallet");
-  final CollectionReference _transferCollectionReference =
+  final CollectionReference<Map<String, dynamic>> _transferCollectionReference =
       FirebaseFirestore.instance.collection("Transfer");
 
   // var dio = Dio(BaseOptions(followRedirects: false));
@@ -33,7 +33,7 @@ class WalletService {
 
   Future getResponseFromEndpoint(String url) async {
     try {
-      var response = await http.get(url);
+      var response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -48,7 +48,7 @@ class WalletService {
   }
 
   Future verifyAccount(AccountCharge payload) async {
-    var res = await http.post(ACCOUNT_VERIFICATION_ENDPOINT,
+    var res = await http.post(Uri.parse(ACCOUNT_VERIFICATION_ENDPOINT),
         body: json.encode(payload), headers: headers);
     return jsonDecode(res.body);
   }
@@ -56,7 +56,7 @@ class WalletService {
   Future verifyCharge(int id) async {
     var url = 'https://api.flutterwave.com/v3/transactions/$id/verify';
     try {
-      var res = await http.get(url, headers: headers);
+      var res = await http.get(Uri.parse(url), headers: headers);
       return VerifyChargeResponse.fromJson(jsonDecode(res.body));
     } catch (e) {
       print(e);
@@ -66,7 +66,7 @@ class WalletService {
 
   Future getBanks() async {
     try {
-      var res = await http.get(BANKS_ENDPOINT, headers: headers);
+      var res = await http.get(Uri.parse(BANKS_ENDPOINT), headers: headers);
       return BankModel.fromJson(jsonDecode(res.body));
     } catch (e) {
       print(e);
@@ -76,7 +76,7 @@ class WalletService {
 
   Future validateCharge(payload) async {
     try {
-      var res = await http.post(VALIDATE_CHARGE_ENDPOINT,
+      var res = await http.post(Uri.parse(VALIDATE_CHARGE_ENDPOINT),
           body: json.encode(payload), headers: headers);
       return ValidateChargeResponse.fromJson(jsonDecode(res.body));
     } catch (e) {
@@ -88,8 +88,10 @@ class WalletService {
 
   Future loadWallet(body) async {
     try {
-      var res = await http.post(BANK_TRANSFER_ENDPOINT,
+      var res = await http.post(Uri.parse(BANK_TRANSFER_ENDPOINT),
           body: json.encode(body), headers: headers);
+      print(res.body);
+
       return BankTransferResponse.fromJson(jsonDecode(res.body));
     } catch (e) {
       return null;
@@ -98,7 +100,7 @@ class WalletService {
 
   Future cashOut(body) async {
     try {
-      var res = await http.post(CASHOUT_ENDPOINT,
+      var res = await http.post(Uri.parse(CASHOUT_ENDPOINT),
           body: json.encode(body), headers: headers);
 
       return CashoutResponse.fromJson(jsonDecode(res.body));
@@ -109,7 +111,8 @@ class WalletService {
 
   Future getTransfer(int id) async {
     try {
-      var res = await http.get('$CASHOUT_ENDPOINT/$id', headers: headers);
+      final url = '$CASHOUT_ENDPOINT/$id';
+      var res = await http.get(Uri.parse(url), headers: headers);
       return CashoutResponse.fromJson(jsonDecode(res.body));
     } catch (e) {
       print(e);
@@ -130,7 +133,8 @@ class WalletService {
 
   Future startJob(payload) async {
     try {
-      var res = await http.post(JOB_ENDPOINT, body: jsonEncode(payload));
+      var res =
+          await http.post(Uri.parse(JOB_ENDPOINT), body: jsonEncode(payload));
       print(res);
     } catch (e) {
       throw HttpException(e.toString());
@@ -162,13 +166,9 @@ class WalletService {
 
   Future intitialUpdateWalletData(String walletId, WalletModel payload) async {
     try {
-      _walletCollectionReference.doc(walletId).update({
-        'AccountNumber': payload.accountNumber,
-        'Accountbank': payload.accountbank,
-        'Bvn': payload.bvn,
-        'AvailableBalance': payload.availableBalance,
-        'LegderBalance': payload.legderBalance
-      });
+      _walletCollectionReference
+          .doc(walletId)
+          .update({'PushToken': payload.pushToken});
     } catch (e) {
       throw HttpException(e.toString());
     }
@@ -178,7 +178,7 @@ class WalletService {
     try {
       _walletCollectionReference.doc(walletId).update({
         'AvailableBalance': payload.availableBalance,
-        'LedgerBalance': payload.legderBalance
+        'LedgerBalance': payload.legderBalance,
       });
     } catch (e) {
       throw HttpException(e.toString());

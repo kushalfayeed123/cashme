@@ -9,6 +9,7 @@ class WalletModel {
   final String accountNumber;
   final String accountbank;
   final String bvn;
+  final String pushToken;
   // final DateTime createdOn;
   // final DateTime modifiedOn;
 
@@ -20,17 +21,19 @@ class WalletModel {
     @required this.accountNumber,
     @required this.accountbank,
     @required this.bvn,
+    @required this.pushToken,
     // @required this.createdOn,
     // @required this.modifiedOn,
   });
-  WalletModel.fromData(DocumentSnapshot snapshot)
+  WalletModel.fromData(DocumentSnapshot<Map<String, dynamic>> snapshot)
       : id = snapshot.id,
         userId = snapshot.data()['UserId'],
         availableBalance = snapshot.data()['AvailableBalance'] ?? 0,
         legderBalance = snapshot.data()['LedgerBalance'] ?? 0,
         accountNumber = snapshot.data()['AccountNumber'],
         accountbank = snapshot.data()['Accountbank'],
-        bvn = snapshot.data()['Bvn'];
+        bvn = snapshot.data()['Bvn'],
+        pushToken = snapshot.data()['PushToken'];
   // createdOn = snapshot.data()['CreatedOn'].toDate(),
   // modifiedOn = snapshot.data()['ModifiedOn'].toDate();
 
@@ -42,6 +45,7 @@ class WalletModel {
       'AccountNumber': accountNumber,
       'Accountbank': accountbank,
       'Bvn': bvn,
+      'PushToken': pushToken,
       // 'CreatedOn': createdOn,
       // 'ModifiedOn': modifiedOn
     };

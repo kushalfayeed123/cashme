@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 
 class TransactionService {
-  final CollectionReference _trasactCollectionReference =
+  final CollectionReference<Map<String, dynamic>> _trasactCollectionReference =
       FirebaseFirestore.instance.collection("Transaction");
 
   Future createTransaction(TransactionModel transactData) async {

@@ -9,7 +9,7 @@ import 'package:uuid/uuid.dart';
 import 'wallet.service.dart';
 
 class UserService {
-  final CollectionReference _userCollectionReference =
+  final CollectionReference<Map<String, dynamic>> _userCollectionReference =
       FirebaseFirestore.instance.collection("User");
 
   Future<List<UserModel>> getAllUsers() async {
@@ -84,8 +84,9 @@ class UserService {
         'Pin': payload.pin,
         'FullName': payload.fullName,
         'PhoneNumber': payload.phoneNumber,
-        'modifiedOn': payload.modifiedOn,
-        'modifiedBy': payload.modifiedBy
+        'ModifiedOn': payload.modifiedOn,
+        'ModifiedBy': payload.modifiedBy,
+        // 'PushToken': payload.pushToken
       });
     } catch (e) {
       throw HttpException(e.toString());

@@ -25,7 +25,7 @@ class TransactionModel {
       @required this.status,
       @required this.userId,
       @required this.transactionRef});
-  TransactionModel.fromData(DocumentSnapshot snapshot)
+  TransactionModel.fromData(DocumentSnapshot<Map<String, dynamic>> snapshot)
       : id = snapshot.id,
         type = snapshot.data()['Type'],
         value = snapshot.data()['Value'] ?? '',
