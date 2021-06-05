@@ -286,7 +286,7 @@ class _TransferScreenState extends State<TransferScreen> {
     final _user = Provider.of<UserProvider>(context, listen: false).currentUser;
     final _wallet =
         Provider.of<WalletProvider>(context, listen: false).userWallet;
-    final newValue = _wallet.legderBalance + int.parse(qrPayload.transferValue);
+    final newValue = _wallet.availableBalance + int.parse(qrPayload.transferValue);
     final connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.none) {
       closeDialog();
