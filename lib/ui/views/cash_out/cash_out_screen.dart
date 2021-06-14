@@ -8,11 +8,13 @@ import 'package:cash_me/core/models/wallet.model.dart';
 import 'package:cash_me/core/providers/transaction_provider.dart';
 import 'package:cash_me/core/providers/user_provider.dart';
 import 'package:cash_me/core/providers/wallet_provider.dart';
+import 'package:cash_me/ui/shared/widgets/app_drawer.dart';
 import 'package:cash_me/ui/views/home/home_screen.dart';
 import 'package:cash_me/ui/views/load_wallet/load_wallet.dart';
 import 'package:cash_me/ui/views/scan_screen/scan_screen.dart';
 import 'package:cash_me/ui/views/transfer_screen/transfer_screen.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
@@ -435,83 +437,7 @@ class _CashoutScreenState extends State<CashoutScreen>
     return Scaffold(
       backgroundColor: Color(0xFFe8eae6),
       key: _scaffoldKey,
-      endDrawer: Drawer(
-        child: Container(
-          decoration: BoxDecoration(color: Color(0xff16c79a)),
-          padding: EdgeInsets.only(left: 40.0, top: 100.0),
-          child: Column(
-            // mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              GestureDetector(
-                onTap: () {},
-                child: Row(
-                  children: [
-                    Icon(Icons.monetization_on, color: Color(0xFF002147)),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Text(
-                      'Cash Out',
-                      style: TextStyle(
-                          fontSize: 18.0,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'San Francisco',
-                          color: Color(0xFF002147)),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              GestureDetector(
-                onTap: () {},
-                child: Row(
-                  children: [
-                    Icon(Icons.settings, color: Color(0xFF002147)),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Text(
-                      'Settings',
-                      style: TextStyle(
-                          fontSize: 18.0,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'San Francisco',
-                          color: Color(0xFF002147)),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              GestureDetector(
-                onTap: () {
-                  // logout();
-                },
-                child: Row(
-                  children: [
-                    Icon(Icons.logout, color: Color(0xFF002147)),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Text(
-                      'Logout',
-                      style: TextStyle(
-                          fontSize: 18.0,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'San Francisco',
-                          color: Color(0xFF002147)),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      drawer: AppDrawer(),
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: Padding(
@@ -552,7 +478,7 @@ class _CashoutScreenState extends State<CashoutScreen>
                     fontFamily: 'San Francisco',
                   ),
                 ),
-                onPressed: () => Scaffold.of(context).openEndDrawer(),
+                onPressed: () => Scaffold.of(context).openDrawer(),
                 tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
               ),
             ),
@@ -727,7 +653,7 @@ class _CashoutScreenState extends State<CashoutScreen>
               Navigator.of(context).pushNamed(HomeScreen.routeName);
 
               // Navigator.push(context,
-              //     CupertinoPageRoute(builder: (context) => TransferScreen()));
+              //     CupertinoPageRoute(builder: (context) => HomeScreen()));
               break;
             case 1:
               Navigator.of(context).pushNamed(TransferScreen.routeName);
@@ -748,10 +674,10 @@ class _CashoutScreenState extends State<CashoutScreen>
           ),
           BottomNavigationBarItem(
             icon: Icon(
-              Icons.system_update_rounded,
+              Icons.send_to_mobile,
               color: Color(0xFF002147),
             ),
-            label: 'Receive Money',
+            label: 'Transfer',
           ),
           BottomNavigationBarItem(
               icon: Icon(

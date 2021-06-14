@@ -11,6 +11,7 @@ import 'package:cash_me/core/providers/authentication_provider.dart';
 import 'package:cash_me/core/providers/transaction_provider.dart';
 import 'package:cash_me/core/providers/user_provider.dart';
 import 'package:cash_me/core/providers/wallet_provider.dart';
+import 'package:cash_me/ui/shared/widgets/app_drawer.dart';
 import 'package:cash_me/ui/views/cash_out/cash_out_screen.dart';
 import 'package:cash_me/ui/views/home/home_screen.dart';
 import 'package:cash_me/ui/views/load_wallet/load_wallet.dart';
@@ -68,14 +69,6 @@ class _ScanScreenState extends State<ScanScreen> {
     } catch (e) {
       print(e);
     }
-  }
-
-  void logout() async {
-    final _authProvider =
-        Provider.of<AuthenticationProvider>(context, listen: false);
-    _authProvider.signOut();
-    Navigator.of(context).pushNamedAndRemoveUntil(
-        LoginScreen.routeName, (Route<dynamic> route) => false);
   }
 
   showSuccessMessageDialog(message) {
@@ -178,48 +171,38 @@ class _ScanScreenState extends State<ScanScreen> {
   }
 
   senderPayment() async {
-    // var message =
-    //     'Qr transfer was succe Your account has been credited with the sum of ₦${NumberFormat('#,###,000').format(int.parse(senderPayload.transferValue))}.';
-    // openLoadingDialog();
-    // var connectivityResult = await (Connectivity().checkConnectivity());
-    // if (connectivityResult == ConnectivityResult.none) {
-    //   closeDialog();
-    //   // showSuccessMessageDialog(message);
-    // }
-
-    await Provider.of<UserProvider>(context, listen: false)
-        .setUser(qrPayload.email);
-    final currentUser =
-        Provider.of<UserProvider>(context, listen: false).currentUser;
-
-    final _wallet =
-        Provider.of<WalletProvider>(context, listen: false).userWallet;
-    final receiverName =
-        Provider.of<UserProvider>(context, listen: false).sender;
-    setState(() {
-      senderPayload = TransferModel(
-          walletId: _wallet.id,
-          senderId: currentUser.id,
-          receiverId: qrPayload.receiverId,
-          email: qrPayload.email,
-          transferValue: qrPayload.transferValue,
-          id: '',
-          senderAvailableBalance: '',
-          type: '');
-    });
-
-    transferPayload = TransferModel(
-        type: QR_TRANSFER,
-        senderId: currentUser.id,
-        receiverId: senderPayload.receiverId,
-        email: currentUser.email,
-        transferValue: senderPayload.transferValue,
-        walletId: _wallet.id,
-        id: '',
-        senderAvailableBalance: '');
+    openLoadingDialog();
     try {
-      var _wallet =
+      await Provider.of<UserProvider>(context, listen: false)
+          .setUser(qrPayload.email);
+      final currentUser =
+          Provider.of<UserProvider>(context, listen: false).currentUser;
+
+      final _wallet =
           Provider.of<WalletProvider>(context, listen: false).userWallet;
+
+      setState(() {
+        senderPayload = TransferModel(
+            walletId: _wallet.id,
+            senderId: currentUser.id,
+            receiverId: qrPayload.receiverId,
+            email: qrPayload.email,
+            transferValue: qrPayload.transferValue,
+            id: '',
+            senderAvailableBalance: '',
+            type: '');
+      });
+
+      transferPayload = TransferModel(
+          type: QR_TRANSFER,
+          senderId: currentUser.id,
+          receiverId: senderPayload.receiverId,
+          email: currentUser.email,
+          transferValue: senderPayload.transferValue,
+          walletId: _wallet.id,
+          id: '',
+          senderAvailableBalance: '');
+
       if (int.parse(transferPayload.transferValue) > _wallet.availableBalance) {
         closeDialog();
         showErrorMessageDialog(
@@ -251,9 +234,8 @@ class _ScanScreenState extends State<ScanScreen> {
         await Provider.of<TransactionProvider>(context, listen: false)
             .addTransaction(transactionPayload);
       }
-
-      // closeDialog();
-      // showSuccessMessageDialog('Qr transfer was successful.');
+      closeDialog();
+      showSuccessMessageDialog('Qr transfer was successful.');
     } catch (e) {
       closeDialog();
       throw Exception(e);
@@ -517,85 +499,7 @@ class _ScanScreenState extends State<ScanScreen> {
     return Scaffold(
         backgroundColor: Color(0xFFe8eae6),
         key: _scaffoldKey,
-        endDrawer: Drawer(
-          child: Container(
-            decoration: BoxDecoration(color: Color(0xff16c79a)),
-            padding: EdgeInsets.only(left: 40.0, top: 100.0),
-            child: Column(
-              // mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).pushNamed(CashoutScreen.routeName);
-                  },
-                  child: Row(
-                    children: [
-                      Icon(Icons.monetization_on, color: Color(0xFF002147)),
-                      SizedBox(
-                        width: 10,
-                      ),
-                      Text(
-                        'Cash Out',
-                        style: TextStyle(
-                            fontSize: 18.0,
-                            fontWeight: FontWeight.w600,
-                            fontFamily: 'San Francisco',
-                            color: Color(0xFF002147)),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                GestureDetector(
-                  onTap: () {},
-                  child: Row(
-                    children: [
-                      Icon(Icons.settings, color: Color(0xFF002147)),
-                      SizedBox(
-                        width: 10,
-                      ),
-                      Text(
-                        'Settings',
-                        style: TextStyle(
-                            fontSize: 18.0,
-                            fontWeight: FontWeight.w600,
-                            fontFamily: 'San Francisco',
-                            color: Color(0xFF002147)),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                GestureDetector(
-                  onTap: () {
-                    logout();
-                  },
-                  child: Row(
-                    children: [
-                      Icon(Icons.logout, color: Color(0xFF002147)),
-                      SizedBox(
-                        width: 10,
-                      ),
-                      Text(
-                        'Logout',
-                        style: TextStyle(
-                            fontSize: 18.0,
-                            fontWeight: FontWeight.w600,
-                            fontFamily: 'San Francisco',
-                            color: Color(0xFF002147)),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        drawer: AppDrawer(),
         appBar: AppBar(
           automaticallyImplyLeading: false,
           title: Padding(
@@ -636,7 +540,7 @@ class _ScanScreenState extends State<ScanScreen> {
                       fontFamily: 'San Francisco',
                     ),
                   ),
-                  onPressed: () => Scaffold.of(context).openEndDrawer(),
+                  onPressed: () => Scaffold.of(context).openDrawer(),
                   tooltip:
                       MaterialLocalizations.of(context).openAppDrawerTooltip,
                 ),
@@ -814,10 +718,10 @@ class _ScanScreenState extends State<ScanScreen> {
             ),
             BottomNavigationBarItem(
               icon: Icon(
-                Icons.system_update_rounded,
+                Icons.send_to_mobile,
                 color: Color(0xFF002147),
               ),
-              label: 'Receive Money',
+              label: 'Transfer',
             ),
             BottomNavigationBarItem(
                 icon: Icon(

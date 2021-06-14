@@ -7,17 +7,16 @@ import 'package:cash_me/core/models/transaction.model.dart';
 import 'package:cash_me/core/models/transfer.model.dart';
 import 'package:cash_me/core/models/user.model.dart';
 import 'package:cash_me/core/models/wallet.model.dart';
-import 'package:cash_me/core/providers/authentication_provider.dart';
 import 'package:cash_me/core/providers/transaction_provider.dart';
 import 'package:cash_me/core/providers/user_provider.dart';
 import 'package:cash_me/core/providers/wallet_provider.dart';
-import 'package:cash_me/ui/views/cash_out/cash_out_screen.dart';
+import 'package:cash_me/ui/shared/widgets/app_drawer.dart';
 import 'package:cash_me/ui/views/home/home_screen.dart';
 import 'package:cash_me/ui/views/load_wallet/load_wallet.dart';
-import 'package:cash_me/ui/views/login/login_screen.dart';
 import 'package:cash_me/ui/views/scan_screen/scan_screen.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -44,6 +43,7 @@ class _TransferScreenState extends State<TransferScreen> {
   TransactionModel transactionPayload;
   Map<String, dynamic> qrCodeResult;
   TransferModel qrPayload;
+  WalletModel _wallet;
 
   // var newValue;
 
@@ -55,6 +55,7 @@ class _TransferScreenState extends State<TransferScreen> {
     if (_isInit) {
       getInitValues();
       _isInit = false;
+      qrdataFeed.text = '0';
     }
     super.didChangeDependencies();
   }
@@ -91,6 +92,7 @@ class _TransferScreenState extends State<TransferScreen> {
           Provider.of<UserProvider>(context, listen: false).currentUser;
       await Provider.of<WalletProvider>(context, listen: false)
           .setUserWallet(_user.id);
+      _wallet = Provider.of<WalletProvider>(context, listen: false).userWallet;
       await Provider.of<UserProvider>(context, listen: false)
           .setAllUsers(_user.id);
     } catch (e) {
@@ -220,6 +222,7 @@ class _TransferScreenState extends State<TransferScreen> {
           width: MediaQuery.of(context).size.width,
           padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 message,
@@ -284,15 +287,10 @@ class _TransferScreenState extends State<TransferScreen> {
   prePaymentAction() async {
     openLoadingDialog();
     final _user = Provider.of<UserProvider>(context, listen: false).currentUser;
-    final _wallet =
-        Provider.of<WalletProvider>(context, listen: false).userWallet;
-    final newValue = _wallet.legderBalance + int.parse(qrPayload.transferValue);
-    final connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.none) {
-      closeDialog();
-      await showSuccessMessageDialog(
-          'Your account has been credited with the sum of ₦${NumberFormat('#,###,##0').format(int.parse(qrPayload.transferValue))}.');
-    }
+
+    final newValue =
+        _wallet.availableBalance + int.parse(qrPayload.transferValue);
+
     try {
       transactionPayload = TransactionModel(
           type: CREDIT,
@@ -326,12 +324,82 @@ class _TransferScreenState extends State<TransferScreen> {
     }
   }
 
-  void logout() async {
-    final _authProvider =
-        Provider.of<AuthenticationProvider>(context, listen: false);
-    _authProvider.signOut();
-    Navigator.of(context).pushNamedAndRemoveUntil(
-        LoginScreen.routeName, (Route<dynamic> route) => false);
+  getSelectedUser() async {
+    await Provider.of<UserProvider>(context, listen: false)
+        .setUser(selectedUser);
+    final receiverUserId =
+        Provider.of<UserProvider>(context, listen: false).sender.id;
+    await Provider.of<WalletProvider>(context, listen: false)
+        .getSenderWallet(receiverUserId);
+  }
+
+  transfer() async {
+    openLoadingDialog();
+    try {
+      if (int.parse(qrdataFeed.text) > _wallet.availableBalance) {
+        print(qrdataFeed.text);
+        closeDialog();
+        showErrorMessageDialog(
+            'Sorry, this transcation can not be completed because you do not have sufficient funds.');
+      } else if (int.parse(qrdataFeed.text) == 0) {
+        closeDialog();
+        showErrorMessageDialog('Sorry, you can not transfer this amount.');
+      } else if (qrdataFeed.text.isEmpty) {
+        closeDialog();
+        showErrorMessageDialog('Amount can not be empty.');
+      } else {
+        final currentUser =
+            Provider.of<UserProvider>(context, listen: false).currentUser;
+        final receiverWallet =
+            Provider.of<WalletProvider>(context, listen: false).senderWallet;
+        final newValue =
+            receiverWallet.availableBalance + int.parse(qrdataFeed.text);
+        final payLoad = WalletModel(
+          availableBalance: newValue,
+        );
+        final senderBalance =
+            _wallet.availableBalance - int.parse(qrdataFeed.text);
+        final senderPayload = WalletModel(
+          availableBalance: senderBalance,
+        );
+        final receiver =
+            Provider.of<UserProvider>(context, listen: false).sender;
+
+        final senderTransactionPayload = TransactionModel(
+            type: DEBIT,
+            value: qrdataFeed.text,
+            senderName: currentUser.cashMeName,
+            transactionMode: USERNAME_TRANSFER,
+            createdOn: DateTime.now(),
+            modifiedOn: DateTime.now(),
+            status: 'Completed',
+            userId: currentUser.id,
+            transactionRef: '');
+        final receiverTransactionPayload = TransactionModel(
+            type: CREDIT,
+            value: qrdataFeed.text,
+            senderName: receiver.cashMeName,
+            transactionMode: USERNAME_TRANSFER,
+            createdOn: DateTime.now(),
+            modifiedOn: DateTime.now(),
+            status: 'Completed',
+            userId: receiver.id,
+            transactionRef: '');
+        await Provider.of<WalletProvider>(context, listen: false)
+            .updateWallet(receiverWallet.id, payLoad);
+        await Provider.of<WalletProvider>(context, listen: false)
+            .updateWallet(_wallet.id, senderPayload);
+        await Provider.of<TransactionProvider>(context, listen: false)
+            .addTransaction(senderTransactionPayload);
+        await Provider.of<TransactionProvider>(context, listen: false)
+            .addTransaction(receiverTransactionPayload);
+        closeDialog();
+        showSuccessMessageDialog('Your transfer was successful.');
+      }
+    } catch (e) {
+      closeDialog();
+      print(e);
+    }
   }
 
   Future<void> openScanner() async {
@@ -350,8 +418,9 @@ class _TransferScreenState extends State<TransferScreen> {
         Provider.of<UserProvider>(context, listen: false).currentUser;
 
     final transferEditor = new Theme(
-      data: new ThemeData(primaryColor: Color(0xFF002147)),
-      child: TextField(
+      data: new ThemeData(primaryColor: Color(0xff16c79a)),
+      child: TextFormField(
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         keyboardType: TextInputType.number,
         controller: qrdataFeed,
         obscureText: false,
@@ -359,39 +428,10 @@ class _TransferScreenState extends State<TransferScreen> {
         decoration: InputDecoration(
           contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
           suffixIcon: Icon(Icons.money),
-          hintText: "How much do you need?",
+          hintText: "Enter amount",
           border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(32.0),
               borderSide: BorderSide(color: Color(0xff16c79a))),
-        ),
-      ),
-    );
-    final usersField = new Theme(
-      data: new ThemeData(primaryColor: Color(0xff16c79a)),
-      child: Container(
-        width: MediaQuery.of(context).size.width,
-        padding: EdgeInsets.only(left: 20, right: 20),
-        decoration: BoxDecoration(
-            border: Border.all(color: Color(0xFFBDBDBD)),
-            borderRadius: BorderRadius.all(Radius.circular(30))),
-        child: DropdownButtonHideUnderline(
-          child: new DropdownButton<String>(
-            hint: new Text('Select the user you want to transfer to'),
-            value: selectedUser,
-            isDense: false,
-            onChanged: (value) {
-              setState(() {
-                selectedUser = value;
-              });
-            },
-            items: users.map((UserModel map) {
-              return new DropdownMenuItem<String>(
-                value: map.id,
-                child: new Text(map.cashMeName,
-                    style: new TextStyle(color: Colors.black)),
-              );
-            }).toList(),
-          ),
         ),
       ),
     );
@@ -404,10 +444,6 @@ class _TransferScreenState extends State<TransferScreen> {
         isScrollControlled: true,
         isDismissible: true,
         enableDrag: true,
-
-        // bounce: true,
-        // backgroundColor: Color(0xFFe8eae6),
-        // expand: true,
         builder: (BuildContext context) {
           return StatefulBuilder(
               builder: (BuildContext context, StateSetter mystate) {
@@ -457,10 +493,19 @@ class _TransferScreenState extends State<TransferScreen> {
                                     ),
                                     width: MediaQuery.of(context).size.width *
                                         0.68,
-                                    child: QrImage(
-                                      data: jsonEncode(transferPayload),
-                                      foregroundColor: Color(0xFF002147),
-                                    ),
+                                    height: valueGenerated
+                                        ? null
+                                        : MediaQuery.of(context).size.height *
+                                            0.35,
+                                    child: valueGenerated
+                                        ? QrImage(
+                                            data: jsonEncode(transferPayload),
+                                            foregroundColor: Color(0xFF002147),
+                                          )
+                                        : Icon(
+                                            Icons.qr_code_outlined,
+                                            size: 100,
+                                          ),
                                   ),
                                 ),
                               ),
@@ -633,7 +678,7 @@ class _TransferScreenState extends State<TransferScreen> {
                                     top: 20,
                                   ),
                                   child: Text(
-                                    'Transfer via Cashme Name',
+                                    'Cashme Transfer',
                                     style: TextStyle(
                                       color: Color(0xFF002147),
                                       fontFamily: 'San Francisco',
@@ -657,8 +702,8 @@ class _TransferScreenState extends State<TransferScreen> {
                                     width: MediaQuery.of(context).size.width *
                                         0.68,
                                     child: Icon(
-                                      Icons.system_update_rounded,
-                                      size: 70,
+                                      Icons.send_to_mobile,
+                                      size: 100,
                                     ),
                                   ),
                                 ),
@@ -695,7 +740,55 @@ class _TransferScreenState extends State<TransferScreen> {
                                         Container(
                                           padding: EdgeInsets.symmetric(
                                               horizontal: 20),
-                                          child: usersField,
+                                          child: Theme(
+                                            data: new ThemeData(
+                                                primaryColor:
+                                                    Color(0xff16c79a)),
+                                            child: Container(
+                                              width: MediaQuery.of(context)
+                                                  .size
+                                                  .width,
+                                              padding: EdgeInsets.only(
+                                                  left: 20, right: 20),
+                                              decoration: BoxDecoration(
+                                                  border: Border.all(
+                                                      color: Color(0xFFBDBDBD)),
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(30))),
+                                              child:
+                                                  DropdownButtonHideUnderline(
+                                                child:
+                                                    new DropdownButton<String>(
+                                                  hint: new Text(
+                                                      'Select the user you want to transfer to'),
+                                                  value: selectedUser,
+                                                  isDense: false,
+                                                  onChanged: (value) {
+                                                    mystate(() {
+                                                      selectedUser = value;
+                                                    });
+                                                    setState(() {
+                                                      selectedUser = value;
+                                                    });
+                                                    getSelectedUser();
+                                                  },
+                                                  items: users
+                                                      .map((UserModel map) {
+                                                    return new DropdownMenuItem<
+                                                        String>(
+                                                      value: map.email,
+                                                      child: new Text(
+                                                          map.cashMeName,
+                                                          style: new TextStyle(
+                                                              color: Colors
+                                                                  .black)),
+                                                    );
+                                                  }).toList(),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
                                         ),
                                         SizedBox(
                                           height: MediaQuery.of(context)
@@ -707,14 +800,20 @@ class _TransferScreenState extends State<TransferScreen> {
                                           elevation: 5.0,
                                           borderRadius:
                                               BorderRadius.circular(30.0),
-                                          color: Color(0xFF002147),
+                                          color: selectedUser == null
+                                              ? Color(0xFF002147)
+                                                  .withOpacity(0.5)
+                                              : Color(0xFF002147),
                                           child: MaterialButton(
                                             minWidth: MediaQuery.of(context)
                                                 .size
                                                 .width,
                                             padding: EdgeInsets.fromLTRB(
                                                 20.0, 15.0, 20.0, 15.0),
-                                            onPressed: () async {},
+                                            onPressed: () =>
+                                                selectedUser == null
+                                                    ? null
+                                                    : transfer(),
                                             child: Text("Transfer",
                                                 textAlign: TextAlign.center,
                                                 style: style.copyWith(
@@ -741,11 +840,6 @@ class _TransferScreenState extends State<TransferScreen> {
 
   @override
   Widget build(BuildContext context) {
-    setState(() => this.bcontext = context);
-
-    // if (valueGenerated) {
-    //   Navigator.of(context).pop();
-    // }
     final _wallet =
         Provider.of<WalletProvider>(context, listen: false).userWallet;
     TextStyle style = TextStyle(fontFamily: 'San Francisco', fontSize: 16.0);
@@ -758,11 +852,11 @@ class _TransferScreenState extends State<TransferScreen> {
         minWidth: MediaQuery.of(context).size.width,
         padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
         onPressed: () {
-          // openBottomSheet('receive');
+          openBottomSheet('transfer', '');
           // initiatePayment();
         },
         child: Text(
-          "RECEIVE MONEY",
+          "Send Money",
           textAlign: TextAlign.center,
           style:
               style.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
@@ -782,7 +876,7 @@ class _TransferScreenState extends State<TransferScreen> {
           // initiatePayment();
         },
         child: Text(
-          "Generate QR",
+          "Receive Money",
           textAlign: TextAlign.center,
           style:
               style.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
@@ -793,85 +887,7 @@ class _TransferScreenState extends State<TransferScreen> {
     return Scaffold(
       backgroundColor: Color(0xFFe8eae6),
       key: _scaffoldKey,
-      endDrawer: Drawer(
-        child: Container(
-          decoration: BoxDecoration(color: Color(0xff16c79a)),
-          padding: EdgeInsets.only(left: 40.0, top: 100.0),
-          child: Column(
-            // mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.of(context).pushNamed(CashoutScreen.routeName);
-                },
-                child: Row(
-                  children: [
-                    Icon(Icons.monetization_on, color: Color(0xFF002147)),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Text(
-                      'Cash Out',
-                      style: TextStyle(
-                          fontSize: 18.0,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'San Francisco',
-                          color: Color(0xFF002147)),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              GestureDetector(
-                onTap: () {},
-                child: Row(
-                  children: [
-                    Icon(Icons.settings, color: Color(0xFF002147)),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Text(
-                      'Settings',
-                      style: TextStyle(
-                          fontSize: 18.0,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'San Francisco',
-                          color: Color(0xFF002147)),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              GestureDetector(
-                onTap: () {
-                  logout();
-                },
-                child: Row(
-                  children: [
-                    Icon(Icons.logout, color: Color(0xFF002147)),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Text(
-                      'Logout',
-                      style: TextStyle(
-                          fontSize: 18.0,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'San Francisco',
-                          color: Color(0xFF002147)),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      drawer: AppDrawer(),
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: Padding(
@@ -912,7 +928,7 @@ class _TransferScreenState extends State<TransferScreen> {
                     fontFamily: 'San Francisco',
                   ),
                 ),
-                onPressed: () => Scaffold.of(context).openEndDrawer(),
+                onPressed: () => Scaffold.of(context).openDrawer(),
                 tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
               ),
             ),
@@ -1027,7 +1043,7 @@ class _TransferScreenState extends State<TransferScreen> {
                     bottom: 0),
                 child: SizedBox(
                   child: Text(
-                    'Receive money by generating a QR code',
+                    'Receive money by generating a QR code or send money via cashme transfer',
                     style: TextStyle(
                         color: Colors.blueGrey,
                         fontSize: 16,
@@ -1047,10 +1063,10 @@ class _TransferScreenState extends State<TransferScreen> {
                 child: Container(
                   child: Wrap(
                     children: [
-                      // userButton,
-                      // SizedBox(
-                      //   height: 70,
-                      // ),
+                      userButton,
+                      SizedBox(
+                        height: 70,
+                      ),
                       qrButton
                     ],
                   ),
@@ -1096,7 +1112,7 @@ class _TransferScreenState extends State<TransferScreen> {
               Icons.system_update_rounded,
               color: Color(0xFF002147),
             ),
-            label: 'Receive Money',
+            label: 'Transfer',
           ),
           BottomNavigationBarItem(
               icon: Icon(
