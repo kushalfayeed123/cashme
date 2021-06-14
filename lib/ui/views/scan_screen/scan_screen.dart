@@ -234,8 +234,8 @@ class _ScanScreenState extends State<ScanScreen> {
         await Provider.of<TransactionProvider>(context, listen: false)
             .addTransaction(transactionPayload);
       }
-      closeDialog();
-      showSuccessMessageDialog('Qr transfer was successful.');
+      // closeDialog();
+      // showSuccessMessageDialog('Qr transfer was successful.');
     } catch (e) {
       closeDialog();
       throw Exception(e);
