@@ -234,8 +234,6 @@ class _ScanScreenState extends State<ScanScreen> {
         await Provider.of<TransactionProvider>(context, listen: false)
             .addTransaction(transactionPayload);
       }
-      // closeDialog();
-      // showSuccessMessageDialog('Qr transfer was successful.');
     } catch (e) {
       closeDialog();
       throw Exception(e);
@@ -467,9 +465,11 @@ class _ScanScreenState extends State<ScanScreen> {
     final _wallet = Provider.of<WalletProvider>(context).userWallet;
     TextStyle style = TextStyle(fontFamily: 'San Francisco', fontSize: 16.0);
     Map<String, dynamic> qrCodeResult;
-    setState(() => this.bcontext = context);
-    Future.delayed(Duration(seconds: 5), () {
-      showButton = true;
+    setState(() {
+      this.bcontext = context;
+      Future.delayed(Duration(seconds: 10), () {
+        showButton = true;
+      });
     });
 
     final scanButton = Material(
