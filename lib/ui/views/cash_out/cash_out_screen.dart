@@ -272,22 +272,23 @@ class _CashoutScreenState extends State<CashoutScreen>
         showErrorMessageDialog(
             'You do not have sufficient funds to complete this transaction');
       } else {
-        await Provider.of<WalletProvider>(context, listen: false)
-            .cashOut(payload);
-        final cashOutRes =
-            Provider.of<WalletProvider>(context, listen: false).cashOutRes;
+        // await Provider.of<WalletProvider>(context, listen: false)
+        //     .cashOut(payload);
+        // final cashOutRes =
+        //     Provider.of<WalletProvider>(context, listen: false).cashOutRes;
         final wallet =
             Provider.of<WalletProvider>(context, listen: false).userWallet;
         final transactionPayload = TransactionModel(
-            type: 'Debit',
-            value: _amountController.text,
-            senderName: user.cashMeName,
-            transactionMode: CASHOUT,
-            createdOn: DateTime.now(),
-            modifiedOn: DateTime.now(),
-            status: 'Pending',
-            userId: user.id,
-            transactionRef: cashOutRes.data.reference);
+          type: 'Debit',
+          value: _amountController.text,
+          senderName: user.cashMeName,
+          transactionMode: CASHOUT,
+          createdOn: DateTime.now(),
+          modifiedOn: DateTime.now(),
+          status: 'Pending',
+          userId: user.id,
+          // transactionRef: cashOutRes.data.reference
+        );
         final newValue =
             wallet.availableBalance - int.parse(_amountController.text);
         final walletPayload = WalletModel(
@@ -302,16 +303,17 @@ class _CashoutScreenState extends State<CashoutScreen>
         await Provider.of<TransactionProvider>(context, listen: false)
             .addTransaction(transactionPayload);
         closeDialog();
-        showSuccessMessageDialog(
-            'Your cashout transaction is in progress. You will be notified once it is done.',
-            true);
-        if (cashOutRes.status == 'success') {
-          await Provider.of<WalletProvider>(context, listen: false)
-              .setTransfer(cashOutRes.data.id);
-        } else {
-          closeDialog();
-          showErrorMessageDialog(cashOutRes.message);
-        }
+        showSuccessMessageDialog('Cashout Successful!', false);
+        // showSuccessMessageDialog(
+        //     'Your cashout transaction is in progress. You will be notified once it is done.',
+        //     true);
+        // if (cashOutRes.status == 'success') {
+        //   await Provider.of<WalletProvider>(context, listen: false)
+        //       .setTransfer(cashOutRes.data.id);
+        // } else {
+        //   closeDialog();
+        //   showErrorMessageDialog(cashOutRes.message);
+        // }
       }
     } catch (e) {
       closeDialog();

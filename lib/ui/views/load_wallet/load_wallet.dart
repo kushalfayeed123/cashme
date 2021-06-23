@@ -158,7 +158,7 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
   }
 
   void postPaymentAction(int amount) async {
-    // openLoadingDialog();
+    openLoadingDialog();
 
     try {
       var _user = Provider.of<UserProvider>(context, listen: false).currentUser;
@@ -198,10 +198,10 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
         transactionRef: '',
       );
 
-      var newValue = _wallet.legderBalance + amount;
+      var newValue = _wallet.availableBalance + amount;
 
       walletPayload = WalletModel(
-          legderBalance: newValue,
+          legderBalance: 0,
           availableBalance: newValue,
           accountbank: '',
           accountNumber: '',
@@ -890,7 +890,8 @@ class _LoadWalletScreenState extends State<LoadWalletScreen>
         padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
         onPressed: () {
           if (_formKey.currentState.validate()) {
-            initiatePayment();
+            // initiatePayment();
+            postPaymentAction(int.parse(_amountController.text));
           }
         },
         child: Text(
