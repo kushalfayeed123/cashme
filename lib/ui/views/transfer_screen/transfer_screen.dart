@@ -760,8 +760,7 @@ class _TransferScreenState extends State<TransferScreen> {
                                                   DropdownButtonHideUnderline(
                                                 child:
                                                     new DropdownButton<String>(
-                                                  hint: new Text(
-                                                      'Select the user you want to transfer to'),
+                                                  hint: new Text('Select User'),
                                                   value: selectedUser,
                                                   isDense: false,
                                                   onChanged: (value) {
