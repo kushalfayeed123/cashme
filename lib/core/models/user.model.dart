@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 
 class UserModel {
   final String id;
-  final String firstName;
-  final String lastName;
+  final String fullName;
   final String email;
   final String pin;
   final String cashMeName;
@@ -13,11 +12,12 @@ class UserModel {
   final String modifiedBy;
   final DateTime modifiedOn;
   final String keyReference;
+  final String phoneNumber;
+  // final String pushToken;
 
   const UserModel({
     this.id,
-    @required this.firstName,
-    @required this.lastName,
+    @required this.fullName,
     @required this.email,
     @required this.pin,
     @required this.cashMeName,
@@ -26,15 +26,18 @@ class UserModel {
     @required this.modifiedBy,
     @required this.modifiedOn,
     @required this.keyReference,
+    @required this.phoneNumber,
+    // @required this.pushToken,
   });
 
-  UserModel.fromData(DocumentSnapshot snapshot)
+  UserModel.fromData(DocumentSnapshot<Map<String, dynamic>> snapshot)
       : id = snapshot.id,
-        firstName = snapshot.data()['FirstName'],
-        lastName = snapshot.data()['LastName'],
+        fullName = snapshot.data()['FullName'],
         email = snapshot.data()['Email'],
         keyReference = snapshot.data()['KeyReference'],
         pin = snapshot.data()['Pin'],
+        phoneNumber = snapshot.data()['PhoneNumber'],
+        // pushToken = snapshot.data()['PushToken'],
         cashMeName = snapshot.data()['CashMeName'],
         createdBy = snapshot.data()['CreatedBy'],
         createdOn = snapshot.data()['CreatedOn'].toDate(),
@@ -43,16 +46,17 @@ class UserModel {
 
   Map<String, dynamic> toJson() {
     return {
-      'FirstName': firstName,
-      'LastName': lastName,
+      'FullName': fullName,
       'Email': email,
       'Pin': pin,
+      'PhoneNumber': phoneNumber,
       'CashMeName': cashMeName,
       'KeyReference': keyReference,
       'CreatedBy': createdBy,
       'CreatedOn': createdOn,
       'ModifiedBy': modifiedBy,
       'ModifiedOn': modifiedOn,
+      // 'PushToken': pushToken,
     };
   }
 }

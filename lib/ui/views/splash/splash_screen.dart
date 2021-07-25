@@ -2,16 +2,14 @@ import 'dart:async';
 
 import 'package:cash_me/core/models/user.model.dart';
 import 'package:cash_me/core/providers/authentication_provider.dart';
+import 'package:cash_me/core/providers/transaction_provider.dart';
 import 'package:cash_me/core/providers/user_provider.dart';
 import 'package:cash_me/core/providers/wallet_provider.dart';
-import 'package:cash_me/ui/shared/utils/settings.dart';
 import 'package:cash_me/ui/views/home/home_screen.dart';
 import 'package:cash_me/ui/views/login/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:splashscreen/splashscreen.dart';
 import 'package:provider/provider.dart';
-import 'package:animated_splash_screen/animated_splash_screen.dart';
-import 'package:page_transition/page_transition.dart';
 
 class SplashScreenUi extends StatefulWidget {
   static const routeName = '/';
@@ -32,6 +30,7 @@ class _SplashScreenState extends State<SplashScreenUi>
     _textAnimationController =
         AnimationController(vsync: this, duration: Duration(seconds: 3))
           ..repeat();
+
     super.initState();
   }
 
@@ -52,6 +51,19 @@ class _SplashScreenState extends State<SplashScreenUi>
     super.didChangeDependencies();
   }
 
+  Future<void> _getUserInfo() async {
+    try {
+      final _user =
+          Provider.of<UserProvider>(context, listen: false).currentUser;
+      await Provider.of<WalletProvider>(context, listen: false)
+          .setUserWallet(_user.id);
+      await Provider.of<TransactionProvider>(context, listen: false)
+          .setUserTransactions(_user.id);
+    } catch (e) {
+      print(e);
+    }
+  }
+
   startTime() async {
     var duration = new Duration(seconds: 5);
     return new Timer(duration, () => route());
@@ -64,13 +76,7 @@ class _SplashScreenState extends State<SplashScreenUi>
       if (isLoggedIn) {
         await Provider.of<UserProvider>(context, listen: false)
             .setCurrentUser(false);
-        UserModel _user =
-            Provider.of<UserProvider>(context, listen: false).currentUser;
-        await Provider.of<WalletProvider>(context, listen: false)
-            .setUserWallet(_user.id);
-
-        // await Provider.of<NotificationProvider>(context, listen: false)
-        //     .setUserNotifications(_user?.id);
+        _getUserInfo();
         Navigator.of(context).pushNamedAndRemoveUntil(
             HomeScreen.routeName, (Route<dynamic> route) => false);
       } else {
@@ -96,8 +102,6 @@ class _SplashScreenState extends State<SplashScreenUi>
   }
 
   initScreen(BuildContext context) {
-    double targetValue = MediaQuery.of(context).size.height * 0.2;
-
     return SplashScreen(
       seconds: 20,
       navigateAfterSeconds: route(),

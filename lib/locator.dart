@@ -1,4 +1,5 @@
 import 'package:cash_me/core/services/wallet.service.dart';
+import 'package:cash_me/core/services/transaction.service.dart';
 import 'package:get_it/get_it.dart';
 
 import 'core/services/auth.service.dart';
@@ -9,4 +10,5 @@ void setupLocator() {
   locator.registerLazySingleton(() => AuthenticationService());
   locator.registerLazySingleton(() => UserService());
   locator.registerLazySingleton(() => WalletService());
+  locator.registerLazySingleton(() => TransactionService());
 }

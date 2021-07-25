@@ -28,7 +28,6 @@ class Loader extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Container(
-            
               alignment: Alignment.center,
               padding: const EdgeInsets.only(top: 10),
               child: CircularProgressIndicator(

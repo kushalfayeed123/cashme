@@ -5,20 +5,18 @@ import 'package:flutter/material.dart';
 class AuthenticationProvider with ChangeNotifier {
   AuthenticationService _authService = locator<AuthenticationService>();
 
-  Future<void> signIn({String email, String password}) async {
+  Future<void> signIn({email, password}) async {
     await _authService.signIn(email: email, password: password);
   }
 
   Future<void> registerUser({
     String password,
     String email,
-    String firstName,
-    String lastName,
+    String fullName,
     String cashMeName,
     String pin,
   }) async {
-    await _authService.registerUser(
-        password, email, firstName, lastName, cashMeName, pin);
+    await _authService.registerUser(password, email, fullName, cashMeName, pin);
   }
 
   Future<bool> isUserLoggedIn() async {

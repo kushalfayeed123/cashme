@@ -1,12 +1,124 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:cash_me/core/constants.dart';
+import 'package:cash_me/core/models/account_charge.model.dart';
+import 'package:cash_me/core/models/bank.model.dart';
+import 'package:cash_me/core/models/bank_transfer_response.model.dart';
+import 'package:cash_me/core/models/cashout_response.model.dart';
+import 'package:cash_me/core/models/charge_response.model.dart';
+import 'package:cash_me/core/models/validate_charge_response.model.dart';
+import 'package:cash_me/core/models/transfer.model.dart';
+import 'package:cash_me/core/models/verify_charge_response.model.dart';
 import 'package:cash_me/core/models/wallet.model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
+import 'package:http/http.dart' as http;
 
 class WalletService {
-  final CollectionReference _walletCollectionReference =
+  final CollectionReference<Map<String, dynamic>> _walletCollectionReference =
       FirebaseFirestore.instance.collection("Wallet");
+  final CollectionReference<Map<String, dynamic>> _transferCollectionReference =
+      FirebaseFirestore.instance.collection("Transfer");
+
+  // var dio = Dio(BaseOptions(followRedirects: false));
+
+  Map<String, String> get headers => {
+        "Authorization": "Bearer FLWSECK-2e71fb7432ce8d2baba8e2ddb320d6bf-X",
+
+        // "Bearer FLWSECK_TEST-88e6e737751438039c0a2875396babc1-X",
+        "Content-Type": " application/json",
+        "Accept": " application/json"
+      };
+
+  Future getResponseFromEndpoint(String url) async {
+    try {
+      var response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        // print('Error: ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      print('Exception $e');
+      return null;
+    }
+  }
+
+  Future verifyAccount(AccountCharge payload) async {
+    var res = await http.post(Uri.parse(ACCOUNT_VERIFICATION_ENDPOINT),
+        body: json.encode(payload), headers: headers);
+    return jsonDecode(res.body);
+  }
+
+  Future verifyCharge(int id) async {
+    var url = 'https://api.flutterwave.com/v3/transactions/$id/verify';
+    try {
+      var res = await http.get(Uri.parse(url), headers: headers);
+      return VerifyChargeResponse.fromJson(jsonDecode(res.body));
+    } catch (e) {
+      print(e);
+      throw HttpException(e.toString());
+    }
+  }
+
+  Future getBanks() async {
+    try {
+      var res = await http.get(Uri.parse(BANKS_ENDPOINT), headers: headers);
+      return BankModel.fromJson(jsonDecode(res.body));
+    } catch (e) {
+      print(e);
+      throw HttpException(e.toString());
+    }
+  }
+
+  Future validateCharge(payload) async {
+    try {
+      var res = await http.post(Uri.parse(VALIDATE_CHARGE_ENDPOINT),
+          body: json.encode(payload), headers: headers);
+      return ValidateChargeResponse.fromJson(jsonDecode(res.body));
+    } catch (e) {
+      print(e);
+
+      throw HttpException(e.toString());
+    }
+  }
+
+  Future loadWallet(body) async {
+    try {
+      var res = await http.post(Uri.parse(BANK_TRANSFER_ENDPOINT),
+          body: json.encode(body), headers: headers);
+      print(res.body);
+
+      return BankTransferResponse.fromJson(jsonDecode(res.body));
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future cashOut(body) async {
+    try {
+      var res = await http.post(Uri.parse(CASHOUT_ENDPOINT),
+          body: json.encode(body), headers: headers);
+
+      return CashoutResponse.fromJson(jsonDecode(res.body));
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future getTransfer(int id) async {
+    try {
+      final url = '$CASHOUT_ENDPOINT/$id';
+      var res = await http.get(Uri.parse(url), headers: headers);
+      return CashoutResponse.fromJson(jsonDecode(res.body));
+    } catch (e) {
+      print(e);
+      throw HttpException(e.toString());
+    }
+  }
 
   Future addWallet(String userId, WalletModel walletData) async {
     final walletId = Uuid().v1();
@@ -15,7 +127,28 @@ class WalletService {
             walletData.toJson(),
           );
     } catch (e) {
-      throw HttpException(e.message);
+      throw HttpException(e.toString());
+    }
+  }
+
+  Future startJob(payload) async {
+    try {
+      var res =
+          await http.post(Uri.parse(JOB_ENDPOINT), body: jsonEncode(payload));
+      print(res);
+    } catch (e) {
+      throw HttpException(e.toString());
+    }
+  }
+
+  Future createTransferRecord(TransferModel transferData) async {
+    final transferId = Uuid().v1();
+    try {
+      await _transferCollectionReference
+          .doc(transferId)
+          .set(transferData.toJson());
+    } catch (e) {
+      throw HttpException(e.toString());
     }
   }
 
@@ -27,7 +160,28 @@ class WalletService {
           .asyncMap((doc) =>
               doc.docs.map((e) => WalletModel.fromData(e)).toList()[0]);
     } catch (e) {
-      throw HttpException(e);
+      throw HttpException(e.toString());
+    }
+  }
+
+  Future intitialUpdateWalletData(String walletId, WalletModel payload) async {
+    try {
+      _walletCollectionReference
+          .doc(walletId)
+          .update({'PushToken': payload.pushToken});
+    } catch (e) {
+      throw HttpException(e.toString());
+    }
+  }
+
+  Future updateWallet(String walletId, WalletModel payload) async {
+    try {
+      _walletCollectionReference.doc(walletId).update({
+        'AvailableBalance': payload.availableBalance,
+        'LedgerBalance': payload.legderBalance,
+      });
+    } catch (e) {
+      throw HttpException(e.toString());
     }
   }
 }

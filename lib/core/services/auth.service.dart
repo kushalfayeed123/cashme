@@ -1,11 +1,7 @@
 import 'dart:io';
 
-import 'package:cash_me/core/models/wallet.model.dart';
-import 'package:cash_me/core/providers/wallet_provider.dart';
 import 'package:cash_me/core/services/user.service.dart';
-import 'package:cash_me/core/services/wallet.service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:provider/provider.dart';
 
 import '../../locator.dart';
 
@@ -23,15 +19,14 @@ class AuthenticationService {
       await _firebaseAuth.signInWithEmailAndPassword(
           email: email, password: password);
     } catch (e) {
-      throw HttpException(e.message);
+      throw HttpException(e.toString());
     }
   }
 
   Future registerUser(
     String password,
     String email,
-    String firstName,
-    String lastName,
+    String fullName,
     String cashMeName,
     String pin,
   ) async {
@@ -42,18 +37,21 @@ class AuthenticationService {
       );
       User user = _firebaseAuth.currentUser;
       await locator<UserService>()
-          .addUserData(user.uid, email, firstName, lastName, cashMeName, pin);
+          .addUserData(user.uid, email, fullName, cashMeName, pin);
     } catch (e) {
-      throw HttpException(e.message);
+      throw HttpException(e.toString());
     }
   }
 
   Future<bool> isUserLoggedIn() async {
     try {
       User user = _firebaseAuth.currentUser;
-      return user != null;
+      if (user.email.isNotEmpty) {
+        return true;
+      }
+      return false;
     } catch (e) {
-      throw HttpException(e.message);
+      throw HttpException(e.toString());
     }
   }
 
@@ -61,7 +59,7 @@ class AuthenticationService {
     try {
       await _firebaseAuth.signOut();
     } catch (e) {
-      throw HttpException(e.message);
+      throw HttpException(e.toString());
     }
   }
 }
