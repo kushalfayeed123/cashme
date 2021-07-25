@@ -1114,7 +1114,7 @@ class _TransferScreenState extends State<TransferScreen> {
               backgroundColor: Color(0xFF002147)),
           BottomNavigationBarItem(
             icon: Icon(
-              Icons.system_update_rounded,
+              Icons.send_to_mobile,
               color: Color(0xFF002147),
             ),
             label: 'Transfer',
