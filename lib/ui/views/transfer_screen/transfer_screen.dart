@@ -473,10 +473,10 @@ class _TransferScreenState extends State<TransferScreen> {
                                 alignment: Alignment.topCenter,
                                 child: Container(
                                   padding: EdgeInsets.only(
-                                    top: 20,
-                                  ),
+                                      top: 20, left: 10, right: 10),
                                   child: Text(
                                     'Generate QR to Receive Money',
+                                    textAlign: TextAlign.center,
                                     style: TextStyle(
                                       color: Color(0xFF002147),
                                       fontFamily: 'San Francisco',
