@@ -10,7 +10,6 @@ import 'package:cash_me/core/providers/user_provider.dart';
 import 'package:cash_me/core/providers/wallet_provider.dart';
 import 'package:cash_me/ui/shared/widgets/app_drawer.dart';
 import 'package:cash_me/ui/views/home/home_screen.dart';
-import 'package:cash_me/ui/views/load_wallet/load_wallet.dart';
 import 'package:cash_me/ui/views/scan_screen/scan_screen.dart';
 import 'package:cash_me/ui/views/transfer_screen/transfer_screen.dart';
 import 'package:connectivity/connectivity.dart';
@@ -285,7 +284,7 @@ class _CashoutScreenState extends State<CashoutScreen>
           transactionMode: CASHOUT,
           createdOn: DateTime.now(),
           modifiedOn: DateTime.now(),
-          status: 'Pending',
+          status: 'Completed',
           userId: user.id,
           // transactionRef: cashOutRes.data.reference
         );

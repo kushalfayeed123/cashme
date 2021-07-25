@@ -117,8 +117,9 @@ class _HomeScreenState extends State<HomeScreen> {
       drawer: AppDrawer(),
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Padding(
-          padding: const EdgeInsets.only(top: 30.0, left: 20.0),
+        title: Container(
+          alignment: Alignment.topLeft,
+          padding: const EdgeInsets.only(top: 30.0, left: 15.0),
           child: RichText(
             text: TextSpan(
                 text: 'CASH',
@@ -252,7 +253,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     padding: EdgeInsets.only(
                                         top:
                                             MediaQuery.of(context).size.height *
-                                                0.07,
+                                                0.05,
                                         // bottom: 5.0,
                                         left: 30.0),
                                     child: Row(
@@ -341,9 +342,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                     itemCount: _transactions.length,
                                     itemBuilder:
                                         (BuildContext context, int index) {
-                                      var _timeago = DateFormatter(
-                                              _transactions[index].createdOn)
-                                          .format();
                                       return Container(
                                         child: Column(
                                           mainAxisSize: MainAxisSize.min,
@@ -359,15 +357,53 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   fontWeight: FontWeight.w600,
                                                 ),
                                               ),
-                                              subtitle: Text(
-                                                _transactions[index].type,
-                                                style: TextStyle(
-                                                  color: Colors.blueGrey,
-                                                  fontFamily: 'San Francisco',
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
+                                              subtitle: _transactions[index]
+                                                          .type ==
+                                                      DEBIT
+                                                  ? _transactions[index]
+                                                                  .receiverName !=
+                                                              '' &&
+                                                          _transactions[index]
+                                                                  .transactionMode !=
+                                                              WALLET_LOAD &&
+                                                          _transactions[index]
+                                                                  .transactionMode !=
+                                                              CASHOUT
+                                                      ? Text(
+                                                          'to ${_transactions[index].receiverName}',
+                                                          style: TextStyle(
+                                                            color:
+                                                                Colors.blueGrey,
+                                                            fontFamily:
+                                                                'San Francisco',
+                                                            fontSize: 14,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                          ),
+                                                        )
+                                                      : Container()
+                                                  : _transactions[index]
+                                                                  .senderName !=
+                                                              '' &&
+                                                          _transactions[index]
+                                                                  .transactionMode !=
+                                                              WALLET_LOAD &&
+                                                          _transactions[index]
+                                                                  .transactionMode !=
+                                                              CASHOUT
+                                                      ? Text(
+                                                          'from ${_transactions[index].senderName}',
+                                                          style: TextStyle(
+                                                            color:
+                                                                Colors.blueGrey,
+                                                            fontFamily:
+                                                                'San Francisco',
+                                                            fontSize: 14,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                          ),
+                                                        )
+                                                      : Container(),
                                               trailing: Column(
                                                 children: [
                                                   _transactions[index].type ==
@@ -439,12 +475,6 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Color(0xFFf4f9f9),
         onTap: (index) {
           switch (index) {
-            case 0:
-              Navigator.of(context).pushNamed(HomeScreen.routeName);
-
-              // Navigator.push(context,
-              //     CupertinoPageRoute(builder: (context) => TransferScreen()));
-              break;
             case 1:
               Navigator.of(context).pushNamed(TransferScreen.routeName);
               break;

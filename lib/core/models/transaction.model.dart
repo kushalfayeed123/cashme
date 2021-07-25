@@ -13,6 +13,7 @@ class TransactionModel {
   final String status;
   final String userId;
   final String transactionRef;
+  final String receiverName;
 
   const TransactionModel(
       {this.id,
@@ -24,6 +25,7 @@ class TransactionModel {
       @required this.modifiedOn,
       @required this.status,
       @required this.userId,
+      @required this.receiverName,
       @required this.transactionRef});
   TransactionModel.fromData(DocumentSnapshot<Map<String, dynamic>> snapshot)
       : id = snapshot.id,
@@ -35,7 +37,8 @@ class TransactionModel {
         modifiedOn = snapshot.data()['ModifiedOn'].toDate(),
         status = snapshot.data()['Status'],
         transactionRef = snapshot.data()['TransactionReference'] ?? '',
-        userId = snapshot.data()['UserId'];
+        userId = snapshot.data()['UserId'],
+        receiverName = snapshot.data()['ReceiverName'] ?? '';
   Map<String, dynamic> toJson() {
     return {
       'Type': type,
@@ -46,6 +49,7 @@ class TransactionModel {
       'ModifiedOn': modifiedOn,
       'Status': status,
       'UserId': userId,
+      'ReceiverName': receiverName,
       'TransactionReference': transactionRef,
     };
   }

@@ -7,15 +7,12 @@ import 'package:cash_me/core/models/transaction.model.dart';
 import 'package:cash_me/core/models/transfer.model.dart';
 import 'package:cash_me/core/models/user.model.dart';
 import 'package:cash_me/core/models/wallet.model.dart';
-import 'package:cash_me/core/providers/authentication_provider.dart';
 import 'package:cash_me/core/providers/transaction_provider.dart';
 import 'package:cash_me/core/providers/user_provider.dart';
 import 'package:cash_me/core/providers/wallet_provider.dart';
 import 'package:cash_me/ui/shared/widgets/app_drawer.dart';
-import 'package:cash_me/ui/views/cash_out/cash_out_screen.dart';
 import 'package:cash_me/ui/views/home/home_screen.dart';
 import 'package:cash_me/ui/views/load_wallet/load_wallet.dart';
-import 'package:cash_me/ui/views/login/login_screen.dart';
 import 'package:cash_me/ui/views/transfer_screen/transfer_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +21,6 @@ import 'package:intl/intl.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:provider/provider.dart';
 import 'package:barcode_scan_fix/barcode_scan.dart';
-import 'package:connectivity/connectivity.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class ScanScreen extends StatefulWidget {
@@ -180,6 +176,9 @@ class _ScanScreenState extends State<ScanScreen> {
 
       final _wallet =
           Provider.of<WalletProvider>(context, listen: false).userWallet;
+      final receiverName = Provider.of<UserProvider>(context, listen: false)
+          .selectedUser
+          .cashMeName;
 
       setState(() {
         senderPayload = TransferModel(
@@ -220,6 +219,7 @@ class _ScanScreenState extends State<ScanScreen> {
             modifiedOn: DateTime.now(),
             status: 'Completed',
             userId: currentUser.id,
+            receiverName: receiverName,
             id: '');
 
         walletPayload = WalletModel(
@@ -251,7 +251,7 @@ class _ScanScreenState extends State<ScanScreen> {
     final _wallet =
         Provider.of<WalletProvider>(context, listen: false).userWallet;
     final receiverName =
-        Provider.of<UserProvider>(context, listen: false).sender;
+        Provider.of<UserProvider>(context, listen: false).selectedUser;
     setState(() {
       senderPayload = TransferModel(
           walletId: _wallet.id,
@@ -269,7 +269,10 @@ class _ScanScreenState extends State<ScanScreen> {
         isScrollControlled: true,
         isDismissible: true,
         enableDrag: true,
-
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20.0), topRight: Radius.circular(20.0)),
+        ),
         // bounce: true,
         // backgroundColor: Color(0xFFe8eae6),
         // expand: true,
@@ -284,7 +287,7 @@ class _ScanScreenState extends State<ScanScreen> {
                 controller: ModalScrollController.of(context),
                 child: Container(
                   // padding: EdgeInsets.symmetric(horizontal: 20.0),
-                  height: MediaQuery.of(context).size.height,
+                  height: MediaQuery.of(context).size.height * 0.8,
                   child: Stack(
                     children: [
                       Align(
@@ -311,7 +314,7 @@ class _ScanScreenState extends State<ScanScreen> {
                         alignment: Alignment.topCenter,
                         child: Padding(
                           padding: EdgeInsets.only(
-                              top: MediaQuery.of(context).size.height * 0.24),
+                              top: MediaQuery.of(context).size.height * 0.08),
                           child: Container(
                             decoration: BoxDecoration(
                               // border: Border.all(color: Color(0xff16c79a), width: 1),
@@ -332,7 +335,7 @@ class _ScanScreenState extends State<ScanScreen> {
                         alignment: Alignment.bottomCenter,
                         child: Container(
                           padding: EdgeInsets.only(
-                              top: MediaQuery.of(context).size.height * 0.075),
+                              top: MediaQuery.of(context).size.height * 0.055),
                           width: MediaQuery.of(context).size.width * 0.96,
                           height: MediaQuery.of(context).size.height * 0.30,
                           decoration: BoxDecoration(
@@ -385,7 +388,7 @@ class _ScanScreenState extends State<ScanScreen> {
                                       minWidth:
                                           MediaQuery.of(context).size.width,
                                       padding: EdgeInsets.fromLTRB(
-                                          20.0, 15.0, 20.0, 15.0),
+                                          20.0, 10.0, 20.0, 15.0),
                                       onPressed: () async {
                                         mystate(() {
                                           senderPayload = TransferModel(
@@ -670,7 +673,7 @@ class _ScanScreenState extends State<ScanScreen> {
                 alignment: Alignment.center,
                 child: Padding(
                   padding: EdgeInsets.only(
-                      top: MediaQuery.of(context).size.height * 0.25,
+                      top: MediaQuery.of(context).size.height * 0.35,
                       left: 30.0,
                       right: 30.0),
                   child: Container(
@@ -703,9 +706,9 @@ class _ScanScreenState extends State<ScanScreen> {
                 Navigator.of(context).pushNamed(TransferScreen.routeName);
                 break;
 
-              case 2:
-                Navigator.of(context).pushNamed(ScanScreen.routeName);
-                break;
+              // case 2:
+              //   Navigator.of(context).pushNamed(ScanScreen.routeName);
+              //   break;
             }
           },
           items: const <BottomNavigationBarItem>[

@@ -14,7 +14,6 @@ import 'package:cash_me/ui/shared/widgets/app_drawer.dart';
 import 'package:cash_me/ui/views/home/home_screen.dart';
 import 'package:cash_me/ui/views/load_wallet/load_wallet.dart';
 import 'package:cash_me/ui/views/scan_screen/scan_screen.dart';
-import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -55,7 +54,7 @@ class _TransferScreenState extends State<TransferScreen> {
     if (_isInit) {
       getInitValues();
       _isInit = false;
-      qrdataFeed.text = '0';
+      qrdataFeed.text = '';
     }
     super.didChangeDependencies();
   }
@@ -287,9 +286,11 @@ class _TransferScreenState extends State<TransferScreen> {
   prePaymentAction() async {
     openLoadingDialog();
     final _user = Provider.of<UserProvider>(context, listen: false).currentUser;
-
     final newValue =
         _wallet.availableBalance + int.parse(qrPayload.transferValue);
+    final receiverName = Provider.of<UserProvider>(context, listen: false)
+        .selectedUser
+        .cashMeName;
 
     try {
       transactionPayload = TransactionModel(
@@ -301,6 +302,7 @@ class _TransferScreenState extends State<TransferScreen> {
           modifiedOn: DateTime.now(),
           status: 'Completed',
           userId: _user.id,
+          receiverName: receiverName,
           id: '');
 
       walletPayload = WalletModel(
@@ -328,7 +330,7 @@ class _TransferScreenState extends State<TransferScreen> {
     await Provider.of<UserProvider>(context, listen: false)
         .setUser(selectedUser);
     final receiverUserId =
-        Provider.of<UserProvider>(context, listen: false).sender.id;
+        Provider.of<UserProvider>(context, listen: false).selectedUser.id;
     await Provider.of<WalletProvider>(context, listen: false)
         .getSenderWallet(receiverUserId);
   }
@@ -363,7 +365,8 @@ class _TransferScreenState extends State<TransferScreen> {
           availableBalance: senderBalance,
         );
         final receiver =
-            Provider.of<UserProvider>(context, listen: false).sender;
+            Provider.of<UserProvider>(context, listen: false).selectedUser;
+        print(receiver.cashMeName);
 
         final senderTransactionPayload = TransactionModel(
             type: DEBIT,
@@ -374,16 +377,18 @@ class _TransferScreenState extends State<TransferScreen> {
             modifiedOn: DateTime.now(),
             status: 'Completed',
             userId: currentUser.id,
+            receiverName: receiver.cashMeName,
             transactionRef: '');
         final receiverTransactionPayload = TransactionModel(
             type: CREDIT,
             value: qrdataFeed.text,
-            senderName: receiver.cashMeName,
+            senderName: currentUser.cashMeName,
             transactionMode: USERNAME_TRANSFER,
             createdOn: DateTime.now(),
             modifiedOn: DateTime.now(),
             status: 'Completed',
             userId: receiver.id,
+            receiverName: receiver.cashMeName,
             transactionRef: '');
         await Provider.of<WalletProvider>(context, listen: false)
             .updateWallet(receiverWallet.id, payLoad);
@@ -408,7 +413,8 @@ class _TransferScreenState extends State<TransferScreen> {
     setState(() {
       qrPayload = TransferModel.fromJson(qrCodeResult);
     });
-
+    await Provider.of<UserProvider>(context, listen: false)
+        .setUser(qrPayload.email);
     prePaymentAction();
   }
 
@@ -444,6 +450,10 @@ class _TransferScreenState extends State<TransferScreen> {
         isScrollControlled: true,
         isDismissible: true,
         enableDrag: true,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20.0), topRight: Radius.circular(20.0)),
+        ),
         builder: (BuildContext context) {
           return StatefulBuilder(
               builder: (BuildContext context, StateSetter mystate) {
@@ -455,7 +465,7 @@ class _TransferScreenState extends State<TransferScreen> {
                 controller: ModalScrollController.of(context),
                 child: Container(
                     // padding: EdgeInsets.symmetric(horizontal: 20.0),
-                    height: MediaQuery.of(context).size.height,
+                    height: MediaQuery.of(context).size.height * 0.8,
                     child: type == 'receive'
                         ? Stack(
                             children: [
@@ -485,7 +495,7 @@ class _TransferScreenState extends State<TransferScreen> {
                                 child: Padding(
                                   padding: EdgeInsets.only(
                                       top: MediaQuery.of(context).size.height *
-                                          0.24),
+                                          0.08),
                                   child: Container(
                                     decoration: BoxDecoration(
                                       // border: Border.all(color: Color(0xff16c79a), width: 1),
@@ -517,7 +527,7 @@ class _TransferScreenState extends State<TransferScreen> {
                                 child: Container(
                                   padding: EdgeInsets.only(
                                       top: MediaQuery.of(context).size.height *
-                                          0.075),
+                                          0.055),
                                   width:
                                       MediaQuery.of(context).size.width * 0.96,
                                   height:
@@ -575,16 +585,10 @@ class _TransferScreenState extends State<TransferScreen> {
                                               : transferEditor,
                                         ),
                                         SizedBox(
-                                          height: valueGenerated
-                                              ? MediaQuery.of(context)
-                                                      .size
-                                                      .height *
-                                                  0.02
-                                              : MediaQuery.of(context)
-                                                      .size
-                                                      .height *
-                                                  0.07,
-                                        ),
+                                            height: MediaQuery.of(context)
+                                                    .size
+                                                    .height *
+                                                0.02),
                                         Material(
                                           elevation: 5.0,
                                           borderRadius:
@@ -592,10 +596,11 @@ class _TransferScreenState extends State<TransferScreen> {
                                           color: Color(0xFF002147),
                                           child: MaterialButton(
                                             minWidth: MediaQuery.of(context)
-                                                .size
-                                                .width,
+                                                    .size
+                                                    .width *
+                                                0.88,
                                             padding: EdgeInsets.fromLTRB(
-                                                20.0, 15.0, 20.0, 15.0),
+                                                20.0, 10.0, 20.0, 15.0),
                                             onPressed: () async {
                                               valueGenerated
                                                   ? setState(() {
@@ -693,7 +698,7 @@ class _TransferScreenState extends State<TransferScreen> {
                                 child: Padding(
                                   padding: EdgeInsets.only(
                                       top: MediaQuery.of(context).size.height *
-                                          0.24),
+                                          0.14),
                                   child: Container(
                                     decoration: BoxDecoration(
                                       // border: Border.all(color: Color(0xff16c79a), width: 1),
@@ -717,7 +722,7 @@ class _TransferScreenState extends State<TransferScreen> {
                                   width:
                                       MediaQuery.of(context).size.width * 0.96,
                                   height:
-                                      MediaQuery.of(context).size.height * 0.50,
+                                      MediaQuery.of(context).size.height * 0.40,
                                   decoration: BoxDecoration(
                                       color: Color(0xFFe8eae6),
                                       borderRadius: BorderRadius.circular(10)),
@@ -735,7 +740,7 @@ class _TransferScreenState extends State<TransferScreen> {
                                           height: MediaQuery.of(context)
                                                   .size
                                                   .height *
-                                              0.09,
+                                              0.04,
                                         ),
                                         Container(
                                           padding: EdgeInsets.symmetric(
@@ -793,7 +798,7 @@ class _TransferScreenState extends State<TransferScreen> {
                                           height: MediaQuery.of(context)
                                                   .size
                                                   .height *
-                                              0.09,
+                                              0.04,
                                         ),
                                         Material(
                                           elevation: 5.0,
@@ -805,8 +810,9 @@ class _TransferScreenState extends State<TransferScreen> {
                                               : Color(0xFF002147),
                                           child: MaterialButton(
                                             minWidth: MediaQuery.of(context)
-                                                .size
-                                                .width,
+                                                    .size
+                                                    .width *
+                                                0.88,
                                             padding: EdgeInsets.fromLTRB(
                                                 20.0, 15.0, 20.0, 15.0),
                                             onPressed: () =>
@@ -1056,7 +1062,7 @@ class _TransferScreenState extends State<TransferScreen> {
               alignment: Alignment.center,
               child: Padding(
                 padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).size.height * 0.25,
+                    top: MediaQuery.of(context).size.height * 0.35,
                     left: 30.0,
                     right: 30.0),
                 child: Container(
@@ -1089,9 +1095,9 @@ class _TransferScreenState extends State<TransferScreen> {
               // Navigator.push(context,
               //     CupertinoPageRoute(builder: (context) => TransferScreen()));
               break;
-            case 1:
-              Navigator.of(context).pushNamed(TransferScreen.routeName);
-              break;
+            // case 1:
+            //   Navigator.of(context).pushNamed(TransferScreen.routeName);
+            //   break;
 
             case 2:
               Navigator.of(context).pushNamed(ScanScreen.routeName);
